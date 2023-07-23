@@ -366,14 +366,15 @@ if __name__ == "__main__":
                 for k, v in data_ts.items()
             }
 
-    print("Running nonlinear least-squares optimization...")
     if optimization_type == "llq":
+        print("Running linear least-squares optimization...")
         Pi_est = optimize_with_closed_form_linear_lq(
             cal_a_fn,
             cal_b_fn,
             data_ts,
         )
     elif optimization_type == "nlq":
+        print("Running nonlinear least-squares optimization...")
         Pi_est = optimize_with_nonlinear_lq(
             eom_residual_fn,
             data_ts,
@@ -382,5 +383,5 @@ if __name__ == "__main__":
     else:
         raise ValueError("Unknown optimization type: ", optimization_type)
 
-    print("Identified system params using steady-state samples:\n", Pi_est)
+    print(f"Identified system params {Pi_syms} using steady-state samples:\n", Pi_est)
     onp.savetxt("Pi_static_elongation_nlq_est.csv", Pi_est, delimiter=",")
