@@ -79,7 +79,7 @@ def linear_lq_optim_problem_factory(
             warnings.warn("Substituted sigma_a_eq with S_a_hat_times_sigma_a_eq / S_a_hat")
         else:
             continue
-        Pi_syms[param_idx] = new_param_sym\
+        Pi_syms[param_idx] = new_param_sym
 
     # define equation
     eq = sp.Eq(lhs, rhs)
