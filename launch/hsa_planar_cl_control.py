@@ -116,6 +116,11 @@ def generate_launch_description():
                 ),
             ],
         ),
+        Node(
+            package="hsa_visualization",
+            executable="planar_viz_node",
+            name="visualization",
+        )
     ]
 
     if RECORD_BAG:
