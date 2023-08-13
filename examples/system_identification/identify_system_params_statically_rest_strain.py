@@ -111,7 +111,7 @@ if __name__ == "__main__":
             resampling_dt=resampling_dt,
             filter=True,
             derivative_method="savgol_filter",
-            plotting=True,
+            plotting=False,
         )
 
         t_ts = experiment_data_ts[

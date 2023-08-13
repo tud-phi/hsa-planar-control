@@ -262,7 +262,7 @@ elif SYSTEM_ID_STEP == 3:
     # identification result for 20230621_165020:
     # sigma_a_eq = 1.03195326
     # identification result for 20230703_155911:
-    # sigma_a_eq = 1.06077167
+    # sigma_a_eq = 1.0753753
 
     # previously identified parameters in steps 0, 1, 2
     known_params["S_a_hat"] = 5.66472469 * ones_rod
@@ -276,15 +276,15 @@ elif SYSTEM_ID_STEP == 3:
         #     "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
         # },
         # # staircase of bending to 180 deg
-        "20230621_165020": {
-            "t_ss": jnp.array([0.8, 2.0, 3.0, 4.0, 5.0, 6.0]),
-            "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        },
+        # "20230621_165020": {
+        #     "t_ss": jnp.array([0.8, 2.0, 3.0, 4.0, 5.0, 6.0]),
+        #     "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        # },
         # cw staircase bending with alternating payload
-        # "20230703_155911": {
-        #     "t_ss": jnp.array([3.3, 5.6, 9.0, 50, 51, 52, 53, 54, 55, 56]),
-        #     "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        # }
+        "20230703_155911": {
+            "t_ss": jnp.array([3.3, 5.6, 9.0, 50, 51, 52, 53, 54, 55, 56]),
+            "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        }
     }
 
 else:

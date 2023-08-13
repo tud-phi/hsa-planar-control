@@ -38,7 +38,7 @@ known_params = {
     "lpc": 25e-3 * jnp.ones((num_segments,)),
     # length of the rigid distal caps of the rods connecting to the platform [m]
     "ldc": 14e-3 * jnp.ones((num_segments,)),
-    "sigma_a_eq": 1.03195326 * ones_rod,  # axial rest strains of each rod
+    "sigma_a_eq": 1.0753753 * ones_rod,  # axial rest strains of each rod
     # scale factor for the rest length as a function of the twist strain [1/(rad/m) = m / rad]
     "C_varepsilon": 0.00984819 * ones_rod,  # Average: 0.009118994, Std: 0.000696435
     # outside radius of each rod [m]. The rows correspond to the segments.
@@ -75,44 +75,44 @@ known_params = {
 }
 
 experiment_configs = {
-    # staircase of bending to 180 deg
-    "20230621_165020": {
-        "t_ss": jnp.array([
-            2.0, 3.0, 4.0,
-            8.2, 10.0, 11.4,
-            14.5, 16.0, 17.0,
-            20.0, 21.0, 22.0,
-            26, 27.0, 28.0,
-            32.0, 33.0, 34.0,
-        ]),
-        "mpl_ss": jnp.array([
-            0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0,
-        ]),
-    },
-    # ccw staircase bending with alternating payload
-    # "20230703_155911": {
+    # # staircase of bending to 180 deg
+    # "20230621_165020": {
     #     "t_ss": jnp.array([
-    #         # 6.33, 21.5, 65.8,
-    #         # 78.4, 99.3, 132.9,
-    #         # 185,
-    #         # 225, 257.5, 277,
-    #         292, 317.5, 346,
-    #         # 363, 402.5, 415.7,
+    #         2.0, 3.0, 4.0,
+    #         8.2, 10.0, 11.4,
+    #         14.5, 16.0, 17.0,
+    #         20.0, 21.0, 22.0,
+    #         26, 27.0, 28.0,
+    #         32.0, 33.0, 34.0,
     #     ]),
     #     "mpl_ss": jnp.array([
-    #         # 0.0, 0.2, 0.0,
-    #         # 0.0, 0.2, 0.0,
-    #         # 0.0,
-    #         # 0.0, 0.2, 0.0,
-    #         0.0, 0.2, 0.0,
-    #         # 0.0, 0.2, 0.0,
+    #         0.0, 0.0, 0.0,
+    #         0.0, 0.0, 0.0,
+    #         0.0, 0.0, 0.0,
+    #         0.0, 0.0, 0.0,
+    #         0.0, 0.0, 0.0,
+    #         0.0, 0.0, 0.0,
     #     ]),
     # },
+    # ccw staircase bending with alternating payload
+    "20230703_155911": {
+        "t_ss": jnp.array([
+            6.33, 21.5, 65.8,
+            78.4, 99.3, 132.9,
+            185,
+            225, 257.5, 277,
+            292, 317.5, 346,
+            363, 402.5, 415.7,
+        ]),
+        "mpl_ss": jnp.array([
+            0.0, 0.2, 0.0,
+            0.0, 0.2, 0.0,
+            0.0,
+            0.0, 0.2, 0.0,
+            0.0, 0.2, 0.0,
+            0.0, 0.2, 0.0,
+        ]),
+    },
     # # cw staircase bending with alternating payload
     # "20230703_162136": {
     #     "t_ss": jnp.array(

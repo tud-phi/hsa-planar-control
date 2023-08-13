@@ -41,9 +41,6 @@ if experiment_id == "20230621_153408":
     params["sigma_a_eq"] = 1.0388612 * jnp.ones_like(params["sigma_a_eq"])
 elif experiment_id == "20230621_165020":
     params["sigma_a_eq"] = 1.03195326 * jnp.ones_like(params["sigma_a_eq"])
-    params["zetab"] = 1e1 * params["zetab"]
-    params["zetash"] = 1e1 * params["zetash"]
-    params["zetaa"] = 1e1 * params["zetaa"]
 
 # settings for simulation
 mocap_body_ids = {"base": 4, "platform": 5}

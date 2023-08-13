@@ -36,9 +36,9 @@ known_params = {
     "lpc": 25e-3 * jnp.ones((num_segments,)),
     # length of the rigid distal caps of the rods connecting to the platform [m]
     "ldc": 14e-3 * jnp.ones((num_segments,)),
-    "sigma_a_eq": 9.98051512e-01 * ones_rod,  # axial rest strains of each rod
+    "sigma_a_eq": 1.08094014 * ones_rod,  # axial rest strains of each rod
     # scale factor for the rest length as a function of the twist strain [1/(rad/m) = m / rad]
-    "C_varepsilon": 1.12848472e-02 * ones_rod,  # Previous: 9.1e-3
+    "C_varepsilon": 0.00984819 * ones_rod,  # Previous: 9.1e-3
     # outside radius of each rod [m]. The rows correspond to the segments.
     "rout": 25.4e-3 / 2 * ones_rod,  # this is for FPU rods
     # inside radius of each rod [m]. The rows correspond to the segments.
@@ -66,15 +66,20 @@ known_params = {
     # --> rho = 710.4 kg/m^3
     "rhoec": 710.4 * jnp.ones((num_segments,)),
     "g": jnp.array([0.0, 9.81]),
-    "Ehat": 4.67725384e03 * ones_rod,  # Elastic modulus of each rod [Pa]
-    "Ghat": 4.11478872e03 * ones_rod,  # Shear modulus of each rod [Pa]
-    # Constant to scale the Elastic modulus linearly with the twist strain [Pa/(rad/m)]
-    # 53 rad / m is roughly the twist strain at 180 deg twist angle
-    "C_E": 67.74549753 * ones_rod,
-    # Constant to scale the Shear modulus linearly with the twist strain [Pa/(rad/m)]
-    # 53 rad / m is roughly the twist strain at 180 deg twist angle
-    "C_G": -1.64919053e01 * ones_rod,
-    "S_b_sh": 7.56629739e-03 * ones_rod,  # Elastic coupling between bending and shear
+    # Nominal bending stiffness of each rod [Nm^2]
+    "S_b_hat": 5.71346377e-04 * ones_rod,
+    # Nominal shear stiffness of each rod [N]
+    "S_sh_hat": 5.91462074e-01 * ones_rod,
+    # Nominal axial stiffness of each rod [N]
+    "S_a_hat": 5.66472469 * ones_rod,
+    # Elastic coupling between bending and shear [Nm/rad]
+    "S_b_sh": 4.48419541e-03 * ones_rod,
+    # Scaling of bending stiffness with twist strain [Nm^3/rad]
+    "C_S_b": -9.67560524e-06 * ones_rod,
+    # Scaling of shear stiffness with twist strain [Nm/rad]
+    "C_S_sh": -4.75687961e-04 * ones_rod,
+    # Scaling of axial stiffness with twist strain [Nm/rad]
+    "C_S_a": 0.01508165 * ones_rod,
 }
 
 experiment_ids = [
