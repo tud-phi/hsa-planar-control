@@ -151,4 +151,4 @@ if __name__ == "__main__":
     )
 
     print("Identified system params using steady-state samples:\n", Pi_est)
-    onp.savetxt("Pi_static_est.csv", Pi_est, delimiter=",")
+    onp.savetxt("Pi_static_est_rest_strain.csv", Pi_est, delimiter=",")
