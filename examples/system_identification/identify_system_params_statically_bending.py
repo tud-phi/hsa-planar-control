@@ -38,9 +38,9 @@ known_params = {
     "lpc": 25e-3 * jnp.ones((num_segments,)),
     # length of the rigid distal caps of the rods connecting to the platform [m]
     "ldc": 14e-3 * jnp.ones((num_segments,)),
-    "sigma_a_eq": 1.06077167 * ones_rod,  # axial rest strains of each rod
+    "sigma_a_eq": 1.0753753 * ones_rod,  # axial rest strains of each rod
     # scale factor for the rest length as a function of the twist strain [1/(rad/m) = m / rad]
-    "C_varepsilon": 0.01032588 * ones_rod,  # Average: 0.009118994, Std: 0.000696435
+    "C_varepsilon": 0.00984819 * ones_rod,  # Average: 0.009118994, Std: 0.000696435
     # outside radius of each rod [m]. The rows correspond to the segments.
     "rout": 25.4e-3 / 2 * ones_rod,  # this is for FPU rods
     # inside radius of each rod [m]. The rows correspond to the segments.
@@ -68,75 +68,13 @@ known_params = {
     # --> rho = 710.4 kg/m^3
     "rhoec": 710.4 * jnp.ones((num_segments,)),
     "g": jnp.array([0.0, 9.81]),
-    "S_a_hat": 0.79971525 * ones_rod,  # Nominal axial stiffness of each rod [N]
+    "S_a_hat": 5.66472469 * ones_rod,  # Nominal axial stiffness of each rod [N]
     # Scaling of axial stiffness with twist strain [Nm/rad]
-    "C_S_a": 0.01019387 * ones_rod,
+    "C_S_a": 0.01508165 * ones_rod,
     "lpl": 25e-3,  # length of payload [m] (100g weights)
 }
 
 experiment_configs = {
-    # ccw staircase bending with alternating payload
-    # "20230703_155911": {
-    #     "t_ss": jnp.array([
-    #         # 6.33, 21.5, 65.8,
-    #         # 78.4, 99.3, 132.9,
-    #         # 185,
-    #         # 225, 257.5, 277,
-    #         292, 317.5, 346,
-    #         # 363, 402.5, 415.7,
-    #     ]),
-    #     "mpl_ss": jnp.array([
-    #         # 0.0, 0.2, 0.0,
-    #         # 0.0, 0.2, 0.0,
-    #         # 0.0,
-    #         # 0.0, 0.2, 0.0,
-    #         0.0, 0.2, 0.0,
-    #         # 0.0, 0.2, 0.0,
-    #     ]),
-    # },
-    # cw staircase bending with alternating payload
-    "20230703_162136": {
-        "t_ss": jnp.array(
-            [
-                11.3,
-                36.5,
-                68.2,
-                82.5,
-                111.5,
-                138.33,
-                147.7,
-                171.3,
-                206.6,
-                213,
-                233,
-                276.3,
-                289.2,
-                321.4,
-                345.6,
-                415,
-            ]
-        ),
-        "mpl_ss": jnp.array(
-            [
-                0.0,
-                0.2,
-                0.0,
-                0.0,
-                0.2,
-                0.0,
-                0.0,
-                0.2,
-                0.0,
-                0.0,
-                0.2,
-                0.0,
-                0.0,
-                0.2,
-                0.0,
-                0.0,
-            ]
-        ),
-    }
     # # staircase of bending to 180 deg
     # "20230621_165020": {
     #     "t_ss": jnp.array([
@@ -156,6 +94,68 @@ experiment_configs = {
     #         0.0, 0.0, 0.0,
     #     ]),
     # },
+    # ccw staircase bending with alternating payload
+    "20230703_155911": {
+        "t_ss": jnp.array([
+            6.33, 21.5, 65.8,
+            78.4, 99.3, 132.9,
+            185,
+            225, 257.5, 277,
+            292, 317.5, 346,
+            363, 402.5, 415.7,
+        ]),
+        "mpl_ss": jnp.array([
+            0.0, 0.2, 0.0,
+            0.0, 0.2, 0.0,
+            0.0,
+            0.0, 0.2, 0.0,
+            0.0, 0.2, 0.0,
+            0.0, 0.2, 0.0,
+        ]),
+    },
+    # # cw staircase bending with alternating payload
+    # "20230703_162136": {
+    #     "t_ss": jnp.array(
+    #         [
+    #             11.3,
+    #             36.5,
+    #             68.2,
+    #             82.5,
+    #             111.5,
+    #             138.33,
+    #             147.7,
+    #             171.3,
+    #             206.6,
+    #             213,
+    #             233,
+    #             276.3,
+    #             289.2,
+    #             321.4,
+    #             345.6,
+    #             415,
+    #         ]
+    #     ),
+    #     "mpl_ss": jnp.array(
+    #         [
+    #             0.0,
+    #             0.2,
+    #             0.0,
+    #             0.0,
+    #             0.2,
+    #             0.0,
+    #             0.0,
+    #             0.2,
+    #             0.0,
+    #             0.0,
+    #             0.2,
+    #             0.0,
+    #             0.0,
+    #             0.2,
+    #             0.0,
+    #             0.0,
+    #         ]
+    #     ),
+    # }
 }
 mocap_body_ids = {"base": 4, "platform": 5}
 resampling_dt = 0.01  # [s]

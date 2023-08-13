@@ -36,11 +36,13 @@ experiment_id = "20230621_165020"  # staircase bending ccw
 # experiment_id = "20230621_170734"  # step elongation 210 deg
 # experiment_id = "20230621_171345"  # step bending cw 180 deg
 # experiment_id = "20230621_182829"  # GBN elongation 180 deg
-experiment_id = "20230621_183620"  # GBN bending combined 180 deg
+# experiment_id = "20230621_183620"  # GBN bending combined 180 deg
 if experiment_id == "20230621_153408":
-    params["sigma_a_eq"] = 1.0242209 * jnp.ones_like(params["sigma_a_eq"])
+    params["sigma_a_eq"] = 1.0388612 * jnp.ones_like(params["sigma_a_eq"])
 elif experiment_id == "20230621_165020":
-    params["sigma_a_eq"] = 1.01734995 * jnp.ones_like(params["sigma_a_eq"])
+    params["sigma_a_eq"] = 1.03195326 * jnp.ones_like(params["sigma_a_eq"])
+elif experiment_id == "20230621_183620":
+    params["sigma_a_eq"] = 1.102869 * jnp.ones_like(params["sigma_a_eq"])
 
 # settings for simulation
 mocap_body_ids = {"base": 4, "platform": 5}

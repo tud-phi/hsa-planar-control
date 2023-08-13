@@ -84,16 +84,17 @@ known_params = {
 }
 
 if SYSTEM_ID_STEP == 0:
-    optimization_type = "nlq"
+    optimization_type = "llq"
     params_to_be_idd_names = ["sigma_a_eq", "S_a_hat"]
     Pi_init = jnp.array([9.98051512e-01, 0.820156460844])
-    # identified parameters from step 1:
-    # sigma_a_eq = 0.99805151
-    # S_a_hat = 0.79971525
+    # identified parameters from step 0:
+    # sigma_a_eq = 1.063278732
+    # S_a_hat = 5.66472469
 
     # set dummy parameters for C_varepsilon and C_S_a
-    known_params["C_varepsilon"] = jnp.zeros_like(known_params["roff"])
-    known_params["C_S_a"] = jnp.zeros_like(known_params["roff"])
+    # known_params["sigma_a_eq"] = 1.0 * 0.0 * ones_rod
+    known_params["C_varepsilon"] = 0.0 * ones_rod
+    known_params["C_S_a"] = 0.0 * ones_rod
 
     experiment_configs = {
         # Staircase elongation with changing mass up to 210 deg
@@ -140,16 +141,58 @@ if SYSTEM_ID_STEP == 0:
         },
     }
 elif SYSTEM_ID_STEP == 1:
-    optimization_type = "nlq"
-    params_to_be_idd_names = ["C_varepsilon", "C_S_a"]
-    Pi_init = jnp.array([9.1e-3, 1.18791729918850e-2])
+    optimization_type = "llq"
+    params_to_be_idd_names = ["C_varepsilon"]
     # identified parameters from step 1:
-    # C_varepsilon = 0.01032588
-    # C_S_a = 0.01019387
+    # C_varepsilon = 0.00984819
 
     # previously identified parameters in step 0
-    known_params["sigma_a_eq"] = 0.99805151 * ones_rod
-    known_params["S_a_hat"] = 0.79971525 * ones_rod
+    known_params["sigma_a_eq"] = 1.06327873 * ones_rod
+    known_params["S_a_hat"] = 5.66472469 * ones_rod
+    known_params["C_S_a"] = 0.0 * ones_rod  # we assume that change of S_a is negligible without payload
+
+    experiment_configs = {
+        # Staircase elongation with changing mass up to 210 deg
+        # only regard samples with 0g payload mass
+        "20230703_115411": {
+            "t_ss": jnp.array(
+                [
+                    72.2,
+                    126.7,
+                    140.6,
+                    197.57,
+                    222,
+                    281.6,
+                    296,
+                    349.8,
+                    415,
+                ]
+            ),
+            "mpl_ss": jnp.array(
+                [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                ]
+            ),
+        },
+    }
+elif SYSTEM_ID_STEP == 2:
+    optimization_type = "llq"
+    params_to_be_idd_names = ["C_S_a"]
+    # identified parameters from step 2:
+    # C_S_a = 0.01508165
+
+    # previously identified parameters in step 0
+    known_params["sigma_a_eq"] = 1.06327873 * ones_rod
+    known_params["S_a_hat"] = 5.66472469 * ones_rod
+    known_params["C_varepsilon"] = 0.00984819 * ones_rod
 
     experiment_configs = {
         # Staircase elongation with changing mass up to 210 deg
@@ -213,36 +256,44 @@ elif SYSTEM_ID_STEP == 1:
             ),
         },
     }
-elif SYSTEM_ID_STEP == 2:
+elif SYSTEM_ID_STEP == 3:
     optimization_type = "llq"
-    # identify `sigma_a_eq` on the 20230621_165020 dataset
     params_to_be_idd_names = ["sigma_a_eq"]
-    Pi_init = jnp.array([0.99805151])
     # identification result for 20230621_165020:
-    # sigma_a_eq = 1.01734995
+    # sigma_a_eq = 1.03195326
     # identification result for 20230703_155911:
-    # sigam_a_eq = 1.06077167
+    # sigma_a_eq = 1.0753753
 
-    # previously identified parameters in steps 1 and 2
-    known_params["C_varepsilon"] = 0.01032588 * ones_rod
-    known_params["S_a_hat"] = 0.79971525 * ones_rod
-    known_params["C_S_a"] = 0.01019387 * ones_rod
+    # previously identified parameters in steps 0, 1, 2
+    known_params["S_a_hat"] = 5.66472469 * ones_rod
+    known_params["C_S_a"] = 0.01508165 * ones_rod
+    known_params["C_varepsilon"] = 0.00984819 * ones_rod
 
     experiment_configs = {
-        # staircase of bending to 180 deg
-        "20230621_165020": {
-            "t_ss": jnp.array([0.8, 2.0, 3.0, 4.0, 5.0, 6.0]),
-            "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        },
+        # staircase of elongation
+        # "20230621_153408": {
+        #     "t_ss": jnp.array([0.8, 2.0, 3.0, 4.0, 5.0, 6.0]),
+        #     "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        # },
+        # # staircase of bending to 180 deg
+        # "20230621_165020": {
+        #     "t_ss": jnp.array([0.8, 2.0, 3.0, 4.0, 5.0, 6.0]),
+        #     "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        # },
         # cw staircase bending with alternating payload
-        # "20230703_155911": {
-        #     "t_ss": jnp.array([3.3, 5.6, 9.0, 50, 51, 52, 53, 54, 55, 56]),
-        #     "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        "20230703_155911": {
+            "t_ss": jnp.array([3.3, 5.6, 9.0, 50, 51, 52, 53, 54, 55, 56]),
+            "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        },
+        # # GBN bending combined 180 deg
+        # "20230621_183620": {
+        #     "t_ss": jnp.array([1.05]),
+        #     "mpl_ss": jnp.array([0.0]),
         # }
     }
 
 else:
-    raise ValueError("SYSTEM_ID_STEP must be 0 or 1")
+    raise ValueError("SYSTEM_ID_STEP must be 0, 1, 2, or 3.")
 
 # experiment_configs = {
 #     # staircase of elongation to 210 deg
@@ -366,14 +417,15 @@ if __name__ == "__main__":
                 for k, v in data_ts.items()
             }
 
-    print("Running nonlinear least-squares optimization...")
     if optimization_type == "llq":
+        print("Running linear least-squares optimization...")
         Pi_est = optimize_with_closed_form_linear_lq(
             cal_a_fn,
             cal_b_fn,
             data_ts,
         )
     elif optimization_type == "nlq":
+        print("Running nonlinear least-squares optimization...")
         Pi_est = optimize_with_nonlinear_lq(
             eom_residual_fn,
             data_ts,
@@ -382,5 +434,5 @@ if __name__ == "__main__":
     else:
         raise ValueError("Unknown optimization type: ", optimization_type)
 
-    print("Identified system params using steady-state samples:\n", Pi_est)
+    print(f"Identified system params {Pi_syms} using steady-state samples:\n", Pi_est)
     onp.savetxt("Pi_static_elongation_nlq_est.csv", Pi_est, delimiter=",")

@@ -6,6 +6,7 @@ from jsrm.systems.utils import substitute_params_into_single_symbolic_expression
 from os import PathLike
 import sympy as sp
 from typing import Callable, Dict, List, Tuple
+import warnings
 
 from .utils import isolateVariablesToLeftHandSide
 
@@ -66,6 +67,19 @@ def linear_lq_optim_problem_factory(
     rhs = substitute_params_into_single_symbolic_expression(
         rhs, sym_exps["params_syms"], known_params
     )
+
+    # apply tricks where we find a multiplication of two parameters
+    for param_idx, (param_name, param_sym) in enumerate(zip(params_to_be_idd_names, Pi_syms)):
+        if param_name == "sigma_a_eq" and "S_a_hat" in params_to_be_idd_names:
+            # we have a multiplication of S_a_hat with sigma_a_eq
+            # therefore, we substitute sigma_a_eq with sigma_a_eq_times_S_a_hat / S_a_hat
+            new_param_sym = sp.Symbol("S_a_hat_times_sigma_a_eq")
+            lhs = lhs.subs(param_sym, new_param_sym / sp.Symbol("S_a_hat"))
+            rhs = rhs.subs(param_sym, new_param_sym / sp.Symbol("S_a_hat"))
+            warnings.warn("Substituted sigma_a_eq with S_a_hat_times_sigma_a_eq / S_a_hat")
+        else:
+            continue
+        Pi_syms[param_idx] = new_param_sym
 
     # define equation
     eq = sp.Eq(lhs, rhs)
