@@ -284,7 +284,12 @@ elif SYSTEM_ID_STEP == 3:
         "20230703_155911": {
             "t_ss": jnp.array([3.3, 5.6, 9.0, 50, 51, 52, 53, 54, 55, 56]),
             "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        }
+        },
+        # # GBN bending combined 180 deg
+        # "20230621_183620": {
+        #     "t_ss": jnp.array([1.05]),
+        #     "mpl_ss": jnp.array([0.0]),
+        # }
     }
 
 else:
