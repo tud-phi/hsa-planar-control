@@ -24,6 +24,7 @@ setup(
         (os.path.join("share", package_name, "assets"), glob("assets/*")),
     ],
     install_requires=[
+        "derivative",
         "diffrax",
         "dill",
         "jax",
