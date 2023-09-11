@@ -31,6 +31,7 @@ setup(
         "jaxopt",
         "jax-cosmo",
         "jax-spcs-kinematics",
+        "jsrm",
         "numpy",
         "opencv-python",
         "pandas",
