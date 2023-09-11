@@ -1,5 +1,26 @@
 # HSA planar control
 
+This repository provides implementation and closed-loop simulation of various control strategies for planar HSA robots.
+Furthermore, it contains ROS2 nodes for planning and control of the planar HSA robots.
+
+## Citation
+
+This simulator is part of the publication **An Experimental Study of Model-based Control
+for Planar Handed Shearing Auxetics Robots** presented at the _18th International Symposium on Experimental Robotics_. 
+You can find the publication ~~online~~ in the Springer Proceedings on Advanced Robotics (SPAR).
+
+Please use the following citation if you use our software in your (scientific) work:
+
+```bibtex
+@inproceedings{stolzle2023modelling,
+  title={An Experimental Study of Model-based Control for Planar Handed Shearing Auxetics Robots},
+  author={St{\"o}lzle, Maximilian and Rus, Daniela and Della Santina, Cosimo},
+  booktitle={Experimental Robotics: The 18th International Symposium},
+  year={2023},
+  organization={Springer}
+}
+```
+
 ## Installation
 
 1. Please follow the JAX installation instructions on [GitHub](https://github.com/google/jax).
@@ -8,8 +29,9 @@
 
 ## ROS2
 
-This repository also contains various ROS2 nodes. 
+This repository also contains various ROS2 nodes for planning and control. 
 As usual, clone this repository into your ROS2 workspace and build it with `colcon build`.
+Furthermore, we rely on the ROS2 packages in the [ros2-hsa](https://github.com/tud-cor-sr/ros2-hsa) repository for the communication with the hardware (both actuation and motion capture), inverse kinematics and visualization.
 You can launch the nodes with `ros2 launch hsa_planar_control ./launch/hsa_planar_cl_control.py`.
 
 ## System identification
