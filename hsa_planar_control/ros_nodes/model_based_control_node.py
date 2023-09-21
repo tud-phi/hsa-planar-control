@@ -231,6 +231,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 ),
                 jacobian_end_effector_fn=partial(jacobian_end_effector_fn, self.params),
                 dt=control_dt,
+                phi_ss=self.params["phi_max"].squeeze() / 2,
                 Kp=Kp,
                 Ki=Ki,
                 Kd=Kd,
@@ -243,16 +244,26 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         phi_dummy = self.map_motor_angles_to_actuation_coordinates(
             self.present_motor_angles
         )
-        phi_des_dummy, _ = self.control_fn(
-            0.0,
-            self.q,
-            self.q_d,
-            phi_dummy,
-            controller_state=self.controller_state,
-            pee_des=self.chiee_des[:2],
-            q_des=self.q_des,
-            phi_ss=self.phi_ss,
-        )
+        if self.controller_type == "basic_operational_space_pid":
+            phi_des_dummy, _ = self.control_fn(
+                0.0,
+                self.q,
+                self.q_d,
+                phi_dummy,
+                controller_state=self.controller_state,
+                pee_des=self.chiee_des[:2]
+            )
+        else:
+            phi_des_dummy, _ = self.control_fn(
+                0.0,
+                self.q,
+                self.q_d,
+                phi_dummy,
+                controller_state=self.controller_state,
+                pee_des=self.chiee_des[:2],
+                q_des=self.q_des,
+                phi_ss=self.phi_ss,
+            )
         motor_goal_angles_dummy = self.map_actuation_coordinates_to_motor_angles(
             phi_des_dummy
         )
@@ -364,16 +375,26 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.actuation_coordinates_pub.publish(Float64MultiArray(data=phi.tolist()))
 
         # evaluate controller
-        phi_des, self.controller_state = self.control_fn(
-            t,
-            self.q,
-            self.q_d,
-            phi,
-            controller_state=self.controller_state,
-            pee_des=self.chiee_des[:2],
-            q_des=self.q_des,
-            phi_ss=self.phi_ss,
-        )
+        if self.controller_type == "basic_operational_space_pid":
+            phi_des, self.controller_state = self.control_fn(
+                t,
+                self.q,
+                self.q_d,
+                phi,
+                controller_state=self.controller_state,
+                pee_des=self.chiee_des[:2],
+            )
+        else:
+            phi_des, self.controller_state = self.control_fn(
+                t,
+                self.q,
+                self.q_d,
+                phi,
+                controller_state=self.controller_state,
+                pee_des=self.chiee_des[:2],
+                q_des=self.q_des,
+                phi_ss=self.phi_ss,
+            )
 
         # self.get_logger().info(f"e_y: {self.controller_state['e_y']}, e_int: {jnp.tanh(self.get_parameter('gamma').value * self.controller_state['e_y'])}")
 

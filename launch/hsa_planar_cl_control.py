@@ -29,6 +29,13 @@ RECORD = True  # Record data to rosbag file
 BAG_PATH = f"/home/mstoelzle/phd/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
 LOG_LEVEL = "warn"
 
+""" implemented controllers:
+- P_satI_D_collocated_form_plus_steady_state_actuation
+- P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation
+- P_satI_D_plus_steady_state_actuation
+- basic_operational_space_pid
+"""
+controller_type = "basic_operational_space_pid"
 phi_max = 200 / 180 * np.pi
 sigma_a_eq = 1.0
 
@@ -41,20 +48,31 @@ planning_params = {
     "setpoint_mode": "image",
     "image_type": "star",
 }
-control_params = {
-    # implemented controllers:
-    # - P_satI_D_collocated_form_plus_steady_state_actuation
-    # - P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation
-    # - P_satI_D_plus_steady_state_actuation
-    # - basic_operational_space_pid
-    "controller_type": "P_satI_D_collocated_form_plus_steady_state_actuation",
-    "Kp": 4.0e-1,  # [-]
-    "Ki": 2.0e-1,  # [1/s]
-    "Kd": 1.0e-2,  # [s]
-    "gamma": 1e2,
-    "phi_max": phi_max,
-    "sigma_a_eq": sigma_a_eq,
-}
+
+if controller_type == "basic_operational_space_pid":
+    control_params = {
+        "controller_type": controller_type,
+        "Kp": 2e0,  # [rad/m]
+        "Ki": 1e1,  # [rad/(ms)]
+        "Kd": 0e0,  # [rad s/m]
+        # "Kp": 1e1,  # [rad/m]
+        # "Ki": 5e1,  # [rad/(ms)]
+        # "Kd": 0e0,  # [rad s/m]
+        "phi_max": phi_max,
+        "sigma_a_eq": sigma_a_eq,
+    }
+elif controller_type == "P_satI_D_collocated_form_plus_steady_state_actuation":
+    control_params = {
+        "controller_type": controller_type,
+        "Kp": 4.0e-1,  # [-]
+        "Ki": 2.0e-1,  # [1/s]
+        "Kd": 1.0e-2,  # [s]
+        "gamma": 1e2,
+        "phi_max": phi_max,
+        "sigma_a_eq": sigma_a_eq,
+    }
+else:
+    raise ValueError(f"Unknown controller type: {controller_type}")
 
 
 def generate_launch_description():
