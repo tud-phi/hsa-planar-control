@@ -25,7 +25,7 @@ import os
 # datetime object containing current date and time
 now = datetime.now()
 
-RECORD_BAG = True  # Record data to rosbag file
+RECORD = True  # Record data to rosbag file
 BAG_PATH = f"/home/mstoelzle/phd/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
 LOG_LEVEL = "warn"
 
@@ -59,13 +59,13 @@ control_params = {
 
 def generate_launch_description():
     # Create the NatNet client node
-    natnet_config = os.path.join(
+    natnet_config_path = os.path.join(
         get_package_share_directory("mocap_optitrack_client"),
         "config",
         "natnetclient.yaml",
     )
     # Create the world to base client
-    w2b_config = os.path.join(
+    w2b_config_path = os.path.join(
         get_package_share_directory("hsa_inverse_kinematics"),
         "config",
         "world_to_base_y_up.yaml",
@@ -76,14 +76,14 @@ def generate_launch_description():
             package="mocap_optitrack_client",
             executable="mocap_optitrack_client",
             name="natnet_client",
-            parameters=[natnet_config],
+            parameters=[natnet_config_path, {"record": RECORD}],
             arguments=["--ros-args", "--log-level", LOG_LEVEL],
         ),
         Node(
             package="mocap_optitrack_w2b",
             executable="mocap_optitrack_w2b",
             name="world_to_base",
-            parameters=[w2b_config],
+            parameters=[w2b_config_path],
             arguments=["--ros-args", "--log-level", LOG_LEVEL],
         ),
         Node(
@@ -123,7 +123,7 @@ def generate_launch_description():
         )
     ]
 
-    if RECORD_BAG:
+    if RECORD:
         launch_actions.append(
             ExecuteProcess(
                 cmd=["ros2", "bag", "record", "-a", "-o", BAG_PATH, "-s", "sqlite3"],
