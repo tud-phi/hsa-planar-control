@@ -131,23 +131,11 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             self.setpoint_listener_callback,
             10,
         )
-        # self.q_des = jnp.zeros_like(self.q)
-        self.q_des = jnp.array(
-            [0.0, 0.0, 0.04]
-        )  # slight elongation to avoid windup of integral error
+        self.q_des = jnp.zeros_like(self.q)
         self.chiee_des = jnp.zeros((3,))
         self.phi_ss = jnp.zeros_like(phi0)
 
-        self.setpoint_msg = PlanarSetpoint()
-        self.setpoint_msg.q_des.header.stamp = self.get_clock().now().to_msg()
-        self.setpoint_msg.q_des.kappa_b = self.q_des[0].item()
-        self.setpoint_msg.q_des.sigma_sh = self.q_des[1].item()
-        self.setpoint_msg.q_des.sigma_a = self.q_des[2].item()
-        self.setpoint_msg.chiee_des.x = self.chiee_des[0].item()
-        self.setpoint_msg.chiee_des.y = self.chiee_des[1].item()
-        self.setpoint_msg.chiee_des.theta = self.chiee_des[2].item()
-        self.setpoint_msg.phi_ss = self.phi_ss.tolist()
-        self.setpoint_msg.optimality_error = 0.0
+        self.setpoint_msg = None
 
         # re-publishing of setpoints
         self.setpoint_in_control_loop_pub = self.create_publisher(
@@ -366,6 +354,10 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
     def call_controller(self):
         t = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
+
+        if self.setpoint_msg is None:
+            # we have not received a setpoint yet so we cannot compute the control input
+            return
 
         # compute the velocity of the generalized coordinates
         self.q_d = self.compute_q_d()
