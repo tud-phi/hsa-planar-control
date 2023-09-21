@@ -48,9 +48,9 @@ control_params = {
     # - P_satI_D_plus_steady_state_actuation
     # - basic_operational_space_pid
     "controller_type": "P_satI_D_collocated_form_plus_steady_state_actuation",
-    "Kp": 5.0e-1,  # [-]
-    "Ki": 2.3e-1,  # [1/s]
-    "Kd": 1.0e-1,  # [s]
+    "Kp": 4.0e-1,  # [-]
+    "Ki": 2.0e-1,  # [1/s]
+    "Kd": 5.0e-2,  # [s]
     "gamma": 1e2,
     "phi_max": phi_max,
     "sigma_a_eq": sigma_a_eq,
