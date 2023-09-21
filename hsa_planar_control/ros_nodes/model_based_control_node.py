@@ -249,6 +249,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             self.q_d,
             phi_dummy,
             controller_state=self.controller_state,
+            pee_des=self.chiee_des[:2],
             q_des=self.q_des,
             phi_ss=self.phi_ss,
         )
