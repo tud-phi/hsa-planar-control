@@ -17,6 +17,7 @@ def basic_operational_space_pid(
     jacobian_end_effector_fn,
     dt: float,
     pee_des: Array,
+    phi_ss: Array,
     Kp: Array,
     Ki: Array,
     Kd: Array,
@@ -34,6 +35,7 @@ def basic_operational_space_pid(
         jacobian_end_effector_fn: function that returns the Jacobian of the end effector of shape (3, n_q)
         dt: time step of controller [s]
         pee_des: desired end effector position of shape (2, )
+        phi_ss: steady state actuation at the desired configuration. Vector of shape (n_phi, )
         Kp: proportional gain matrix of shape (n_phi, n_phi)
         Ki: integral gain matrix of shape (n_phi, n_phi)
         Kd: derivative gain matrix of shape (n_phi, n_phi)
@@ -59,7 +61,7 @@ def basic_operational_space_pid(
     controller_state["integral_error"] += e_pee * dt
 
     # project control input to the actuation space
-    phi_des = jnp.array([[1, 1], [-1, 1]]) @ u
+    phi_des = phi_ss + jnp.array([[1, 1], [-1, 1]]) @ u
 
     return phi_des, controller_state
 

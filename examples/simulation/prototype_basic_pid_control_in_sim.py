@@ -59,8 +59,8 @@ sim_dt = 5e-5  # time step
 
 # control settings
 control_dt = 2e-2  # control time step. corresponds to 50 Hz
-Kp = 2e1 * jnp.eye(phi0.shape[0])
-Ki = 1e2 * jnp.eye(phi0.shape[0])
+Kp = 1e1 * jnp.eye(phi0.shape[0])
+Ki = 5e1 * jnp.eye(phi0.shape[0])
 Kd = 0e0 * jnp.eye(phi0.shape[0])
 
 # video settings
@@ -84,6 +84,7 @@ if __name__ == "__main__":
         jacobian_end_effector_fn=partial(jacobian_end_effector_fn, params),
         dt=control_dt,
         pee_des=pee_des,
+        phi_ss=params["phi_max"].squeeze() / 2,
         Kp=Kp,
         Ki=Ki,
         Kd=Kd,
