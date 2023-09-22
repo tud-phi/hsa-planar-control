@@ -233,7 +233,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             self.present_motor_angles
         )
         if self.controller_type == "basic_operational_space_pid":
-            phi_des_dummy, _ = self.control_fn(
+            phi_des_dummy, _, _ = self.control_fn(
                 0.0,
                 self.q,
                 self.q_d,
@@ -242,7 +242,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 pee_des=self.chiee_des[:2]
             )
         else:
-            phi_des_dummy, _ = self.control_fn(
+            phi_des_dummy, _, _ = self.control_fn(
                 0.0,
                 self.q,
                 self.q_d,
