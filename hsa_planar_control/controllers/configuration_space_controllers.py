@@ -19,7 +19,7 @@ def pd_plus_feedforward(
     Kp: Array,
     Kd: Array,
     **kwargs,
-) -> Array:
+) -> Tuple[Array, Dict[str, Array]]:
     """
     PD plus static feedforward controller in configuration space.
     Evaluates the gravity and stiffness at the desired configuration.
@@ -36,6 +36,7 @@ def pd_plus_feedforward(
 
     Returns:
         phi_des: desired motor positions (n_tau, )
+        controller_info: dictionary with information about intermediate computations
     """
     # compute the desired torque in configuration space
     B_des, C_des, G_des, K_des, D_des, alpha_des = dynamical_matrices_fn(
@@ -47,7 +48,9 @@ def pd_plus_feedforward(
         q, phi, dynamical_matrices_fn, tau_q_des
     )
 
-    return phi_des
+    controller_info = {}
+
+    return phi_des, controller_info
 
 
 def pd_plus_potential_compensation(
@@ -61,7 +64,7 @@ def pd_plus_potential_compensation(
     Kp: Array,
     Kd: Array,
     **kwargs,
-) -> Array:
+) -> Tuple[Array, Dict[str, Array]]:
     """
     PD plus potential compensation controller in configuration space.
     Evaluates the gravity and the stiffness at the current configuration.
@@ -77,6 +80,7 @@ def pd_plus_potential_compensation(
         Kd: derivative gain matrix of shape (n_q, n_q)
     Returns:
         phi_des: desired motor positions (n_phi, )
+        controller_info: dictionary with information about intermediate computations
     """
     # compute the desired torque in configuration space
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
@@ -86,7 +90,9 @@ def pd_plus_potential_compensation(
         q, phi, dynamical_matrices_fn, tau_q_des
     )
 
-    return phi_des
+    controller_info = {}
+
+    return phi_des, controller_info
 
 
 def pd_plus_steady_state_actuation(
@@ -101,7 +107,7 @@ def pd_plus_steady_state_actuation(
     Kp: Array,
     Kd: Array,
     **kwargs,
-) -> Array:
+) -> Tuple[Array, Dict[str, Array]]:
     """
     PD plus steady state actuation
     Args:
@@ -118,6 +124,7 @@ def pd_plus_steady_state_actuation(
 
     Returns:
         phi_des: desired motor positions (n_tau, )
+        controller_info: dictionary with information about intermediate computations
     """
     # linearize the system around the desired configuration
     tau_eq, A = linearize_actuation(q_des, phi_ss, dynamical_matrices_fn)
@@ -125,7 +132,9 @@ def pd_plus_steady_state_actuation(
     # implement the underactuated PD + feedforward controller
     phi_des = phi_ss + Kp @ A.T @ (q_des - q) - Kd @ A.T @ q_d
 
-    return phi_des
+    controller_info = {}
+
+    return phi_des, controller_info
 
 
 def P_satI_D_plus_steady_state_actuation(
@@ -144,7 +153,7 @@ def P_satI_D_plus_steady_state_actuation(
     Kd: Array,
     gamma: Array = jnp.array(1.0),
     **kwargs,
-) -> Tuple[Array, Dict[str, Array]]:
+) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
     """
     P-saturation-I-D plus steady state actuation. As a saturation function, we use the hyperbolic tangent.
     Args:
@@ -166,6 +175,7 @@ def P_satI_D_plus_steady_state_actuation(
     Returns:
         phi_des: desired motor positions (n_tau, )
         controller_state: state of the controller (integral error)
+        controller_info: dictionary with information about intermediate computations
     """
     # linearize the system around the desired configuration
     tau_eq, A = linearize_actuation(q, phi_ss, dynamical_matrices_fn)
@@ -178,10 +188,11 @@ def P_satI_D_plus_steady_state_actuation(
         phi_ss + Kp @ e_phi - Kd @ A.T @ q_d + Ki @ controller_state["integral_error"]
     )
 
-    controller_state["e_phi"] = e_phi
     controller_state["integral_error"] += jnp.tanh(gamma * e_phi) * dt
 
-    return phi_des, controller_state
+    controller_info = {"e_phi": e_phi, "e_int": controller_state["integral_error"]}
+
+    return phi_des, controller_state, controller_info
 
 
 def P_satI_D_collocated_form_plus_steady_state_actuation_for_constant_stiffness(
@@ -200,7 +211,7 @@ def P_satI_D_collocated_form_plus_steady_state_actuation_for_constant_stiffness(
     Kd: Array,
     gamma: Array = jnp.array(1.0),
     **kwargs,
-) -> Tuple[Array, Dict[str, Array]]:
+) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
     """
     P-saturation-I-D on the system in collocated form plus steady state actuation.
     As a saturation function, we use the hyperbolic tangent.
@@ -225,6 +236,7 @@ def P_satI_D_collocated_form_plus_steady_state_actuation_for_constant_stiffness(
     Returns:
         phi_des: desired motor positions (n_tau, )
         controller_state: state of the controller (integral error)
+        controller_info: dictionary with information about intermediate computations
     """
     # linearize the system around the desired configuration
     tau_eq, A = linearize_actuation(q_des, phi_ss, dynamical_matrices_fn)
@@ -252,10 +264,16 @@ def P_satI_D_collocated_form_plus_steady_state_actuation_for_constant_stiffness(
         phi_ss + Kp @ e_y - Kd @ varphi_d[:2] + Ki @ controller_state["integral_error"]
     )
 
-    controller_state["e_y"] = e_y
     controller_state["integral_error"] += jnp.tanh(gamma * e_y) * dt
 
-    return phi_des, controller_state
+    controller_info = {
+        "varphi": varphi,
+        "varphi_des": varphi_des,
+        "e_y": e_y,
+        "e_int": controller_state["integral_error"],
+    }
+
+    return phi_des, controller_state, controller_info
 
 
 def P_satI_D_collocated_form_plus_steady_state_actuation(
@@ -274,7 +292,7 @@ def P_satI_D_collocated_form_plus_steady_state_actuation(
     Kd: Array,
     gamma: Array = jnp.array(1.0),
     **kwargs,
-) -> Tuple[Array, Dict[str, Array]]:
+) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
     """
     P-saturation-I-D on the system in collocated form plus steady state actuation.
     As a saturation function, we use the hyperbolic tangent.
@@ -297,6 +315,7 @@ def P_satI_D_collocated_form_plus_steady_state_actuation(
     Returns:
         phi_des: desired motor positions (n_tau, )
         controller_state: state of the controller (integral error)
+        controller_info: dictionary with information about intermediate computations
     """
     varphi, Jvarphi = map_into_collocated_form_fn(q, phi_ss)
     varphi_des, Jvarphi_des = map_into_collocated_form_fn(q_des, phi_ss)
@@ -312,10 +331,16 @@ def P_satI_D_collocated_form_plus_steady_state_actuation(
         phi_ss + Kp @ e_y - Kd @ varphi_d[:2] + Ki @ controller_state["integral_error"]
     )
 
-    controller_state["e_y"] = e_y
     controller_state["integral_error"] += jnp.tanh(gamma * e_y) * dt
 
-    return phi_des, controller_state
+    controller_info = {
+        "varphi": varphi,
+        "varphi_des": varphi_des,
+        "e_y": e_y,
+        "e_int": controller_state["integral_error"],
+    }
+
+    return phi_des, controller_state, controller_info
 
 
 def P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation(
@@ -335,7 +360,7 @@ def P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation(
     Kd: Array,
     gamma: Array = jnp.array(1.0),
     **kwargs,
-) -> Tuple[Array, Dict[str, Array]]:
+) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
     """
     P-saturation-I-D on the system in collocated form plus terms for gravity cancellation and elastic compensation.
     As a saturation function, we use the hyperbolic tangent.
@@ -360,6 +385,7 @@ def P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation(
     Returns:
         phi_des: desired motor positions (n_tau, )
         controller_state: state of the controller (integral error)
+        controller_info: dictionary with information about intermediate computations
     """
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
     B_des, C_des, G_des, K_des, D_des, alpha_des = dynamical_matrices_fn(
@@ -389,7 +415,14 @@ def P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation(
         + Ki @ controller_state["integral_error"]
     )
 
-    controller_state["e_y"] = e_y
     controller_state["integral_error"] += jnp.tanh(gamma * e_y) * dt
 
-    return phi_des, controller_state
+    controller_info = {
+        "varphi": varphi,
+        "varphi_des": varphi_des,
+        "varphi_d": varphi_d,
+        "e_y": e_y,
+        "e_int": controller_state["integral_error"],
+    }
+
+    return phi_des, controller_state, controller_info

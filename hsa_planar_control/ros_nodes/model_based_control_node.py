@@ -368,7 +368,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
         # evaluate controller
         if self.controller_type == "basic_operational_space_pid":
-            phi_des, self.controller_state = self.control_fn(
+            phi_des, self.controller_state, controller_info = self.control_fn(
                 t,
                 self.q,
                 self.q_d,
@@ -377,7 +377,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 pee_des=self.chiee_des[:2],
             )
         else:
-            phi_des, self.controller_state = self.control_fn(
+            phi_des, self.controller_state, controller_info = self.control_fn(
                 t,
                 self.q,
                 self.q_d,
@@ -388,7 +388,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 phi_ss=self.phi_ss,
             )
 
-        # self.get_logger().info(f"e_y: {self.controller_state['e_y']}, e_int: {jnp.tanh(self.get_parameter('gamma').value * self.controller_state['e_y'])}")
+        # self.get_logger().info(f"e_y: {controller_info['e_y']}, e_int: controller_info['e_int'])}")
 
         # republishing of setpoints
         setpoint_msg = deepcopy(self.setpoint_msg)
@@ -402,8 +402,8 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         )
 
         # saturate the control input
-        phi_sat, self.controller_state = saturate_control_inputs(
-            self.params, phi_des, controller_state=self.controller_state
+        phi_sat, self.controller_state, controller_info = saturate_control_inputs(
+            self.params, phi_des, controller_state=self.controller_state, controller_info=controller_info
         )
         self.saturated_control_input_pub.publish(
             Float64MultiArray(data=phi_sat.tolist())

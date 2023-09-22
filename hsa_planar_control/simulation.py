@@ -46,9 +46,9 @@ def simulate_closed_loop_system(
                 u = jnp.zeros((n_q,))
         else:
             if controller_state_init is None:
-                u = control_fn(t, q, q_d, phi)
+                u, controller_info = control_fn(t, q, q_d, phi)
             else:
-                u, controller_state = control_fn(
+                u, controller_state, controller_info = control_fn(
                     t, q, q_d, phi, controller_state=carry["controller_state"]
                 )
                 carry["controller_state"] = controller_state
@@ -79,6 +79,9 @@ def simulate_closed_loop_system(
             "u_ts": u,
             "phi_ts": carry["phi_next"],
         }
+
+        if control_fn is not None:
+            output["controller_info_ts"] = controller_info
 
         return carry, output
 

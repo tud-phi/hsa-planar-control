@@ -150,12 +150,12 @@ if __name__ == "__main__":
     }
 
     @jit
-    def saturated_control_fn(*args, **kwargs) -> Tuple[Array, Dict[str, Array]]:
-        phi_des, controller_state = control_fn(*args, **kwargs)
-        phi_sat, controller_state = saturate_control_inputs(
-            params, phi_des, controller_state=controller_state
+    def saturated_control_fn(*args, **kwargs) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
+        phi_des, controller_state, controller_info = control_fn(*args, **kwargs)
+        phi_sat, controller_state, controller_info = saturate_control_inputs(
+            params, phi_des, controller_state=controller_state, controller_info=controller_info
         )
-        return phi_sat, controller_state
+        return phi_sat, controller_state, controller_info
 
     sim_ts = simulate_closed_loop_system(
         dynamical_matrices_fn,
