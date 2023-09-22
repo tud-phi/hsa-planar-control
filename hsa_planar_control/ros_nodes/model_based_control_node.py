@@ -69,6 +69,9 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         )
         # actual rest strain
         self.xi_eq = sys_helpers["rest_strains_fn"](self.params)  # rest strains
+        # external payload mass (assumed to be at end effector)
+        self.declare_parameter("payload_mass", 0.0)
+        self.params["mpl"] = self.get_parameter("payload_mass").value
 
         self.declare_parameter("phi_max", self.params["phi_max"].mean().item())
         self.params["phi_max"] = self.get_parameter("phi_max").value * jnp.ones_like(

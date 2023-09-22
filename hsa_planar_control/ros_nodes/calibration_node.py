@@ -58,6 +58,10 @@ class CalibrationNode(Node):
         # rest strains used for inverse kinematics
         self.xi_eq_ik = sys_helpers["rest_strains_fn"](self.known_params)
 
+        # external payload mass (assumed to be at end effector)
+        self.declare_parameter("payload_mass", 0.0)
+        self.params["mpl"] = self.get_parameter("payload_mass").value
+
         params_to_be_idd_names = ["sigma_a_eq"]
         self.Pi_syms, self.cal_a_fn, self.cal_b_fn = linear_lq_optim_problem_factory(
             sym_exp_filepath,
@@ -104,6 +108,7 @@ class CalibrationNode(Node):
             "xi_d_ts": jnp.zeros_like(self.q_hs),
             "xi_dd_ts": jnp.zeros_like(self.q_hs),
             "phi_ts": jnp.zeros((self.t_hs.shape[0], self.n_phi)),
+            "mpl_ts": self.params["mpl"] * jnp.ones_like(self.t_hs),
         }
 
         Pi_est = optimize_with_closed_form_linear_lq(

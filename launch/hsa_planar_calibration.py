@@ -14,6 +14,9 @@ now = datetime.now()
 
 LOG_LEVEL = "warn"
 
+calibration_params = {
+    "payload_mass": 0.0,
+}
 
 def generate_launch_description():
     # Create the NatNet client node
@@ -54,6 +57,7 @@ def generate_launch_description():
             package="hsa_planar_control",
             executable="calibration_node",
             name="calibration",
+            parameters=[calibration_params],
         ),
     ]
 
