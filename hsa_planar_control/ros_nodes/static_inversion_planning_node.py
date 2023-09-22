@@ -140,6 +140,14 @@ class StaticInversionPlanningNode(Node):
                 )
                 pee_centroid = jnp.array([0.0, 0.130])
                 max_radius = jnp.array(0.013)
+            elif image_type == "mit-csail":
+                image_path = os.path.join(
+                    get_package_share_directory("hsa_planar_control"),
+                    "assets",
+                    "mit_csail.png",
+                )
+                pee_centroid = jnp.array([0.0, 0.127])
+                max_radius = jnp.array(0.013)
             else:
                 raise ValueError(f"Unknown image type: {image_type}")
 

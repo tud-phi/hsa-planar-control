@@ -51,6 +51,9 @@ if IMAGE_TYPE == "star":
 elif IMAGE_TYPE == "tud-flame":
     pee_centroid = jnp.array([0.0, 0.128])
     max_radius = jnp.array(0.015)
+elif IMAGE_TYPE == "mit-csail":
+    pee_centroid = jnp.array([0.0, 0.127])
+    max_radius = jnp.array(0.015)
 else:
     raise ValueError(f"Unknown image type: {IMAGE_TYPE}")
 
