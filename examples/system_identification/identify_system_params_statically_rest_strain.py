@@ -31,6 +31,8 @@ sym_exp_filepath = (
 
 ones_rod = jnp.ones((num_segments, num_rods_per_segment))
 known_params = PARAMS_SYSTEM_ID.copy()
+# delete payload mass from known params so that we can specify it for each datapoint
+known_params.pop("mpl")
 
 experiment_configs = {
     # step of elongation to 90 deg

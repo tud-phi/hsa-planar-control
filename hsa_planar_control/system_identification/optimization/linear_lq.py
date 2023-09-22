@@ -1,3 +1,4 @@
+from copy import deepcopy
 import dill
 from functools import partial
 from jax import Array, debug, jit, vmap
@@ -40,6 +41,7 @@ def linear_lq_optim_problem_factory(
     # load saved symbolic data
     sym_exps = dill.load(open(str(sym_exp_filepath), "rb"))
 
+    params_syms = sym_exps["params_syms"]
     state_syms = sym_exps["state_syms"]
     exps = sym_exps["exps"]
     xi_d = sp.Matrix(state_syms["xi_d"])
@@ -61,11 +63,14 @@ def linear_lq_optim_problem_factory(
         Pi_syms.append(shared_param)
 
     # substitute the parameters with the known values
+    subs_params_syms_exps = deepcopy(params_syms)
+    # do not substitute the payload mass `mpl` as we want to change it at runtime
+    subs_params_syms_exps.pop("mpl")
     lhs = substitute_params_into_single_symbolic_expression(
-        lhs, sym_exps["params_syms"], known_params
+        lhs, subs_params_syms_exps, known_params
     )
     rhs = substitute_params_into_single_symbolic_expression(
-        rhs, sym_exps["params_syms"], known_params
+        rhs, subs_params_syms_exps, known_params
     )
 
     # apply tricks where we find a multiplication of two parameters
@@ -107,6 +112,7 @@ def linear_lq_optim_problem_factory(
             + state_syms["xi_d"]
             + state_syms["xi_dd"]
             + state_syms["phi"]
+            + [params_syms["mpl"]]
         ),
         rhs,
         "jax",
@@ -117,27 +123,6 @@ def linear_lq_optim_problem_factory(
         cal_a = cal_a_lambda(*xi, *xi_d, *phi)
 
         return cal_a
-
-    # symbolic position of the payload mass
-    # we assume that payload mass is attached to bottom end of the platform
-    # orientation of end-effector with respect to the base
-    thee = exps["chiee"][2, 0]
-    R_exp = sp.Matrix([[sp.cos(thee), -sp.sin(thee)], [sp.sin(thee), sp.cos(thee)]])
-    # distance along local y-axis from the end-effector to the payload CoM
-    dy_pl_ee = known_params["pcudim"][-1, 1] + known_params.get("lpl", 0.0) / 2
-    # subtract distance from the end-effector position
-    ppl_exp = exps["chiee"][:2, 0] - R_exp @ sp.Matrix([0, dy_pl_ee.item()])
-    # positional Jacobian of the payload mass
-    Jpl_exp = ppl_exp.jacobian(state_syms["xi"])
-    # substitute the parameters
-    Jpl_exp = substitute_params_into_single_symbolic_expression(
-        Jpl_exp, sym_exps["params_syms"], known_params
-    )
-    Jpl_lambda = sp.lambdify(
-        sym_exps["state_syms"]["xi"],
-        Jpl_exp,
-        "jax",
-    )
 
     @jit
     def cal_b_fn(
@@ -161,14 +146,7 @@ def linear_lq_optim_problem_factory(
         )
 
         # evaluate the expression for the right side of the system identification problem
-        cal_b = cal_b_lambda(*xi_epsed, *xi_d, *xi_dd, *phi).squeeze()
-
-        # evaluate the positional Jacobian of the payload mass
-        Jpl = Jpl_lambda(*xi_epsed).squeeze()
-        # define gravity vector for payload mass
-        Gpl = -mpl * Jpl.T @ known_params["g"]
-        # add the gravity vector to the right side of the system identification problem
-        cal_b = cal_b - Gpl
+        cal_b = cal_b_lambda(*xi_epsed, *xi_d, *xi_dd, *phi, mpl).squeeze()
 
         return cal_b
 

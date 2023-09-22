@@ -108,7 +108,6 @@ class CalibrationNode(Node):
             "xi_d_ts": jnp.zeros_like(self.q_hs),
             "xi_dd_ts": jnp.zeros_like(self.q_hs),
             "phi_ts": jnp.zeros((self.t_hs.shape[0], self.n_phi)),
-            "mpl_ts": self.params["mpl"] * jnp.ones_like(self.t_hs),
         }
 
         Pi_est = optimize_with_closed_form_linear_lq(
