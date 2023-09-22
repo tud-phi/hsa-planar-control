@@ -17,7 +17,7 @@ from rclpy.time import Time
 from pathlib import Path
 
 from geometry_msgs.msg import Pose2D
-from hsa_control_interfaces.msg import PlanarSetpoint
+from hsa_control_interfaces.msg import PlanarSetpoint, PlanarSetpointControllerInfo
 from mocap_optitrack_interfaces.msg import PlanarCsConfiguration
 
 from hsa_actuation.hsa_actuation_base_node import HsaActuationBaseNode
@@ -83,30 +83,6 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         # initial actuation coordinates
         phi0 = self.map_motor_angles_to_actuation_coordinates(self.present_motor_angles)
 
-        # pubslishers for actuation coordinates / control inputs
-        self.declare_parameter("actuation_coordinates_topic", "actuation_coordinates")
-        self.actuation_coordinates_pub = self.create_publisher(
-            Float64MultiArray,
-            self.get_parameter("actuation_coordinates_topic").value,
-            10,
-        )
-        self.declare_parameter(
-            "unsaturated_control_input_topic", "unsaturated_control_input"
-        )
-        self.unsaturated_control_input_pub = self.create_publisher(
-            Float64MultiArray,
-            self.get_parameter("unsaturated_control_input_topic").value,
-            10,
-        )
-        self.declare_parameter(
-            "saturated_control_input_topic", "saturated_control_input"
-        )
-        self.saturated_control_input_pub = self.create_publisher(
-            Float64MultiArray,
-            self.get_parameter("saturated_control_input_topic").value,
-            10,
-        )
-
         # history of configurations
         # the longer the history, the more delays we introduce, but the less noise we get
         self.declare_parameter("history_length_for_diff", 16)
@@ -119,7 +95,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.diff_method = derivative.Spline(s=1.0, k=3)
         self.declare_parameter("configuration_velocity_topic", "configuration_velocity")
         self.configuration_velocity_pub = self.create_publisher(
-            Float64MultiArray,
+            PlanarCsConfiguration,
             self.get_parameter("configuration_velocity_topic").value,
             10,
         )
@@ -136,11 +112,6 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.phi_ss = jnp.zeros_like(phi0)
 
         self.setpoint_msg = None
-
-        # re-publishing of setpoints
-        self.setpoint_in_control_loop_pub = self.create_publisher(
-            PlanarSetpoint, "setpoint_in_control_loop", 10
-        )
 
         self.declare_parameter(
             "controller_type", "P_satI_D_collocated_form_plus_steady_state_actuation"
@@ -256,6 +227,11 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             phi_des_dummy
         )
 
+        # initialize publisher for controller info
+        self.controller_info_pub = self.create_publisher(
+            PlanarSetpointControllerInfo, "controller_info", 10
+        )
+
         self.control_timer = self.create_timer(
             1.0 / self.control_frequency, self.call_controller
         )
@@ -303,7 +279,10 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
             q_d = q_d.at[i].set(q_d_hs[-1])
 
-        self.configuration_velocity_pub.publish(Float64MultiArray(data=q_d.tolist()))
+        q_d_msg = PlanarCsConfiguration(kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item())
+        q_d_msg.header.stamp = self.get_clock().now().to_msg()
+
+        self.configuration_velocity_pub.publish(q_d_msg)
 
         return q_d
 
@@ -364,14 +343,17 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
         # map motor angles to actuation coordinates
         phi = self.map_motor_angles_to_actuation_coordinates(self.present_motor_angles)
-        self.actuation_coordinates_pub.publish(Float64MultiArray(data=phi.tolist()))
+
+        # save the current configuration and velocity
+        q = self.q
+        q_d = self.q_d
 
         # evaluate controller
         if self.controller_type == "basic_operational_space_pid":
             phi_des, self.controller_state, controller_info = self.control_fn(
                 t,
-                self.q,
-                self.q_d,
+                q,
+                q_d,
                 phi,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
@@ -379,8 +361,8 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         else:
             phi_des, self.controller_state, controller_info = self.control_fn(
                 t,
-                self.q,
-                self.q_d,
+                q,
+                q_d,
                 phi,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
@@ -388,25 +370,12 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 phi_ss=self.phi_ss,
             )
 
-        # self.get_logger().info(f"e_y: {controller_info['e_y']}, e_int: controller_info['e_int'])}")
-
-        # republishing of setpoints
-        setpoint_msg = deepcopy(self.setpoint_msg)
-        setpoint_msg.q_des.header.stamp = self.get_clock().now().to_msg()
-        self.setpoint_in_control_loop_pub.publish(setpoint_msg)
-
         # compensate for the handedness specified in the parameters
-        phi_des = self.params["h"].flatten() * phi_des
-        self.unsaturated_control_input_pub.publish(
-            Float64MultiArray(data=phi_des.tolist())
-        )
+        phi_des_unsat = self.params["h"].flatten() * phi_des
 
         # saturate the control input
         phi_sat, self.controller_state, controller_info = saturate_control_inputs(
-            self.params, phi_des, controller_state=self.controller_state, controller_info=controller_info
-        )
-        self.saturated_control_input_pub.publish(
-            Float64MultiArray(data=phi_sat.tolist())
+            self.params, phi_des_unsat, controller_state=self.controller_state, controller_info=controller_info
         )
 
         # self.get_logger().info(f"Saturated control inputs: {phi_sat}")
@@ -416,6 +385,29 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
         # send motor goal angles to dynamixel motors
         self.set_motor_goal_angles(motor_goal_angles)
+
+        # publish controller info
+        controller_info_msg = PlanarSetpointControllerInfo()
+        controller_info_msg.header.stamp = self.get_clock().now().to_msg()
+        controller_info_msg.planar_setpoint = self.setpoint_msg
+        controller_info_msg.q = PlanarCsConfiguration(kappa_b=q[0].item(), sigma_sh=q[1].item(), sigma_a=q[2].item())
+        controller_info_msg.q_d = PlanarCsConfiguration(kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item())
+        if "chiee" in controller_info:
+            controller_info.chiee = Pose2D(
+                x=controller_info["chiee"][0].item(),
+                y=controller_info["chiee"][1].item(),
+                theta=controller_info["chiee"][2].item(),
+            )
+        if "e_int" in controller_info:
+            controller_info_msg.e_int = controller_info["e_int"].tolist()
+        if "varphi" in controller_info:
+            controller_info_msg.varphi = controller_info["varphi"].tolist()
+        if "varphi_des" in controller_info:
+            controller_info_msg.varphi_des = controller_info["varphi_des"].tolist()
+        controller_info_msg.phi_des_unsat = phi_des_unsat.tolist()
+        controller_info_msg.phi_des_sat = phi_sat.tolist()
+        controller_info_msg.motor_goal_angles = motor_goal_angles.tolist()
+        self.controller_info_pub.publish(controller_info_msg)
 
 
 def main(args=None):
