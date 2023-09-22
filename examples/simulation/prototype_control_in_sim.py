@@ -150,10 +150,15 @@ if __name__ == "__main__":
     }
 
     @jit
-    def saturated_control_fn(*args, **kwargs) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
+    def saturated_control_fn(
+        *args, **kwargs
+    ) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
         phi_des, controller_state, controller_info = control_fn(*args, **kwargs)
         phi_sat, controller_state, controller_info = saturate_control_inputs(
-            params, phi_des, controller_state=controller_state, controller_info=controller_info
+            params,
+            phi_des,
+            controller_state=controller_state,
+            controller_info=controller_info,
         )
         return phi_sat, controller_state, controller_info
 

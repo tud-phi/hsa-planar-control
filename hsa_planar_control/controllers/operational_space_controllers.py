@@ -59,7 +59,11 @@ def basic_operational_space_pid(
     u = Kp @ e_pee + Ki @ controller_state["integral_error"] - Kd @ p_d_ee
 
     controller_state["integral_error"] += e_pee * dt
-    controller_info = {"chiee": chiee, "e_pee": e_pee, "e_int": controller_state["integral_error"]}
+    controller_info = {
+        "chiee": chiee,
+        "e_pee": e_pee,
+        "e_int": controller_state["integral_error"],
+    }
 
     # project control input to the actuation space
     phi_des = phi_ss + jnp.array([[1, 1], [-1, 1]]) @ u

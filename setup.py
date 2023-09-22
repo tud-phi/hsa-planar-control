@@ -46,8 +46,8 @@ setup(
     maintainer="Maximilian Stölzle",
     maintainer_email="maximilian@stoelzle.ch",
     description="Model-based control of Planar HSA robots. "
-                "This package contains the simulation, system identification, planning and control algorithms."
-                "Furthermore, we also provide ROS2 nodes for performing closed-loop control on the real robot.",
+    "This package contains the simulation, system identification, planning and control algorithms."
+    "Furthermore, we also provide ROS2 nodes for performing closed-loop control on the real robot.",
     license="MIT",
     tests_require=["codecov", "coverage", "pytest", "pytest-cov", "pytest-html", "tox"],
     entry_points={

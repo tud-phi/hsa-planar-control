@@ -5,7 +5,10 @@ from typing import Dict, Tuple
 
 @jit
 def saturate_control_inputs(
-    params: Dict[str, Array], phi_des: Array, controller_state: Dict[str, Array], controller_info: Dict[str, Array]
+    params: Dict[str, Array],
+    phi_des: Array,
+    controller_state: Dict[str, Array],
+    controller_info: Dict[str, Array],
 ) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
     """
     Saturate the control inputs (compensated with handedness) to the range [0, phi_max].

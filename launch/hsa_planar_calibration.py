@@ -14,6 +14,7 @@ now = datetime.now()
 
 LOG_LEVEL = "warn"
 
+
 def generate_launch_description():
     # Create the NatNet client node
     natnet_config = os.path.join(

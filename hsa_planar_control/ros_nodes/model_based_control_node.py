@@ -210,7 +210,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 self.q_d,
                 phi_dummy,
                 controller_state=self.controller_state,
-                pee_des=self.chiee_des[:2]
+                pee_des=self.chiee_des[:2],
             )
         else:
             phi_des_dummy, _, _ = self.control_fn(
@@ -279,7 +279,9 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
             q_d = q_d.at[i].set(q_d_hs[-1])
 
-        q_d_msg = PlanarCsConfiguration(kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item())
+        q_d_msg = PlanarCsConfiguration(
+            kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item()
+        )
         q_d_msg.header.stamp = self.get_clock().now().to_msg()
 
         self.configuration_velocity_pub.publish(q_d_msg)
@@ -375,7 +377,10 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
         # saturate the control input
         phi_sat, self.controller_state, controller_info = saturate_control_inputs(
-            self.params, phi_des_unsat, controller_state=self.controller_state, controller_info=controller_info
+            self.params,
+            phi_des_unsat,
+            controller_state=self.controller_state,
+            controller_info=controller_info,
         )
 
         # self.get_logger().info(f"Saturated control inputs: {phi_sat}")
@@ -390,8 +395,12 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         controller_info_msg = PlanarSetpointControllerInfo()
         controller_info_msg.header.stamp = self.get_clock().now().to_msg()
         controller_info_msg.planar_setpoint = self.setpoint_msg
-        controller_info_msg.q = PlanarCsConfiguration(kappa_b=q[0].item(), sigma_sh=q[1].item(), sigma_a=q[2].item())
-        controller_info_msg.q_d = PlanarCsConfiguration(kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item())
+        controller_info_msg.q = PlanarCsConfiguration(
+            kappa_b=q[0].item(), sigma_sh=q[1].item(), sigma_a=q[2].item()
+        )
+        controller_info_msg.q_d = PlanarCsConfiguration(
+            kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item()
+        )
         if "chiee" in controller_info:
             controller_info.chiee = Pose2D(
                 x=controller_info["chiee"][0].item(),
