@@ -402,7 +402,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item()
         )
         if "chiee" in controller_info:
-            controller_info.chiee = Pose2D(
+            controller_info_msg.chiee = Pose2D(
                 x=controller_info["chiee"][0].item(),
                 y=controller_info["chiee"][1].item(),
                 theta=controller_info["chiee"][2].item(),
