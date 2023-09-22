@@ -52,12 +52,9 @@ planning_params = {
 if controller_type == "basic_operational_space_pid":
     control_params = {
         "controller_type": controller_type,
-        "Kp": 2e0,  # [rad/m]
-        "Ki": 1e1,  # [rad/(ms)]
+        "Kp": 1e1,  # [rad/m]
+        "Ki": 1e2,  # [rad/(ms)]
         "Kd": 0e0,  # [rad s/m]
-        # "Kp": 1e1,  # [rad/m]
-        # "Ki": 5e1,  # [rad/(ms)]
-        # "Kd": 0e0,  # [rad s/m]
         "phi_max": phi_max,
         "sigma_a_eq": sigma_a_eq,
     }
