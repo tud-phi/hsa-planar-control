@@ -35,7 +35,7 @@ LOG_LEVEL = "warn"
 - P_satI_D_plus_steady_state_actuation
 - basic_operational_space_pid
 """
-controller_type = "basic_operational_space_pid"
+controller_type = "P_satI_D_collocated_form_plus_steady_state_actuation"
 phi_max = 200 / 180 * np.pi
 sigma_a_eq = 1.0
 
@@ -45,32 +45,39 @@ inverse_kinematics_params = {
 planning_params = {
     "phi_max": phi_max,
     "sigma_a_eq": sigma_a_eq,
-    "setpoint_mode": "image",
+    "setpoint_mode": "manual",  # "manual", "image"
     "image_type": "star",
 }
 
+control_params = {
+    "controller_type": controller_type,
+    "phi_max": phi_max,
+    "sigma_a_eq": sigma_a_eq,
+}
 if controller_type == "basic_operational_space_pid":
-    control_params = {
-        "controller_type": controller_type,
-        "Kp": 1e1,  # [rad/m]
-        "Ki": 1e2,  # [rad/(ms)]
-        "Kd": 0e0,  # [rad s/m]
-        "phi_max": phi_max,
-        "sigma_a_eq": sigma_a_eq,
-    }
+    control_params.update({
+        "Kp": 1.0e1,  # [rad/m]
+        "Ki": 1.1e2,  # [rad/(ms)]
+        "Kd": 5e-1,  # [rad s/m]
+    })
 elif controller_type == "P_satI_D_collocated_form_plus_steady_state_actuation":
-    control_params = {
-        "controller_type": controller_type,
-        "Kp": 4.0e-1,  # [-]
-        "Ki": 2.0e-1,  # [1/s]
-        "Kd": 1.0e-2,  # [s]
-        "gamma": 1e2,
-        "phi_max": phi_max,
-        "sigma_a_eq": sigma_a_eq,
-    }
+    control_params.update({
+        "Kp": 3.0e-1,  # [-]
+        "Ki": 8.0e-2,  # [1/s]
+        "Kd": 2.0e-2,  # [s]
+        "gamma": 1e2
+    })
+elif controller_type == "P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation":
+    control_params.update({
+        "Kp": 3.0e-1,  # [-]
+        "Ki": 8.0e-2,  # [1/s]
+        "Kd": 2.0e-2,  # [s]
+        "gamma": 1e2
+    })
 else:
     raise ValueError(f"Unknown controller type: {controller_type}")
 
+print("Control parameters:\n", control_params, "\n")
 
 def generate_launch_description():
     # Create the NatNet client node
@@ -135,7 +142,7 @@ def generate_launch_description():
             package="hsa_visualization",
             executable="planar_viz_node",
             name="visualization",
-        )
+        ),
     ]
 
     if RECORD:
