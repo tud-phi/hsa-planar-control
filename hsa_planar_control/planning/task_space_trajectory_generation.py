@@ -53,6 +53,17 @@ def generate_task_space_trajectory_from_image(
         # set the threshold for the binary image
         threshold = 140
         threshold_mode = cv2.THRESH_BINARY_INV
+    elif image_type == "mit-csail":
+        if image_path is None:
+            image_path = (
+                Path(__file__).parent.parent.parent / "assets" / "mit_csail.png"
+            )
+
+        img = cv2.imread(str(image_path))
+
+        # set the threshold for the binary image
+        threshold = 140
+        threshold_mode = cv2.THRESH_BINARY_INV
     else:
         raise ValueError(f"Unknown image type: {image_type}")
 
