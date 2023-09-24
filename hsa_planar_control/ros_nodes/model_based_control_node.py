@@ -44,6 +44,14 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             10,
         )
 
+        self.declare_parameter("end_effector_pose_topic", "end_effector_pose")
+        self.end_effector_pose_sub = self.create_subscription(
+            PlanarCsConfiguration,
+            self.get_parameter("end_effector_pose_topic").value,
+            self.end_effector_pose_listener_callback,
+            10,
+        )
+
         # filepath to symbolic expressions
         sym_exp_filepath = (
             Path(jsrm.__file__).parent
@@ -75,10 +83,12 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             self.params["phi_max"]
         )
 
-        # initialize state
+        # initialize system measurements
         self.q = jnp.zeros_like(self.xi_eq)  # generalized coordinates
         self.n_q = self.q.shape[0]  # number of generalized coordinates
         self.q_d = jnp.zeros_like(self.q)  # velocity of generalized coordinates
+        # end-effector pose
+        self.chiee = forward_kinematics_end_effector_fn(self.q)
 
         # initial actuation coordinates
         phi0 = self.map_motor_angles_to_actuation_coordinates(self.present_motor_angles)
@@ -239,7 +249,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
         self.start_time = self.get_clock().now()
 
-    def configuration_listener_callback(self, msg):
+    def configuration_listener_callback(self, msg: PlanarCsConfiguration):
         t = Time.from_msg(msg.header.stamp).nanoseconds / 1e9
 
         # set the current configuration
@@ -251,7 +261,10 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.q_hs = jnp.roll(self.q_hs, shift=-1, axis=0)
         self.q_hs = self.q_hs.at[-1].set(self.q)
 
-    def setpoint_listener_callback(self, msg):
+    def end_effector_pose_listener_callback(self, msg: Pose2D):
+        self.chiee = jnp.array([msg.x, msg.y, msg.theta])
+
+    def setpoint_listener_callback(self, msg: PlanarSetpoint):
         self.setpoint_msg = msg
         self.q_des = jnp.array(
             [msg.q_des.kappa_b, msg.q_des.sigma_sh, msg.q_des.sigma_a]
@@ -402,12 +415,11 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         controller_info_msg.q_d = PlanarCsConfiguration(
             kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item()
         )
-        if "chiee" in controller_info:
-            controller_info_msg.chiee = Pose2D(
-                x=controller_info["chiee"][0].item(),
-                y=controller_info["chiee"][1].item(),
-                theta=controller_info["chiee"][2].item(),
-            )
+        controller_info_msg.chiee = Pose2D(
+            x=self.chiee[0].item(),
+            y=self.chiee[1].item(),
+            theta=self.chiee[2].item(),
+        )
         if "e_int" in controller_info:
             controller_info_msg.e_int = controller_info["e_int"].tolist()
         if "varphi" in controller_info:
