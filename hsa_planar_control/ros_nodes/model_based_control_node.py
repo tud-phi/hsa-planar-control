@@ -17,7 +17,7 @@ from rclpy.time import Time
 from pathlib import Path
 
 from geometry_msgs.msg import Pose2D
-from hsa_control_interfaces.msg import PlanarSetpoint, PlanarSetpointControllerInfo
+from hsa_control_interfaces.msg import PlanarSetpoint, PlanarSetpointControllerInfo, Pose2DStamped
 from mocap_optitrack_interfaces.msg import PlanarCsConfiguration
 
 from hsa_actuation.hsa_actuation_base_node import HsaActuationBaseNode
@@ -89,6 +89,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.q_d = jnp.zeros_like(self.q)  # velocity of generalized coordinates
         # end-effector pose
         self.chiee = forward_kinematics_end_effector_fn(self.q)
+        self.chiee_d = jnp.zeros_like(self.chiee)  # velocity of end-effector pose
 
         # initial actuation coordinates
         phi0 = self.map_motor_angles_to_actuation_coordinates(self.present_motor_angles)
@@ -96,9 +97,15 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         # history of configurations
         # the longer the history, the more delays we introduce, but the less noise we get
         self.declare_parameter("history_length_for_diff", 16)
-        self.t_hs = jnp.zeros((self.get_parameter("history_length_for_diff").value,))
+        self.tq_hs = jnp.zeros((self.get_parameter("history_length_for_diff").value,))
         self.q_hs = jnp.zeros(
             (self.get_parameter("history_length_for_diff").value, self.n_q)
+        )
+        # history of end-effector poses
+        # the longer the history, the more delays we introduce, but the less noise we get
+        self.tchiee_hs = jnp.zeros((self.get_parameter("history_length_for_diff").value,))
+        self.chiee_hs = jnp.zeros(
+            (self.get_parameter("history_length_for_diff").value, self.chiee.shape[0])
         )
 
         # method for computing derivative
@@ -196,10 +203,6 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         elif self.controller_type == "basic_operational_space_pid":
             self.control_fn = partial(
                 basic_operational_space_pid,
-                forward_kinematics_end_effector_fn=partial(
-                    forward_kinematics_end_effector_fn, self.params
-                ),
-                jacobian_end_effector_fn=partial(jacobian_end_effector_fn, self.params),
                 dt=control_dt,
                 phi_ss=self.params["phi_max"].squeeze() / 2,
                 Kp=Kp,
@@ -256,13 +259,22 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.q = jnp.array([msg.kappa_b, msg.sigma_sh, msg.sigma_a])
 
         # update history
-        self.t_hs = jnp.roll(self.t_hs, shift=-1, axis=0)
-        self.t_hs = self.t_hs.at[-1].set(t)
+        self.tq_hs = jnp.roll(self.tq_hs, shift=-1, axis=0)
+        self.tq_hs = self.tq_hs.at[-1].set(t)
         self.q_hs = jnp.roll(self.q_hs, shift=-1, axis=0)
         self.q_hs = self.q_hs.at[-1].set(self.q)
 
-    def end_effector_pose_listener_callback(self, msg: Pose2D):
-        self.chiee = jnp.array([msg.x, msg.y, msg.theta])
+    def end_effector_pose_listener_callback(self, msg: Pose2DStamped):
+        t = Time.from_msg(msg.header.stamp).nanoseconds / 1e9
+
+        # set the current end-effector pose
+        self.chiee = jnp.array([msg.pose.x, msg.pose.y, msg.pose.theta])
+
+        # update history
+        self.tchiee_hs = jnp.roll(self.tchiee_hs, shift=-1, axis=0)
+        self.tchiee_hs = self.tchiee_hs.at[-1].set(t)
+        self.chiee_hs = jnp.roll(self.chiee_hs, shift=-1, axis=0)
+        self.chiee_hs = self.chiee_hs.at[-1].set(self.chiee)
 
     def setpoint_listener_callback(self, msg: PlanarSetpoint):
         self.setpoint_msg = msg
@@ -279,11 +291,11 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         Compute the velocity of the generalized coordinates from the history of configurations.
         """
         # if the buffer is not full yet, return the current velocity
-        if jnp.any(self.t_hs == 0.0):
+        if jnp.any(self.tq_hs == 0.0):
             return self.q_d
 
         # subtract the first time stamp from all time stamps to avoid numerical issues
-        t_hs = self.t_hs - self.t_hs[0]
+        t_hs = self.tq_hs - self.tq_hs[0]
 
         q_d = jnp.zeros_like(self.q)
         # iterate through configuration variables
@@ -301,6 +313,29 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.configuration_velocity_pub.publish(q_d_msg)
 
         return q_d
+    
+
+    def compute_chiee_d(self) -> Array:
+        """
+        Compute the velocity of the end-effector pose from the history of end-effector poses.
+        """
+        # if the buffer is not full yet, return the current velocity
+        if jnp.any(self.tchiee_hs == 0.0):
+            return self.chiee_d
+
+        # subtract the first time stamp from all time stamps to avoid numerical issues
+        tchiee_hs = self.tchiee_hs - self.tchiee_hs[0]
+
+        chiee_d = jnp.zeros_like(self.chiee)
+        # iterate through configuration variables
+        for i in range(self.chiee_hs.shape[-1]):
+            # derivative of all time stamps for configuration variable i
+            chiee_d_hs = self.diff_method.d(self.chiee_hs[:, i], tchiee_hs)
+
+            chiee_d = chiee_d.at[i].set(chiee_d_hs[-1])
+
+        return chiee_d
+
 
     def map_motor_angles_to_actuation_coordinates(self, motor_angles: Array) -> Array:
         """
@@ -354,23 +389,23 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             # we have not received a setpoint yet so we cannot compute the control input
             return
 
-        # compute the velocity of the generalized coordinates
+        # compute the velocity of the generalized coordinates and the end-effector pose
         self.q_d = self.compute_q_d()
+        self.chiee_d = self.compute_chiee_d()
 
         # map motor angles to actuation coordinates
         phi = self.map_motor_angles_to_actuation_coordinates(self.present_motor_angles)
 
         # save the current configuration and velocity
-        q = self.q
-        q_d = self.q_d
+        q, q_d = self.q, self.q_d
+        chiee, chiee_d = self.chiee, self.chiee_d
 
         # evaluate controller
         if self.controller_type == "basic_operational_space_pid":
             phi_des, self.controller_state, controller_info = self.control_fn(
                 t,
-                q,
-                q_d,
-                phi,
+                chiee,
+                chiee_d,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
             )
@@ -410,15 +445,26 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         controller_info_msg.header.stamp = self.get_clock().now().to_msg()
         controller_info_msg.planar_setpoint = self.setpoint_msg
         controller_info_msg.q = PlanarCsConfiguration(
-            kappa_b=q[0].item(), sigma_sh=q[1].item(), sigma_a=q[2].item()
+            header=controller_info_msg.header, kappa_b=q[0].item(), sigma_sh=q[1].item(), sigma_a=q[2].item()
         )
         controller_info_msg.q_d = PlanarCsConfiguration(
-            kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item()
+            header=controller_info_msg.header, kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item()
         )
-        controller_info_msg.chiee = Pose2D(
-            x=self.chiee[0].item(),
-            y=self.chiee[1].item(),
-            theta=self.chiee[2].item(),
+        controller_info_msg.chiee = Pose2DStamped(
+            header=controller_info_msg.header,
+            pose=Pose2D(
+                x=self.chiee[0].item(),
+                y=self.chiee[1].item(),
+                theta=self.chiee[2].item(),
+            )
+        )
+        controller_info_msg.chiee_d = Pose2DStamped(
+            header=controller_info_msg.header,
+            pose=Pose2D(
+                x=self.chiee_d[0].item(),
+                y=self.chiee_d[1].item(),
+                theta=self.chiee_d[2].item(),
+            )
         )
         if "e_int" in controller_info:
             controller_info_msg.e_int = controller_info["e_int"].tolist()

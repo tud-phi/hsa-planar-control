@@ -15,7 +15,7 @@ from typing import Callable, Dict, Tuple
 from hsa_planar_control.collocated_form import mapping_into_collocated_form_factory
 from hsa_planar_control.controllers.constant_controller import constant_control
 from hsa_planar_control.controllers.operational_space_controllers import (
-    basic_operational_space_pid,
+    basic_operational_space_pid_configuration_input,
 )
 from hsa_planar_control.controllers.saturation import saturate_control_inputs
 from hsa_planar_control.rendering.opencv_renderer import animate_robot
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     ) = planar_hsa.factory(sym_exp_filepath)
 
     control_fn = partial(
-        basic_operational_space_pid,
+        basic_operational_space_pid_configuration_input,
         forward_kinematics_end_effector_fn=partial(
             forward_kinematics_end_effector_fn, params
         ),

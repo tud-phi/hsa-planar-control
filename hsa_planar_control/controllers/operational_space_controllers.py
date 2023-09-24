@@ -8,6 +8,62 @@ from .actuation_linearization import map_configuration_space_torque_to_twist_ang
 
 def basic_operational_space_pid(
     t: Array,
+    chiee: Array,
+    chiee_d: Array,
+    *args,
+    controller_state: Dict[str, Array],
+    dt: float,
+    pee_des: Array,
+    phi_ss: Array,
+    Kp: Array,
+    Ki: Array,
+    Kd: Array,
+    **kwargs,
+) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
+    """
+    Implement a basic PID controller in operational space. 
+    Args:
+        t: time [s]
+        q: configuration vector of shape (n_q, )
+        q_d: configuration velocity vector of shape (n_q, )
+        phi: current motor positions vector of shape (n_phi, )
+        controller_state: state of the controller (integral error)
+        dt: time step of controller [s]
+        pee_des: desired end effector position of shape (2, )
+        phi_ss: steady state actuation at the desired configuration. Vector of shape (n_phi, )
+        Kp: proportional gain matrix of shape (n_phi, n_phi)
+        Ki: integral gain matrix of shape (n_phi, n_phi)
+        Kd: derivative gain matrix of shape (n_phi, n_phi)
+
+    Returns:
+        phi_des: desired motor positions (n_tau, )
+        controller_state: state of the controller (integral error)
+        controller_info: dictionary with information about intermediate computations
+    """
+    # current position of end-effector
+    pee = chiee[:2]
+    # current velocity of end-effector
+    pee_d = chiee_d[:2]
+
+    # control input in task space
+    e_pee = pee_des - pee
+    u = Kp @ e_pee + Ki @ controller_state["integral_error"] - Kd @ pee_d
+
+    controller_state["integral_error"] += e_pee * dt
+    controller_info = {
+        "chiee": chiee,
+        "e_pee": e_pee,
+        "e_int": controller_state["integral_error"],
+    }
+
+    # project control input to the actuation space
+    phi_des = phi_ss + jnp.array([[1, 1], [-1, 1]]) @ u
+
+    return phi_des, controller_state, controller_info
+
+
+def basic_operational_space_pid_configuration_input(
+    t: Array,
     q: Array,
     q_d: Array,
     phi: Array,
@@ -24,7 +80,8 @@ def basic_operational_space_pid(
     **kwargs,
 ) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
     """
-    Implement a basic PID controller in operational space.
+    Implement a basic PID controller in operational space. 
+    Takes the robot configuration as input and uses forward kinematics to compute the end-effector pose.
     Args:
         t: time [s]
         q: configuration vector of shape (n_q, )
