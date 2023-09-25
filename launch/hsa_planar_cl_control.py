@@ -61,19 +61,19 @@ if controller_type == "basic_operational_space_pid":
     control_params.update({
         "Kp": 1.0e1,  # [rad/m]
         "Ki": 1.1e2,  # [rad/(ms)]
-        "Kd": 5e-1,  # [rad s/m]
+        "Kd": 2.5e-1,  # [rad s/m]
     })
 elif controller_type == "P_satI_D_collocated_form_plus_steady_state_actuation":
     control_params.update({
         "Kp": 3.0e-1,  # [-]
-        "Ki": 8.0e-2,  # [1/s]
+        "Ki": 5.0e-2,  # [1/s]
         "Kd": 2.0e-2,  # [s]
         "gamma": 1e2
     })
 elif controller_type == "P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation":
     control_params.update({
         "Kp": 3.0e-1,  # [-]
-        "Ki": 8.0e-2,  # [1/s]
+        "Ki": 5.0e-2,  # [1/s]
         "Kd": 2.0e-2,  # [s]
         "gamma": 1e2
     })

@@ -53,6 +53,17 @@ def generate_task_space_trajectory_from_image(
         # set the threshold for the binary image
         threshold = 140
         threshold_mode = cv2.THRESH_BINARY_INV
+    elif image_type == "mit-csail":
+        if image_path is None:
+            image_path = (
+                Path(__file__).parent.parent.parent / "assets" / "mit_csail.png"
+            )
+
+        img = cv2.imread(str(image_path))
+
+        # set the threshold for the binary image
+        threshold = 140
+        threshold_mode = cv2.THRESH_BINARY_INV
     else:
         raise ValueError(f"Unknown image type: {image_type}")
 
@@ -153,10 +164,15 @@ def generate_task_space_trajectory_from_image(
         #     [0.225, -0.310],
         #     [0.0, -1.0],
         # ])
-        sample_step = 5  # only take every 8th point
+        sample_step = 5  # only take every 5th point
         pee_sps_norm = pee_sps_norm[::sample_step, :]
     elif image_type == "tud-flame":
-        sample_step = 5  # only take every 8th point
+        sample_step = 5  # only take every 5th point
+        pee_sps_norm = pee_sps_norm[::sample_step, :]
+        # as the robot is facing upside-down, we need to flip the x-axis and y-axis
+        pee_sps_norm = -pee_sps_norm
+    elif image_type == "mit-csail":
+        sample_step = 8  # only take every 8th point
         pee_sps_norm = pee_sps_norm[::sample_step, :]
         # as the robot is facing upside-down, we need to flip the x-axis and y-axis
         pee_sps_norm = -pee_sps_norm
