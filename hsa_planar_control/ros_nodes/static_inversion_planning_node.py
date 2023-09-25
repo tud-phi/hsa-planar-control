@@ -146,8 +146,8 @@ class StaticInversionPlanningNode(Node):
                     "assets",
                     "mit_csail.png",
                 )
-                pee_centroid = jnp.array([0.0, 0.127])
-                max_radius = jnp.array(0.013)
+                pee_centroid = jnp.array([0.0, 0.129])
+                max_radius = jnp.array(0.0165)
             else:
                 raise ValueError(f"Unknown image type: {image_type}")
 
