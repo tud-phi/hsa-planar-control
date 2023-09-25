@@ -88,7 +88,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.n_q = self.q.shape[0]  # number of generalized coordinates
         self.q_d = jnp.zeros_like(self.q)  # velocity of generalized coordinates
         # end-effector pose
-        self.chiee = forward_kinematics_end_effector_fn(self.q)
+        self.chiee = forward_kinematics_end_effector_fn(self.params, self.q)
         self.chiee_d = jnp.zeros_like(self.chiee)  # velocity of end-effector pose
 
         # initial actuation coordinates
