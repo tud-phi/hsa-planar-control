@@ -60,7 +60,7 @@ class CalibrationNode(Node):
 
         # external payload mass (assumed to be at end effector)
         self.declare_parameter("payload_mass", 0.0)
-        self.params["mpl"] = self.get_parameter("payload_mass").value
+        self.known_params["mpl"] = self.get_parameter("payload_mass").value
 
         params_to_be_idd_names = ["sigma_a_eq"]
         self.Pi_syms, self.cal_a_fn, self.cal_b_fn = linear_lq_optim_problem_factory(
