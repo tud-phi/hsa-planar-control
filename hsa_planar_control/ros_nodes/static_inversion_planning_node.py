@@ -119,7 +119,7 @@ class StaticInversionPlanningNode(Node):
                 )
             )
 
-            default_planning_frequency = 5
+            default_planning_frequency = 8
 
             self.declare_parameter("image_type", "star")
             image_type = self.get_parameter("image_type").value
