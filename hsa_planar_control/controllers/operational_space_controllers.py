@@ -10,6 +10,7 @@ def basic_operational_space_pid(
     t: Array,
     chiee: Array,
     chiee_d: Array,
+    phi: Array,
     *args,
     controller_state: Dict[str, Array],
     dt: float,
@@ -24,8 +25,8 @@ def basic_operational_space_pid(
     Implement a basic PID controller in operational space. 
     Args:
         t: time [s]
-        q: configuration vector of shape (n_q, )
-        q_d: configuration velocity vector of shape (n_q, )
+        chiee: current end effector pose of shape (3, )
+        chiee_d: current end effector velocity of shape (3, )
         phi: current motor positions vector of shape (n_phi, )
         controller_state: state of the controller (integral error)
         dt: time step of controller [s]

@@ -6,6 +6,7 @@ from jax import config as jax_config
 
 jax_config.update("jax_enable_x64", True)  # double precision
 jax_config.update("jax_platform_name", "cpu")  # use CPU
+import jax
 from jax import Array, jit
 from jax import numpy as jnp
 import jsrm
@@ -46,7 +47,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
         self.declare_parameter("end_effector_pose_topic", "end_effector_pose")
         self.end_effector_pose_sub = self.create_subscription(
-            PlanarCsConfiguration,
+            Pose2DStamped,
             self.get_parameter("end_effector_pose_topic").value,
             self.end_effector_pose_listener_callback,
             10,
@@ -220,8 +221,8 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         if self.controller_type == "basic_operational_space_pid":
             phi_des_dummy, _, _ = self.control_fn(
                 0.0,
-                self.q,
-                self.q_d,
+                self.chiee,
+                self.chiee_d,
                 phi_dummy,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
@@ -406,6 +407,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 t,
                 chiee,
                 chiee_d,
+                phi,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
             )
