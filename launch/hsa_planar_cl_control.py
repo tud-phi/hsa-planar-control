@@ -37,7 +37,7 @@ LOG_LEVEL = "warn"
 """
 controller_type = "basic_operational_space_pid"
 phi_max = 200 / 180 * np.pi
-sigma_a_eq = 1.01262071
+sigma_a_eq = 1.0
 payload_mass = 0.0  # kg
 
 inverse_kinematics_params = {
