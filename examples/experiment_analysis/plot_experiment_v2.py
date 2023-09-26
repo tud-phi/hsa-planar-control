@@ -4,19 +4,12 @@ from jax import config as jax_config
 
 jax_config.update("jax_enable_x64", True)  # double precision
 jax_config.update("jax_platform_name", "cpu")  # use CPU
-from jax import Array, jit, vmap
-import jax.numpy as jnp
-import jsrm
-from jsrm.parameters.hsa_params import PARAMS_CONTROL
-from jsrm.systems import planar_hsa
 import matplotlib
 
 matplotlib.use("Qt5Cairo")
 import matplotlib.pyplot as plt
+import numpy as np
 from pathlib import Path
-
-from hsa_planar_control.collocated_form import mapping_into_collocated_form_factory
-from hsa_planar_control.analysis.utils import trim_time_series_data
 
 plt.rcParams.update(
     {
@@ -26,15 +19,13 @@ plt.rcParams.update(
     }
 )
 
-EXPERIMENT_NAME = "20230925_142729"  # experiment name
-if EXPERIMENT_NAME == "20230925_142729":
-    # manual setpoints trajectory
-    DURATION = 92.0
-    SPEEDUP = 2.5
-    SIGMA_A_EQ = 1.01262071
-else:
-    raise NotImplementedError("Please add the settings for the new experiment.")
-PLOT_COLLOCATED_COORDINATES = True
+EXPERIMENT_NAME = "20230925_094023"  # experiment name
+TRAJECTORY_TYPE = "manual"  # trajectory type
+PLOT_STEADY_STATE_ACTUATION = True
+
+DURATION = None
+if TRAJECTORY_TYPE == "manual":
+    DURATION = 110.0  # duration of the experiment [s]
 
 
 def main():
@@ -46,9 +37,19 @@ def main():
     ci_ts = data_ts["controller_info_ts"]
 
     print("Available time series data:\n", data_ts.keys())
+    print("Available controller info", ci_ts.keys())
 
     # absolute start time
     start_time = ci_ts["ts"][0]
+    ts = ci_ts["ts"] - start_time
+    print("Experiment duration:", ts[-1])
+
+    # trim the time series data
+    if DURATION is not None:
+        end_time_idx = np.argmax(ts > DURATION)
+        ts = ts[:end_time_idx]
+        for key in ci_ts.keys():
+            ci_ts[key] = ci_ts[key][:end_time_idx]
 
     figsize = (4.5, 3)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
@@ -58,8 +59,8 @@ def main():
     plt.figure(figsize=(4.5, 3), num="End-effector position")
     ax = plt.gca()
     ax.plot(
-        ci_ts["ts"],
-        data_ts["chiee_des_ts"][:, 0],
+        ts,
+        ci_ts["chiee_des"][:, 0],
         color=colors[0],
         linestyle=":",
         linewidth=linewidth_dotted,
@@ -67,8 +68,8 @@ def main():
         label=r"$p_\mathrm{x}^\mathrm{d}$",
     )
     ax.plot(
-        ci_ts["ts"],
-        data_ts["chiee_des_ts"][:, 1],
+        ts,
+        ci_ts["chiee_des"][:, 1],
         color=colors[1],
         linestyle=":",
         linewidth=linewidth_dotted,
@@ -76,14 +77,14 @@ def main():
         label=r"$p_\mathrm{y}^\mathrm{d}$",
     )
     ax.plot(
-        ci_ts["ts"],
-        data_ts["chiee_ts"][:, 0],
+        ts,
+        ci_ts["chiee"][:, 0],
         color=colors[0],
         label=r"$p_\mathrm{x}$",
     )
     ax.plot(
-        ci_ts["ts"],
-        data_ts["chiee_ts"][:, 1],
+        ts,
+        ci_ts["chiee"][:, 1],
         color=colors[1],
         label=r"$p_\mathrm{y}$",
     )
@@ -99,33 +100,34 @@ def main():
 
     plt.figure(figsize=figsize, num="Control input")
     ax = plt.gca()
+    if PLOT_STEADY_STATE_ACTUATION:
+        ax.plot(
+            ts,
+            ci_ts["phi_ss"][:, 0],
+            color=colors[0],
+            linestyle=":",
+            linewidth=linewidth_dotted,
+            dashes=dashes,
+            label=r"$\phi^\mathrm{ss}_1$",
+        )
+        ax.plot(
+            ts,
+            ci_ts["phi_ss"][:, 1],
+            color=colors[1],
+            linestyle=":",
+            linewidth=linewidth_dotted,
+            dashes=dashes,
+            label=r"$\phi^\mathrm{ss}_2$",
+        )
     ax.plot(
-        ci_ts["ts"],
-        data_ts["phi_ss_ts"][:, 0],
-        color=colors[0],
-        linestyle=":",
-        linewidth=linewidth_dotted,
-        dashes=dashes,
-        label=r"$\phi^\mathrm{ss}_1$",
-    )
-    ax.plot(
-        ci_ts["ts"],
-        data_ts["phi_ss_ts"][:, 1],
-        color=colors[1],
-        linestyle=":",
-        linewidth=linewidth_dotted,
-        dashes=dashes,
-        label=r"$\phi^\mathrm{ss}_2$",
-    )
-    ax.plot(
-        ci_ts["ts"],
-        data_ts["phi_sat_ts"][:, 0],
+        ts,
+        ci_ts["phi_des_sat"][:, 0],
         color=colors[0],
         label=r"$\phi_1$",
     )
     ax.plot(
-        ci_ts["ts"],
-        data_ts["phi_sat_ts"][:, 1],
+        ts,
+        ci_ts["phi_des_sat"][:, 1],
         color=colors[1],
         label=r"$\phi_2$",
     )
@@ -143,8 +145,8 @@ def main():
     ax1 = plt.gca()
     ax2 = ax1.twinx()
     ax1.plot(
-        ci_ts["ts"],
-        data_ts["q_des_ts"][:, 0],
+        ts,
+        ci_ts["q_des"][:, 0],
         color=colors[0],
         linestyle=":",
         linewidth=linewidth_dotted,
@@ -152,14 +154,14 @@ def main():
         label=r"$\kappa_\mathrm{b}^\mathrm{d}$",
     )
     ax1.plot(
-        ci_ts["ts"],
-        data_ts["q_ts"][:, 0],
+        ts,
+        ci_ts["q"][:, 0],
         color=colors[0],
         label=r"$\kappa_\mathrm{b}$",
     )
     ax2.plot(
-        ci_ts["ts"],
-        data_ts["q_des_ts"][:, 1],
+        ts,
+        ci_ts["q_des"][:, 1],
         color=colors[1],
         linestyle=":",
         linewidth=linewidth_dotted,
@@ -167,8 +169,8 @@ def main():
         label=r"$\sigma_\mathrm{sh}^\mathrm{d}$",
     )
     ax2.plot(
-        ci_ts["ts"],
-        data_ts["q_des_ts"][:, 2],
+        ts,
+        ci_ts["q_des"][:, 2],
         color=colors[2],
         linestyle=":",
         linewidth=linewidth_dotted,
@@ -176,14 +178,14 @@ def main():
         label=r"$\sigma_\mathrm{ax}^\mathrm{d}$",
     )
     ax2.plot(
-        ci_ts["ts"],
-        data_ts["q_ts"][:, 1],
+        ts,
+        ci_ts["q"][:, 1],
         color=colors[1],
         label=r"$\sigma_\mathrm{sh}$",
     )
     ax2.plot(
-        ci_ts["ts"],
-        data_ts["q_ts"][:, 2],
+        ts,
+        ci_ts["q"][:, 2],
         color=colors[2],
         label=r"$\sigma_\mathrm{ax}$",
     )
@@ -199,48 +201,48 @@ def main():
     plt.savefig(str(experiment_folder / f"{EXPERIMENT_NAME}_q.eps"))
     plt.show()
 
-    
-    plt.figure(figsize=figsize, num="Actuation coordinates")
-    ax = plt.gca()
-    ax.plot(
-        ci_ts["ts"],
-        varphi_des_ts[:, 0],
-        color=colors[0],
-        linestyle=":",
-        linewidth=linewidth_dotted,
-        dashes=dashes,
-        label=r"$\varphi^\mathrm{d}_1$",
-    )
-    ax.plot(
-        ci_ts["ts"],
-        varphi_des_ts[:, 1],
-        color=colors[1],
-        linestyle=":",
-        linewidth=linewidth_dotted,
-        dashes=dashes,
-        label=r"$\varphi^\mathrm{d}_2$",
-    )
-    ax.plot(
-        ci_ts["ts"],
-        varphi_ts[:, 0],
-        color=colors[0],
-        label=r"$\varphi_1$",
-    )
-    ax.plot(
-        ci_ts["ts"],
-        varphi_ts[:, 1],
-        color=colors[1],
-        label=r"$\varphi_2$",
-    )
-    plt.xlabel(r"$t$ [s]")
-    plt.ylabel(r"Actuation coordinates $\varphi_\mathrm{a}$ [rad]")
-    plt.legend()
-    plt.grid(True)
-    plt.box(True)
-    plt.tight_layout()
-    plt.savefig(str(experiment_folder / f"{EXPERIMENT_NAME}_varphi.pdf"))
-    plt.savefig(str(experiment_folder / f"{EXPERIMENT_NAME}_varphi.eps"))
-    plt.show()
+    if "varphi" in ci_ts.keys() and ci_ts["varphi"].size > 0:
+        plt.figure(figsize=figsize, num="Actuation coordinates")
+        ax = plt.gca()
+        ax.plot(
+            ts,
+            ci_ts["varphi_des"][:, 0],
+            color=colors[0],
+            linestyle=":",
+            linewidth=linewidth_dotted,
+            dashes=dashes,
+            label=r"$\varphi^\mathrm{d}_1$",
+        )
+        ax.plot(
+            ts,
+            ci_ts["varphi_des"][:, 1],
+            color=colors[1],
+            linestyle=":",
+            linewidth=linewidth_dotted,
+            dashes=dashes,
+            label=r"$\varphi^\mathrm{d}_2$",
+        )
+        ax.plot(
+            ts,
+            ci_ts["varphi"][:, 0],
+            color=colors[0],
+            label=r"$\varphi_1$",
+        )
+        ax.plot(
+            ts,
+            ci_ts["varphi"][:, 1],
+            color=colors[1],
+            label=r"$\varphi_2$",
+        )
+        plt.xlabel(r"$t$ [s]")
+        plt.ylabel(r"Actuation coordinates $\varphi_\mathrm{a}$ [rad]")
+        plt.legend()
+        plt.grid(True)
+        plt.box(True)
+        plt.tight_layout()
+        plt.savefig(str(experiment_folder / f"{EXPERIMENT_NAME}_varphi.pdf"))
+        plt.savefig(str(experiment_folder / f"{EXPERIMENT_NAME}_varphi.eps"))
+        plt.show()
 
 
 if __name__ == "__main__":
