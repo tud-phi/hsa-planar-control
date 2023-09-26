@@ -35,10 +35,10 @@ LOG_LEVEL = "warn"
 - P_satI_D_plus_steady_state_actuation
 - basic_operational_space_pid
 """
-controller_type = "P_satI_D_collocated_form_plus_steady_state_actuation"
+controller_type = "basic_operational_space_pid"
 phi_max = 200 / 180 * np.pi
-sigma_a_eq = 1.0
-payload_mass = 0.0
+sigma_a_eq = 1.01262071
+payload_mass = 0.2  # kg
 
 inverse_kinematics_params = {
     "sigma_a_eq": sigma_a_eq,
@@ -151,7 +151,7 @@ def generate_launch_description():
     if RECORD:
         launch_actions.append(
             ExecuteProcess(
-                cmd=["ros2", "bag", "record", "-a", "-o", BAG_PATH, "-s", "sqlite3"],
+                cmd=["ros2", "bag", "record", "-a", "-o", BAG_PATH, "-s", "sqlite3", "-x /rendering"],
                 output="screen",
             )
         )
