@@ -30,10 +30,10 @@ BAG_PATH = f"/home/mstoelzle/phd/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}
 LOG_LEVEL = "warn"
 
 """ implemented controllers:
+- basic_operational_space_pid
+- P_satI_D_plus_steady_state_actuation
 - P_satI_D_collocated_form_plus_steady_state_actuation
 - P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation
-- P_satI_D_plus_steady_state_actuation
-- basic_operational_space_pid
 """
 controller_type = "basic_operational_space_pid"
 phi_max = 200 / 180 * np.pi
