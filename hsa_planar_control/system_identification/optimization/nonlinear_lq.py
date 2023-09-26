@@ -34,30 +34,6 @@ def nonlinear_lq_optim_problem_factory(
     # load saved symbolic data
     sym_exps = dill.load(open(str(sym_exp_filepath), "rb"))
 
-    state_syms = sym_exps["state_syms"]
-    exps = sym_exps["exps"]
-
-    # symbolic position of the payload mass
-    # we assume that payload mass is attached to bottom end of the platform
-    # orientation of end-effector with respect to the base
-    thee = exps["chiee"][2, 0]
-    R_exp = sp.Matrix([[sp.cos(thee), -sp.sin(thee)], [sp.sin(thee), sp.cos(thee)]])
-    # distance along local y-axis from the end-effector to the payload CoM
-    dy_pl_ee = known_params["pcudim"][-1, 1] + known_params.get("lpl", 0.0) / 2
-    # subtract distance from the end-effector position
-    ppl_exp = exps["chiee"][:2, 0] - R_exp @ sp.Matrix([0, dy_pl_ee.item()])
-    # positional Jacobian of the payload mass
-    Jpl_exp = ppl_exp.jacobian(state_syms["xi"])
-    # substitute the parameters
-    Jpl_exp = substitute_params_into_single_symbolic_expression(
-        Jpl_exp, sym_exps["params_syms"], known_params
-    )
-    Jpl_lambda = sp.lambdify(
-        sym_exps["state_syms"]["xi"],
-        Jpl_exp,
-        "jax",
-    )
-
     # these are just dummy values
     # they will not be used during the actual identification procedure
     # they are just used to determine the data shapes and structure
@@ -74,7 +50,6 @@ def nonlinear_lq_optim_problem_factory(
         "C_S_b": 0 * ones_rod,
         "C_S_sh": 0 * ones_rod,  # Scaling of shear stiffness with twist strain [Nm/rad]
         "C_S_a": 0 * ones_rod,  # Scaling of axial stiffness with twist strain [Nm/rad]
-        "S_b_sh": 0 * ones_rod,  # Elastic coupling between bending and shear
         # damping coefficient for bending of shape (num_segments, rods_per_segment)
         "zetab": 0.0 * ones_rod,
         # damping coefficient for shear of shape (num_segments, rods_per_segment)
@@ -100,13 +75,14 @@ def nonlinear_lq_optim_problem_factory(
         Returns:
             residual: array with the residual of the optimization problem
         """
-        # map the configuration to the strains
-
         _params = params.copy()
         for param_idx, param_name in enumerate(params_to_be_idd_names):
             _params[param_name] = Pi[param_idx] * jnp.ones_like(
                 dummy_to_be_identified_params[param_name]
             )
+
+        # update the payload mass in the params dictionary
+        _params["mpl"] = mpl
 
         # add a small number to the bending strain to avoid singularities
         xi_epsed = sys_helpers["apply_eps_to_bend_strains_fn"](
@@ -116,21 +92,16 @@ def nonlinear_lq_optim_problem_factory(
         # compute the rest strain based on the current estimate of the parameters
         xi_eq = sys_helpers["rest_strains_fn"](_params)
         # compute the configuration based on the current estimate of the rest strain
-        q = xi - xi_eq
+        q = xi_epsed - xi_eq
         q_d = xi_d
 
         # evaluate the dynamical matrices
         B, C, G, K, D, alpha = dynamical_matrices_fn(_params, q, q_d, phi)
 
-        # evaluate the positional Jacobian of the payload mass
-        Jpl = Jpl_lambda(*xi_epsed).squeeze()
-        # define gravity vector for payload mass
-        Gpl = -mpl * Jpl.T @ _params["g"]
-
         # rhs of the equations of motion
         rhs = alpha
         # left-hand side of the equations of motion
-        lhs = G + K + Gpl
+        lhs = G + K
         if mode == "dynamic":
             lhs = lhs + B @ xi_dd + C @ xi_d + D @ xi_d
 
