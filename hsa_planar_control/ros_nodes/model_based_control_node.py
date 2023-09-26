@@ -131,8 +131,9 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.q_des = jnp.zeros_like(self.q)
         self.chiee_des = jnp.zeros((3,))
         self.phi_ss = jnp.zeros_like(phi0)
-
         self.setpoint_msg = None
+        self.declare_parameter("reset_integral_error_on_setpoint_change", False)
+        self.reset_integral_error = self.get_parameter("reset_integral_error_on_setpoint_change").value
 
         self.declare_parameter(
             "controller_type", "P_satI_D_collocated_form_plus_steady_state_actuation"
@@ -289,6 +290,10 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             [msg.chiee_des.x, msg.chiee_des.y, msg.chiee_des.theta]
         )
         self.phi_ss = jnp.array(msg.phi_ss)
+
+        if self.reset_integral_error:
+            # reset integral error
+            self.controller_state["integral_error"] = jnp.zeros_like(self.controller_state["integral_error"])
 
     def compute_q_d(self) -> Array:
         """
