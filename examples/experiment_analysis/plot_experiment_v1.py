@@ -6,7 +6,7 @@ jax_config.update("jax_platform_name", "cpu")  # use CPU
 from jax import Array, jit, vmap
 import jax.numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_CONTROL
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
 from jsrm.systems import planar_hsa
 import matplotlib
 
@@ -82,7 +82,7 @@ def main():
             sym_exp_filepath, sys_helpers
         )
         # params
-        params = PARAMS_CONTROL.copy()
+        params = PARAMS_FPU_CONTROL.copy()
         params["sigma_a_eq"] = SIGMA_A_EQ * jnp.ones_like(params["sigma_a_eq"])
 
     figsize = (4.5, 3)

@@ -5,7 +5,7 @@ from functools import partial
 from jax import Array, jit, random, vmap
 from jax import numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_CONTROL
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
 from jsrm.systems import planar_hsa
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -41,7 +41,7 @@ sym_exp_filepath = (
 )
 
 # set parameters
-params = PARAMS_CONTROL.copy()
+params = PARAMS_FPU_CONTROL.copy()
 
 IMAGE_TYPE = "tud-flame"
 

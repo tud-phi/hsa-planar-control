@@ -5,7 +5,7 @@ jax_config.update("jax_enable_x64", True)  # double precision
 from jax import Array, debug, jit, random, vmap
 import jax.numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_CONTROL
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
 from jsrm.systems import planar_hsa
 from jsrm.systems.utils import substitute_params_into_single_symbolic_expression
 from pathlib import Path
@@ -50,7 +50,7 @@ def test_collocated_form(seed: int = 0):
 
     # subsitute in the parameters
     A_exp = substitute_params_into_single_symbolic_expression(
-        A_exp, sym_exps["params_syms"], PARAMS_CONTROL
+        A_exp, sym_exps["params_syms"], PARAMS_FPU_CONTROL
     )
 
     A_lambda = sp.lambdify(
@@ -62,9 +62,9 @@ def test_collocated_form(seed: int = 0):
     @jit
     def compute_A_varphi(q: Array, phi: Array) -> Array:
         # map the configuration to the strains
-        xi = sys_helpers["configuration_to_strains_fn"](PARAMS_CONTROL, q)
+        xi = sys_helpers["configuration_to_strains_fn"](PARAMS_FPU_CONTROL, q)
 
-        varphi, Jh = map_into_collocated_form_fn(PARAMS_CONTROL, q, phi)
+        varphi, Jh = map_into_collocated_form_fn(PARAMS_FPU_CONTROL, q, phi)
 
         # compute the A matrix in q-space
         A_q = A_lambda(*xi, *phi)
@@ -85,14 +85,14 @@ def test_collocated_form(seed: int = 0):
         kappa_b = random.uniform(
             subrng1,
             (num_segments,),
-            minval=-jnp.pi / jnp.mean(PARAMS_CONTROL["l"]),
-            maxval=jnp.pi / jnp.mean(PARAMS_CONTROL["l"]),
+            minval=-jnp.pi / jnp.mean(PARAMS_FPU_CONTROL["l"]),
+            maxval=jnp.pi / jnp.mean(PARAMS_FPU_CONTROL["l"]),
         )
         sigma_sh = random.uniform(subrng2, (num_segments,), minval=-0.2, maxval=0.2)
         sigma_a = random.uniform(subrng3, (num_segments,), minval=0.0, maxval=0.5)
         q = jnp.concatenate((kappa_b, sigma_sh, sigma_a), axis=0)
-        phi = PARAMS_CONTROL["h"].flatten() * random.uniform(
-            subrng5, PARAMS_CONTROL["h"].flatten().shape, minval=0.0, maxval=jnp.pi
+        phi = PARAMS_FPU_CONTROL["h"].flatten() * random.uniform(
+            subrng5, PARAMS_FPU_CONTROL["h"].flatten().shape, minval=0.0, maxval=jnp.pi
         )
 
         A_varphi = compute_A_varphi(q, phi)

@@ -9,7 +9,7 @@ jax_config.update("jax_platform_name", "cpu")  # use CPU
 from jax import Array, jit
 from jax import numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_CONTROL
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
 from jsrm.systems import planar_hsa
 import rclpy
 from rclpy.node import Node
@@ -54,7 +54,7 @@ class StaticInversionPlanningNode(Node):
             sys_helpers,
         ) = planar_hsa.factory(sym_exp_filepath)
 
-        self.params = PARAMS_CONTROL.copy()
+        self.params = PARAMS_FPU_CONTROL.copy()
 
         # parameter for specifying a different axial rest strain
         self.declare_parameter("sigma_a_eq", self.params["sigma_a_eq"].mean().item())

@@ -6,7 +6,7 @@ from functools import partial
 from jax import Array, jit, lax, vmap
 from jax import numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_SYSTEM_ID
+from jsrm.parameters.hsa_params import PARAMS_FPU_SYSTEM_ID
 from jsrm.systems import planar_hsa
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -28,7 +28,7 @@ sym_exp_filepath = (
 )
 
 # set parameters
-params = PARAMS_SYSTEM_ID.copy()
+params = PARAMS_FPU_SYSTEM_ID.copy()
 
 # experiment id
 # experiment_id = "20230621_153408"  # staircase elongation

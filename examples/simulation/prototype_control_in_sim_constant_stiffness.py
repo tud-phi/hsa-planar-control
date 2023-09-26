@@ -6,7 +6,7 @@ from functools import partial
 from jax import Array, jit, vmap
 from jax import numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_CONTROL
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
 from jsrm.systems import planar_hsa
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -40,7 +40,7 @@ sym_exp_filepath = (
 
 # set parameters
 ones_rod = jnp.ones((num_segments, num_rods_per_segment))
-params = PARAMS_CONTROL.copy()
+params = PARAMS_FPU_CONTROL.copy()
 params.update(
     {
         "Ehat": 1e4 * ones_rod,  # Elastic modulus of each rod [Pa]

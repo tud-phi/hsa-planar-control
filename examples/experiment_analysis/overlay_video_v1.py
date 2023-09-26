@@ -4,7 +4,7 @@ from jax import config as jax_config
 jax_config.update("jax_enable_x64", True)  # double precision
 jax_config.update("jax_platform_name", "cpu")  # use CPU
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_CONTROL
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
 from jsrm.systems import planar_hsa
 import matplotlib
 
@@ -104,7 +104,7 @@ def main():
     )
 
     # load robot parameters
-    params = PARAMS_CONTROL.copy()
+    params = PARAMS_FPU_CONTROL.copy()
     (
         forward_kinematics_virtual_backbone_fn,
         forward_kinematics_end_effector_fn,

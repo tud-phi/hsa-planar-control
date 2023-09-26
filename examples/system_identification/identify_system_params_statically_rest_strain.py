@@ -3,7 +3,7 @@ from jax import config as jax_config
 jax_config.update("jax_enable_x64", True)  # double precision
 import jax.numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_SYSTEM_ID
+from jsrm.parameters.hsa_params import PARAMS_FPU_SYSTEM_ID
 from jsrm.systems import planar_hsa
 import matplotlib
 import numpy as onp
@@ -30,7 +30,7 @@ sym_exp_filepath = (
 
 
 ones_rod = jnp.ones((num_segments, num_rods_per_segment))
-known_params = PARAMS_SYSTEM_ID.copy()
+known_params = PARAMS_FPU_SYSTEM_ID.copy()
 # delete payload mass from known params so that we can specify it for each datapoint
 known_params.pop("mpl")
 
