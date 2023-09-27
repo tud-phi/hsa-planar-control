@@ -46,7 +46,7 @@ known_params = {
     # outside radius of each rod [m]. The rows correspond to the segments.
     "rout": 25.4e-3 / 2 * ones_rod,  # this is for FPU rods
     # inside radius of each rod [m]. The rows correspond to the segments.
-    "rin": (25.4e-3 / 2 - 2.43e-3) * ones_rod,  # this is for FPU rods
+    "rin": (25.4e-3 / 2 - 5.0e-3) * ones_rod,  # this is for EPU rods
     # handedness of each rod. The rows correspond to the segments.
     "h": jnp.array([[1.0, -1.0, 1.0, -1.0]]),
     # offset [m] of each rod from the centerline. The rows correspond to the segments.
@@ -54,9 +54,9 @@ known_params = {
     "pcudim": jnp.array(
         [[80e-3, 12e-3, 80e-3]]
     ),  # width, height, depth of the platform [m]
-    # mass of FPU rod: 14 g, mass of EPU rod: 26 g
-    # For FPU, this corresponds to a measure volume of 0000175355 m^3 --> rho = 798.38 kg/m^3
-    "rhor": 798.38 * ones_rod,  # Volumetric density of rods [kg/m^3],
+    # mass of EPU rod: 26 g
+    # For EPU, this corresponds to a measure volume of 0000314034 m^3 --> rho = 827.94 kg/m^3
+    "rhor": 827.94 * ones_rod,  # Volumetric density of rods [kg/m^3],
     # Volumetric density of platform [kg/m^3],
     # weight of platform + marker holder + cylinder top piece: 0.107 kg
     # subtracting 4 x 9g for distal cap: 0.071 kg
@@ -71,17 +71,19 @@ known_params = {
     "rhoec": 710.4 * jnp.ones((num_segments,)),
     "g": jnp.array([0.0, 9.81]),
     # Nominal bending stiffness of each rod [Nm^2]
-    "S_b_hat": 5.4698261027774997e-5 * ones_rod,
+    "S_b_hat": 0.0 * ones_rod,
     # Nominal shear stiffness of each rod [N]
-    "S_sh_hat": 0.9620376027360 * ones_rod,
+    "S_sh_hat": 0.0 * ones_rod,
     # Elastic coupling between bending and shear [Nm/rad]
-    "S_b_sh": 7.56629739e-03 * ones_rod,
+    "S_b_sh": 0.0 * ones_rod,
     # Scaling of bending stiffness with twist strain [Nm^3/rad]
-    "C_S_b": 7.92251400952920015e-7 * ones_rod,
+    "C_S_b": 0.0 * ones_rod,
     # Scaling of shear stiffness with twist strain [Nm/rad]
-    "C_S_sh": -3.85580745914e-3 * ones_rod,
+    "C_S_sh": 0.0 * ones_rod,
     # center of origin of the payload relative to end-effector [m]
-    "CoGpl": jnp.array([0.0, -12e-3 - 5e-3]),  # subtract 12 mm for the thickness of the platform
+    # subtract 12 mm for the thickness of the platform
+    # the 100g weights have a length of 27mm
+    "CoGpl": jnp.array([0.0, -12e-3 - 13.5e-3]),
 }
 
 if SYSTEM_ID_STEP == 0:
@@ -257,72 +259,9 @@ elif SYSTEM_ID_STEP == 2:
             ),
         },
     }
-elif SYSTEM_ID_STEP == 3:
-    optimization_type = "llq"
-    params_to_be_idd_names = ["sigma_a_eq"]
-    # identification result for 20230621_165020:
-    # sigma_a_eq = 1.03195326
-    # identification result for 20230703_155911:
-    # sigma_a_eq = 1.0753753
-
-    # previously identified parameters in steps 0, 1, 2
-    known_params["S_a_hat"] = 5.66472469 * ones_rod
-    known_params["C_S_a"] = 0.01508165 * ones_rod
-    known_params["C_varepsilon"] = 0.00984819 * ones_rod
-
-    experiment_configs = {
-        # staircase of elongation
-        # "20230621_153408": {
-        #     "t_ss": jnp.array([0.8, 2.0, 3.0, 4.0, 5.0, 6.0]),
-        #     "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        # },
-        # # staircase of bending to 180 deg
-        # "20230621_165020": {
-        #     "t_ss": jnp.array([0.8, 2.0, 3.0, 4.0, 5.0, 6.0]),
-        #     "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        # },
-        # cw staircase bending with alternating payload
-        "20230703_155911": {
-            "t_ss": jnp.array([3.3, 5.6, 9.0, 50, 51, 52, 53, 54, 55, 56]),
-            "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        },
-        # # GBN bending combined 180 deg
-        # "20230621_183620": {
-        #     "t_ss": jnp.array([1.05]),
-        #     "mpl_ss": jnp.array([0.0]),
-        # }
-    }
 
 else:
     raise ValueError("SYSTEM_ID_STEP must be 0, 1, 2, or 3.")
-
-# experiment_configs = {
-#     # staircase of elongation to 210 deg
-#     "20230621_153408": {
-#         "t_ss": jnp.array([5.0, 10.0, 16.6, 22.2, 28.6, 34.0]),
-#         "mpl_ss": jnp.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-#     },
-#     # step of elongation to 90 deg
-#     "20230621_170058": {
-#         "t_ss": jnp.array([10.0, 22.0]),
-#         "mpl_ss": jnp.array([0.0, 0.0]),
-#     },
-#     # step of elongation to 120 deg
-#     "20230621_170509": {
-#         "t_ss": jnp.array([10.0, 22.0]),
-#         "mpl_ss": jnp.array([0.0, 0.0]),
-#     },
-#     # step of elongation to 180 deg
-#     "20230621_170624": {
-#         "t_ss": jnp.array([10.0, 22.0]),
-#         "mpl_ss": jnp.array([0.0, 0.0]),
-#     },
-#     # step of elongation to 210 deg
-#     "20230621_170734": {
-#         "t_ss": jnp.array([10.0, 22.0]),
-#         "mpl_ss": jnp.array([0.0, 0.0]),
-#     },
-# }
 
 mocap_body_ids = {"base": 4, "platform": 5}
 resampling_dt = 0.01  # [s]
@@ -436,4 +375,4 @@ if __name__ == "__main__":
         raise ValueError("Unknown optimization type: ", optimization_type)
 
     print(f"Identified system params {Pi_syms} using steady-state samples:\n", Pi_est)
-    onp.savetxt("Pi_fpu_static_elongation_nlq_est.csv", Pi_est, delimiter=",")
+    onp.savetxt("Pi_epu_static_elongation_nlq_est.csv", Pi_est, delimiter=",")

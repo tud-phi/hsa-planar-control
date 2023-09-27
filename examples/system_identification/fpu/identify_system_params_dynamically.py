@@ -136,4 +136,4 @@ if __name__ == "__main__":
         Pi_est_es = Pi_est_es.at[experiment_idx, :].set(Pi_est)
 
     print("Identified system params for each experiment:\n", Pi_est_es)
-    onp.savetxt("Pi_dynamic_est_es.csv", Pi_est_es, delimiter=",")
+    onp.savetxt("Pi_fpu_dynamic_est_es.csv", Pi_est_es, delimiter=",")
