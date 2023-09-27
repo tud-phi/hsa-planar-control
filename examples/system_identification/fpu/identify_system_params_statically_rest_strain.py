@@ -100,7 +100,7 @@ if __name__ == "__main__":
     ):
         print("Processing experiment: ", experiment_id)
         experiment_data_path = (
-            Path(__file__).parent.parent.parent
+            Path(__file__).parent.parent.parent.parent
             / "data"
             / "system_identification"
             / experiment_id

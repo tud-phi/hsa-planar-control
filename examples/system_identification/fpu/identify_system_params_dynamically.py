@@ -116,7 +116,7 @@ if __name__ == "__main__":
     Pi_est_es = jnp.zeros((len(experiment_ids), len(Pi_syms)))
     for experiment_idx, experiment_id in enumerate(experiment_ids):
         experiment_data_path = (
-            Path(__file__).parent.parent.parent
+            Path(__file__).parent.parent.parent.parent
             / "data"
             / "system_identification"
             / experiment_id
