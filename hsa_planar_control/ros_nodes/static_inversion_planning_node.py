@@ -9,7 +9,7 @@ jax_config.update("jax_platform_name", "cpu")  # use CPU
 from jax import Array, jit
 from jax import numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL, PARAMS_EPU_CONTROL
 from jsrm.systems import planar_hsa
 import rclpy
 from rclpy.node import Node
@@ -54,7 +54,14 @@ class StaticInversionPlanningNode(Node):
             sys_helpers,
         ) = planar_hsa.factory(sym_exp_filepath)
 
-        self.params = PARAMS_FPU_CONTROL.copy()
+        self.declare_parameter("hsa_material", "fpu")
+        hsa_material = self.get_parameter("hsa_material").value
+        if hsa_material == "fpu":
+            self.params = PARAMS_FPU_CONTROL.copy()
+        elif hsa_material == "epu":
+            self.params = PARAMS_EPU_CONTROL.copy()
+        else:
+            raise ValueError(f"Unknown HSA material: {hsa_material}")
 
         # parameter for specifying a different axial rest strain
         self.declare_parameter("sigma_a_eq", self.params["sigma_a_eq"].mean().item())

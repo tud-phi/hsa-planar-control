@@ -14,8 +14,9 @@ now = datetime.now()
 
 LOG_LEVEL = "warn"
 
-calibration_params = {
-    "payload_mass": 0.0,
+ros_params = {
+    "hsa_material": "fpu",
+    "payload_mass": 0.0,  # kg
 }
 
 def generate_launch_description():
@@ -52,12 +53,13 @@ def generate_launch_description():
             executable="planar_cs_ik_node",
             name="inverse_kinematics",
             arguments=["--ros-args", "--log-level", LOG_LEVEL],
+            parameters={ros_params},
         ),
         Node(
             package="hsa_planar_control",
             executable="calibration_node",
             name="calibration",
-            parameters=[calibration_params],
+            parameters=[ros_params],
         ),
     ]
 

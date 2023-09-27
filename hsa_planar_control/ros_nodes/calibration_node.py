@@ -8,7 +8,7 @@ jax_config.update("jax_platform_name", "cpu")  # use CPU
 from jax import Array, jit
 from jax import numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_FPU_SYSTEM_ID
+from jsrm.parameters.hsa_params import PARAMS_FPU_SYSTEM_ID, PARAMS_EPU_SYSTEM_ID
 from jsrm.systems import planar_hsa
 import rclpy
 from rclpy.node import Node
@@ -54,7 +54,15 @@ class CalibrationNode(Node):
             sys_helpers,
         ) = planar_hsa.factory(sym_exp_filepath)
 
-        self.known_params = PARAMS_FPU_SYSTEM_ID
+        self.declare_parameter("hsa_material", "fpu")
+        hsa_material = self.get_parameter("hsa_material").value
+        if hsa_material == "fpu":
+            self.known_params = PARAMS_FPU_SYSTEM_ID.copy()
+        elif hsa_material == "epu":
+            self.known_params = PARAMS_EPU_SYSTEM_ID.copy()
+        else:
+            raise ValueError(f"Unknown HSA material: {hsa_material}")
+        
         # rest strains used for inverse kinematics
         self.xi_eq_ik = sys_helpers["rest_strains_fn"](self.known_params)
 

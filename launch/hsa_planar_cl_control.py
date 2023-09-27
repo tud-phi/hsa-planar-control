@@ -35,27 +35,26 @@ LOG_LEVEL = "warn"
 - P_satI_D_collocated_form_plus_steady_state_actuation
 - P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation
 """
-controller_type = "basic_operational_space_pid"
-phi_max = 200 / 180 * np.pi
+controller_type = "P_satI_D_collocated_form_plus_steady_state_actuation"
+hsa_material = "fpu"
 sigma_a_eq = 1.0
+phi_max = 200 / 180 * np.pi
 payload_mass = 0.0  # kg
 
-inverse_kinematics_params = {
+common_params = {
+    "hsa_material": hsa_material,
     "sigma_a_eq": sigma_a_eq,
-}
-planning_params = {
     "phi_max": phi_max,
-    "sigma_a_eq": sigma_a_eq,
-    "payload_mass": payload_mass,
+    "payload_mass": payload_mass
+}
+inverse_kinematics_params = common_params.copy()
+planning_params = common_params |{
     "setpoint_mode": "manual",  # "manual", "image"
     "image_type": "star",
 }
 
 control_params = {
     "controller_type": controller_type,
-    "phi_max": phi_max,
-    "sigma_a_eq": sigma_a_eq,
-    "payload_mass": payload_mass
 }
 if controller_type == "basic_operational_space_pid":
     control_params.update({
