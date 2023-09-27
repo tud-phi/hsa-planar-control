@@ -46,7 +46,7 @@ known_params = {
     # outside radius of each rod [m]. The rows correspond to the segments.
     "rout": 25.4e-3 / 2 * ones_rod,  # this is for FPU rods
     # inside radius of each rod [m]. The rows correspond to the segments.
-    "rin": (25.4e-3 / 2 - 5.0e-3) * ones_rod,  # this is for EPU rods
+    "rin": (25.4e-3 / 2 - 4.76e-3) * ones_rod,  # this is for EPU rods
     # handedness of each rod. The rows correspond to the segments.
     "h": jnp.array([[1.0, -1.0, 1.0, -1.0]]),
     # offset [m] of each rod from the centerline. The rows correspond to the segments.
@@ -89,35 +89,34 @@ known_params = {
 if SYSTEM_ID_STEP == 0:
     params_to_be_idd_names = ["sigma_a_eq", "S_a_hat"]
     # identified parameters from step 0:
-    # sigma_a_eq = 0.83491072
-    # S_a_hat = 0.75125513
+    # sigma_a_eq = 0.9067158
+    # S_a_hat = 0.73610293
 
     # set dummy parameters for C_varepsilon and C_S_a
     known_params["C_varepsilon"] = 0.0 * ones_rod
     known_params["C_S_a"] = 0.0 * ones_rod
 
     experiment_configs = {
-        # Staircase elongation with changing mass up to 270 deg
+        # Staircase elongation with changing mass and actuation up to 210 deg
         # At each step, first 0g payload mass, then 200g, then 400g, then 400g g, then 0g
-        # something is wrong here with the y-coordinates
-        "20230927_151828": {
+        "20230927_150929": {
             "t_ss": jnp.array(
                 [
                     1.6,
-                    1.8,
-                    2.26,
-                    10.2,
-                    11.2,
+                    2.8,
+                    5.0,
+                    11.3,
                     12.2,
+                    13.2,
                     19.8,
                     20.8,
-                    22.8,
-                    31.6,
-                    34.6,
-                    35.6,
-                    52.3,
-                    56.3,
-                    60.3,
+                    21.3,
+                    27.3,
+                    28.6,
+                    29.5,
+                    43.4,
+                    50.3,
+                    55.3,
                 ]
             ),
             "mpl_ss": jnp.array(
@@ -140,37 +139,86 @@ if SYSTEM_ID_STEP == 0:
                 ]
             ),
         },
+        # Staircase elongation with changing mass and actuation up to 270 deg
+        # At each step, first 0g payload mass, then 200g, then 400g, then 400g g, then 0g
+        # something is wrong here with the y-coordinates
+        # "20230927_151828": {
+        #     "t_ss": jnp.array(
+        #         [
+        #             1.6,
+        #             1.8,
+        #             2.26,
+        #             10.2,
+        #             11.2,
+        #             12.2,
+        #             19.8,
+        #             20.8,
+        #             22.8,
+        #             31.6,
+        #             34.6,
+        #             35.6,
+        #             52.3,
+        #             56.3,
+        #             60.3,
+        #         ]
+        #     ),
+        #     "mpl_ss": jnp.array(
+        #         [
+        #             0.0,
+        #             0.0,
+        #             0.0,
+        #             0.2,
+        #             0.2,
+        #             0.2,
+        #             0.4,
+        #             0.4,
+        #             0.4,
+        #             0.2,
+        #             0.2,
+        #             0.2,
+        #             0.0,
+        #             0.0,
+        #             0.0,
+        #         ]
+        #     ),
+        # },
     }
 elif SYSTEM_ID_STEP == 1:
     optimization_type = "llq"
     params_to_be_idd_names = ["C_varepsilon"]
     # identified parameters from step 1:
-    # C_varepsilon = 0.00984819
+    # C_varepsilon = 0.01211987
 
     # previously identified parameters in step 0
-    known_params["sigma_a_eq"] = 1.06327873 * ones_rod
-    known_params["S_a_hat"] = 5.66472469 * ones_rod
+    known_params["sigma_a_eq"] = 0.9067158 * ones_rod
+    known_params["S_a_hat"] = 0.73610293 * ones_rod
     known_params["C_S_a"] = 0.0 * ones_rod  # we assume that change of S_a is negligible without payload
 
     experiment_configs = {
         # Staircase elongation with changing mass up to 210 deg
         # only regard samples with 0g payload mass
-        "20230703_115411": {
+        "20230927_150929": {
             "t_ss": jnp.array(
                 [
-                    72.2,
-                    126.7,
-                    140.6,
-                    197.57,
-                    222,
-                    281.6,
-                    296,
-                    349.8,
-                    415,
+                    1.6,  # 0th step
+                    68.0,
+                    74.7,  # 1st step
+                    138.0,
+                    145.0,  # 2nd step
+                    207.1,
+                    211.4,  # 3rd step
+                    273.6,
+                    284.8,  # 4th step
+                    344.9,
+                    351.4,  # 5th step
+                    415.0,
                 ]
             ),
             "mpl_ss": jnp.array(
                 [
+                    0.0,
+                    0.0,
+                    0.0,
                     0.0,
                     0.0,
                     0.0,
@@ -188,70 +236,82 @@ elif SYSTEM_ID_STEP == 2:
     optimization_type = "llq"
     params_to_be_idd_names = ["C_S_a"]
     # identified parameters from step 2:
-    # C_S_a = 0.01508165
+    # C_S_a = -0.01769041
 
-    # previously identified parameters in step 0
-    known_params["sigma_a_eq"] = 1.06327873 * ones_rod
-    known_params["S_a_hat"] = 5.66472469 * ones_rod
-    known_params["C_varepsilon"] = 0.00984819 * ones_rod
+    # previously identified parameters in steps 0 and 1
+    known_params["sigma_a_eq"] = 0.9067158 * ones_rod
+    known_params["S_a_hat"] = 0.73610293 * ones_rod
+    known_params["C_varepsilon"] = 0.01211987 * ones_rod
 
     experiment_configs = {
         # Staircase elongation with changing mass up to 210 deg
-        # At each step, first 0g payload mass, then 437g, then 637g, then 437 g, then 0g
-        "20230703_115411": {
+        # At each step, first 0g payload mass, then 200g, then 400g, then 200 g, then 0g
+        "20230927_150929": {
             "t_ss": jnp.array(
                 [
-                    72.2,
-                    83.7,
-                    95.8,
-                    105.13,
-                    126.7,
-                    140.6,
-                    159.5,
-                    168.16,
-                    176.09,
-                    197.57,
-                    222,
-                    232,
-                    241,
-                    272.3,
-                    281.6,
-                    296,
-                    307.8,
-                    316.5,
-                    346.3,
-                    349.8,
-                    361.6,
-                    377.6,
-                    387.52,
-                    415,
+                    5.0,  # 0th step
+                    13.2,
+                    21.3,
+                    29.5,
+                    55.3,
+                    76.1,  # 1st step
+                    92.0,
+                    104.4,
+                    119.3,
+                    138.3,
+                    145.1,  # 2nd step
+                    160.2,
+                    177.5,
+                    190.8,
+                    207.5,
+                    211.6,  # 3rd step
+                    227.0,
+                    239.4,
+                    248.8,
+                    276.8,
+                    286.6,  # 4th step
+                    298.4,
+                    311.8,
+                    323.3,
+                    346.2,
+                    353.5,  # 5th step
+                    370.0,
+                    382.2,
+                    390.8,
+                    414.5,
                 ]
             ),
             "mpl_ss": jnp.array(
                 [
                     0.0,
-                    0.437,
-                    0.637,
-                    0.437,
+                    0.2,
+                    0.4,
+                    0.2,
                     0.0,
                     0.0,
-                    0.437,
-                    0.637,
-                    0.437,
-                    0.0,
-                    0.437,
-                    0.637,
-                    0.437,
+                    0.2,
+                    0.4,
+                    0.2,
                     0.0,
                     0.0,
-                    0.437,
-                    0.637,
-                    0.437,
+                    0.2,
+                    0.4,
+                    0.2,
                     0.0,
                     0.0,
-                    0.437,
-                    0.637,
-                    0.437,
+                    0.2,
+                    0.4,
+                    0.2,
+                    0.0,
+                    0.0,
+                    0.2,
+                    0.4,
+                    0.2,
+                    0.0,
+                    0.0,
+                    0.2,
+                    0.4,
+                    0.2,
                     0.0,
                 ]
             ),
@@ -259,9 +319,9 @@ elif SYSTEM_ID_STEP == 2:
     }
 
 else:
-    raise ValueError("SYSTEM_ID_STEP must be 0, 1, 2, or 3.")
+    raise ValueError("SYSTEM_ID_STEP must be 0, 1, or 2.")
 
-mocap_body_ids = {"base": 4, "platform": 5}
+mocap_body_ids = {"base": 3, "platform": 4}
 resampling_dt = 0.01  # [s]
 
 if __name__ == "__main__":
