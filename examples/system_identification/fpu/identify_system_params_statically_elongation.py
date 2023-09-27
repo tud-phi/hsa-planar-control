@@ -80,7 +80,8 @@ known_params = {
     "C_S_b": 7.92251400952920015e-7 * ones_rod,
     # Scaling of shear stiffness with twist strain [Nm/rad]
     "C_S_sh": -3.85580745914e-3 * ones_rod,
-    "lpl": 10e-3,  # length of payload [m]
+    # center of origin of the payload relative to end-effector [m]
+    "CoGpl": jnp.array([0.0, -12e-3 - 5e-3]),  # subtract 12 mm for the thickness of the platform
 }
 
 if SYSTEM_ID_STEP == 0:

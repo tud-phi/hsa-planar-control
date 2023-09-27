@@ -72,6 +72,10 @@ known_params = {
     # Scaling of axial stiffness with twist strain [Nm/rad]
     "C_S_a": 0.01508165 * ones_rod,
     "lpl": 25e-3,  # length of payload [m] (100g weights)
+    # center of origin of the payload relative to end-effector [m]
+    # subtract 12 mm for the thickness of the platform
+    # the 100g weights have a length of 25mm
+    "CoGpl": jnp.array([0.0, -12e-3 - 12.5e-3]),
 }
 
 experiment_configs = {
