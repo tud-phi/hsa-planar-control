@@ -87,39 +87,37 @@ known_params = {
 }
 
 if SYSTEM_ID_STEP == 0:
-    optimization_type = "llq"
     params_to_be_idd_names = ["sigma_a_eq", "S_a_hat"]
-    Pi_init = jnp.array([9.98051512e-01, 0.820156460844])
     # identified parameters from step 0:
-    # sigma_a_eq = 1.063278732
-    # S_a_hat = 5.66472469
+    # sigma_a_eq = 0.83491072
+    # S_a_hat = 0.75125513
 
     # set dummy parameters for C_varepsilon and C_S_a
-    # known_params["sigma_a_eq"] = 1.0 * 0.0 * ones_rod
     known_params["C_varepsilon"] = 0.0 * ones_rod
     known_params["C_S_a"] = 0.0 * ones_rod
 
     experiment_configs = {
-        # Staircase elongation with changing mass up to 210 deg
-        # At each step, first 0g payload mass, then 437g, then 637g, then 437 g, then 0g
-        "20230703_115411": {
+        # Staircase elongation with changing mass up to 270 deg
+        # At each step, first 0g payload mass, then 200g, then 400g, then 400g g, then 0g
+        # something is wrong here with the y-coordinates
+        "20230927_151828": {
             "t_ss": jnp.array(
                 [
                     1.6,
                     1.8,
                     2.26,
-                    11.76,
-                    14.4,
-                    16.0,
-                    22.4,
-                    23.6,
-                    24.8,
-                    28.6,
-                    29.4,
-                    30.4,
-                    37.2,
-                    53.12,
-                    68.4,
+                    10.2,
+                    11.2,
+                    12.2,
+                    19.8,
+                    20.8,
+                    22.8,
+                    31.6,
+                    34.6,
+                    35.6,
+                    52.3,
+                    56.3,
+                    60.3,
                 ]
             ),
             "mpl_ss": jnp.array(
@@ -127,15 +125,15 @@ if SYSTEM_ID_STEP == 0:
                     0.0,
                     0.0,
                     0.0,
-                    0.437,
-                    0.437,
-                    0.437,
-                    0.637,
-                    0.637,
-                    0.637,
-                    0.437,
-                    0.437,
-                    0.437,
+                    0.2,
+                    0.2,
+                    0.2,
+                    0.4,
+                    0.4,
+                    0.4,
+                    0.2,
+                    0.2,
+                    0.2,
                     0.0,
                     0.0,
                     0.0,
@@ -357,22 +355,12 @@ if __name__ == "__main__":
                 for k, v in data_ts.items()
             }
 
-    if optimization_type == "llq":
-        print("Running linear least-squares optimization...")
-        Pi_est = optimize_with_closed_form_linear_lq(
-            cal_a_fn,
-            cal_b_fn,
-            data_ts,
-        )
-    elif optimization_type == "nlq":
-        print("Running nonlinear least-squares optimization...")
-        Pi_est = optimize_with_nonlinear_lq(
-            eom_residual_fn,
-            data_ts,
-            Pi_init=Pi_init,
-        )
-    else:
-        raise ValueError("Unknown optimization type: ", optimization_type)
+    print("Running linear least-squares optimization...")
+    Pi_est = optimize_with_closed_form_linear_lq(
+        cal_a_fn,
+        cal_b_fn,
+        data_ts,
+    )
 
     print(f"Identified system params {Pi_syms} using steady-state samples:\n", Pi_est)
     onp.savetxt("Pi_epu_static_elongation_nlq_est.csv", Pi_est, delimiter=",")
