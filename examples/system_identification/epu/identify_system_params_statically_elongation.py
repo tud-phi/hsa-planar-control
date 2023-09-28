@@ -91,7 +91,7 @@ known_params = {
 if SYSTEM_ID_STEP == 0:
     params_to_be_idd_names = ["sigma_a_eq", "S_a_hat"]
     # identified parameters from step 0:
-    # sigma_a_eq = 0.9067158
+    # sigma_a_eq = 0.81200092
     # S_a_hat = 0.73610293
 
     # set dummy parameters for C_varepsilon and C_S_a
@@ -139,7 +139,7 @@ elif SYSTEM_ID_STEP == 1:
     optimization_type = "llq"
     params_to_be_idd_names = ["C_varepsilon"]
     # identified parameters from step 1:
-    # C_varepsilon = 0.01211987
+    # C_varepsilon = 0.0079049
 
     # previously identified parameters in step 0
     known_params["S_a_hat"] = 0.73610293 * ones_rod
@@ -180,11 +180,11 @@ elif SYSTEM_ID_STEP == 2:
     optimization_type = "llq"
     params_to_be_idd_names = ["C_S_a"]
     # identified parameters from step 2:
-    # C_S_a = -0.01769041
+    # C_S_a = 0.00981059
 
     # previously identified parameters in steps 0 and 1
     known_params["S_a_hat"] = 0.73610293 * ones_rod
-    known_params["C_varepsilon"] = 0.01211987 * ones_rod
+    known_params["C_varepsilon"] = 0.0079049 * ones_rod
 
     # Staircase elongation with changing mass up to 210 deg
     # At each step, first 0g payload mass, then 200g, then 400g, then 200 g, then 0g
