@@ -15,6 +15,10 @@ def identify_rest_strain_for_system_id_dataset(
 ) -> Array:
     """
     Identify the axial rest strain for a system identification dataset.
+    We take two key assumptions:
+    1. The robot is at rest (i.e. steady-state properties) for the first few time steps of the experiment.
+    2. The robot is in its rest state (i.e. no actuation) for the first few time steps of the experiment.
+    This still allows us to take into account the gravitational and elastic forces acting on the robot.
     Args:
         sym_exp_filepath: path to the file with saved symbolic expressions
         sys_helpers: dictionary with helper entries for the HSA system

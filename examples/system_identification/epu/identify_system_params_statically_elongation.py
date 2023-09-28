@@ -11,6 +11,7 @@ import numpy as onp
 matplotlib.use("WebAgg")
 from pathlib import Path
 
+from hsa_planar_control.system_identification.analysis import analyze_neutral_rod_length_model
 from hsa_planar_control.system_identification.optimization.linear_lq import (
     linear_lq_optim_problem_factory,
     optimize_with_closed_form_linear_lq,
@@ -341,3 +342,8 @@ if __name__ == "__main__":
 
     print(f"Identified system params {Pi_syms} using steady-state samples:\n", Pi_est)
     onp.savetxt("Pi_epu_static_elongation_nlq_est.csv", Pi_est, delimiter=",")
+
+    if SYSTEM_ID_STEP == 1:
+        params = known_params.copy()
+        params["C_varepsilon"] = Pi_est[0]
+        analyze_neutral_rod_length_model(params, data_ts)
