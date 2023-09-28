@@ -29,13 +29,15 @@ sym_exp_filepath = (
 )
 
 # experiment id
-# experiment_id = "20230621_153408"  # staircase elongation
-experiment_id = "20230621_165020"  # staircase bending ccw
-# experiment_id = "20230621_170734"  # step elongation 210 deg
-# experiment_id = "20230621_171345"  # step bending cw 180 deg
-# experiment_id = "20230621_182829"  # GBN elongation 180 deg
-# experiment_id = "20230621_183620"  # GBN bending combined 180 deg
-hsa_material = "fpu"
+# experiment_id = "20230621_153408"  # FPU staircase elongation
+# experiment_id = "20230621_165020"  # FPU staircase bending ccw
+# experiment_id = "20230621_170734"  # FPU step elongation 210 deg
+# experiment_id = "20230621_171345"  # FPU step bending cw 180 deg
+# experiment_id = "20230621_182829"  # FPU GBN elongation 180 deg
+# experiment_id = "20230621_183620"  # FPU GBN bending combined 180 deg
+# experiment_id = "20230927_143724"  # EPU staircase bending cw 210 deg
+experiment_id = "20230927_144354"  # EPU staircase bending ccw 210 deg
+hsa_material = "epu"
 
 # set parameters
 if hsa_material == "fpu":
