@@ -155,6 +155,7 @@ def optimize_with_closed_form_linear_lq(
     cal_a_fn: Callable,
     cal_b_fn: Callable,
     data_ts: Dict[str, Array],
+    verbose: bool = True,
 ) -> Array:
     """
     Optimize the parameters of the robot model using the closed-form least squares solution.
@@ -175,15 +176,17 @@ def optimize_with_closed_form_linear_lq(
     ranks_cal_a = vmap(
         lambda _cal_a: jnp.linalg.matrix_rank(_cal_a), in_axes=0, out_axes=0
     )(cal_A)
-    print(
-        f"Checking the rank of the cal_a matrices, each of shape {cal_A.shape[1:]}: "
-        f"min = {ranks_cal_a.min()}, max = {ranks_cal_a.max()}, mean = {ranks_cal_a.mean()}"
-    )
+    if verbose:
+        print(
+            f"Checking the rank of the cal_a matrices, each of shape {cal_A.shape[1:]}: "
+            f"min = {ranks_cal_a.min()}, max = {ranks_cal_a.max()}, mean = {ranks_cal_a.mean()}"
+        )
 
     cal_A = cal_A.reshape(-1, cal_A.shape[-1])
-    print(
-        f"The entire cal_A matrix of shape {cal_A.shape} has rank: {jnp.linalg.matrix_rank(cal_A)}"
-    )
+    if verbose:
+        print(
+            f"The entire cal_A matrix of shape {cal_A.shape} has rank: {jnp.linalg.matrix_rank(cal_A)}"
+        )
 
     cal_B = vmap(
         cal_b_fn,
@@ -201,6 +204,7 @@ def optimize_with_closed_form_linear_lq(
 
     cal_A_pinv = jnp.linalg.pinv(cal_A)
     Pi_est = cal_A_pinv @ cal_B  # Least-squares estimate of the parameters
-    print("Pi_est", Pi_est)
+    if verbose:
+        print("Pi_est", Pi_est)
 
     return Pi_est

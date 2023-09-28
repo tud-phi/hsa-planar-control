@@ -31,6 +31,7 @@ def identify_rest_strain_for_system_id_dataset(
         params,
         params_to_be_idd_names=["sigma_a_eq"],
         mode="static",
+        verbose=False,
     )
 
     # construct the data_ts dictionary with the first num_time_steps time steps
