@@ -16,6 +16,7 @@ from hsa_planar_control.system_identification.optimization.linear_lq import (
     optimize_with_closed_form_linear_lq,
 )
 from hsa_planar_control.system_identification.preprocessing import preprocess_data
+from hsa_planar_control.system_identification.rest_strain import identify_rest_strain_for_system_id_dataset
 
 
 num_segments = 1
@@ -72,6 +73,8 @@ known_params = {
     "S_sh_hat": 0.0 * ones_rod,
     # Elastic coupling between bending and shear [Nm/rad]
     "S_b_sh": 0.0 * ones_rod,
+    # Scaling of axial stiffness with twist strain [Nm/rad]
+    "C_S_a": 0.0 * ones_rod,
     # Scaling of bending stiffness with twist strain [Nm^3/rad]
     "C_S_b": 0.0 * ones_rod,
     # Scaling of shear stiffness with twist strain [Nm/rad]
@@ -92,93 +95,43 @@ if SYSTEM_ID_STEP == 0:
     known_params["C_varepsilon"] = 0.0 * ones_rod
     known_params["C_S_a"] = 0.0 * ones_rod
 
-    experiment_configs = {
-        # Staircase elongation with changing mass and actuation up to 210 deg
-        # At each step, first 0g payload mass, then 200g, then 400g, then 400g g, then 0g
-        "20230927_150929": {
-            "t_ss": jnp.array(
-                [
-                    1.6,
-                    2.8,
-                    5.0,
-                    11.3,
-                    12.2,
-                    13.2,
-                    19.8,
-                    20.8,
-                    21.3,
-                    27.3,
-                    28.6,
-                    29.5,
-                    43.4,
-                    50.3,
-                    55.3,
-                ]
-            ),
-            "mpl_ss": jnp.array(
-                [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.2,
-                    0.2,
-                    0.2,
-                    0.4,
-                    0.4,
-                    0.4,
-                    0.2,
-                    0.2,
-                    0.2,
-                    0.0,
-                    0.0,
-                    0.0,
-                ]
-            ),
-        },
-        # Staircase elongation with changing mass and actuation up to 270 deg
-        # At each step, first 0g payload mass, then 200g, then 400g, then 400g g, then 0g
-        # something is wrong here with the y-coordinates
-        # "20230927_151828": {
-        #     "t_ss": jnp.array(
-        #         [
-        #             1.6,
-        #             1.8,
-        #             2.26,
-        #             10.2,
-        #             11.2,
-        #             12.2,
-        #             19.8,
-        #             20.8,
-        #             22.8,
-        #             31.6,
-        #             34.6,
-        #             35.6,
-        #             52.3,
-        #             56.3,
-        #             60.3,
-        #         ]
-        #     ),
-        #     "mpl_ss": jnp.array(
-        #         [
-        #             0.0,
-        #             0.0,
-        #             0.0,
-        #             0.2,
-        #             0.2,
-        #             0.2,
-        #             0.4,
-        #             0.4,
-        #             0.4,
-        #             0.2,
-        #             0.2,
-        #             0.2,
-        #             0.0,
-        #             0.0,
-        #             0.0,
-        #         ]
-        #     ),
-        # },
-    }
+    # Staircase elongation with changing mass and actuation up to 210 deg
+    # At each step, first 0g payload mass, then 200g, then 400g, then 400g g, then 0g
+    experiment_id = "20230927_150929"
+    t_ss = jnp.array([
+        1.6,
+        2.8,
+        5.0,
+        11.3,
+        12.2,
+        13.2,
+        19.8,
+        20.8,
+        21.3,
+        27.3,
+        28.6,
+        29.5,
+        43.4,
+        50.3,
+        55.3,
+    ])
+    mpl_ss = jnp.array([
+        0.0,
+        0.0,
+        0.0,
+        0.2,
+        0.2,
+        0.2,
+        0.4,
+        0.4,
+        0.4,
+        0.2,
+        0.2,
+        0.2,
+        0.0,
+        0.0,
+        0.0,
+    ])
 elif SYSTEM_ID_STEP == 1:
     optimization_type = "llq"
     params_to_be_idd_names = ["C_varepsilon"]
@@ -186,48 +139,40 @@ elif SYSTEM_ID_STEP == 1:
     # C_varepsilon = 0.01211987
 
     # previously identified parameters in step 0
-    known_params["sigma_a_eq"] = 0.9067158 * ones_rod
     known_params["S_a_hat"] = 0.73610293 * ones_rod
     known_params["C_S_a"] = 0.0 * ones_rod  # we assume that change of S_a is negligible without payload
 
-    experiment_configs = {
-        # Staircase elongation with changing mass up to 210 deg
-        # only regard samples with 0g payload mass
-        "20230927_150929": {
-            "t_ss": jnp.array(
-                [
-                    1.6,  # 0th step
-                    68.0,
-                    74.7,  # 1st step
-                    138.0,
-                    145.0,  # 2nd step
-                    207.1,
-                    211.4,  # 3rd step
-                    273.6,
-                    284.8,  # 4th step
-                    344.9,
-                    351.4,  # 5th step
-                    415.0,
-                ]
-            ),
-            "mpl_ss": jnp.array(
-                [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0,
-                ]
-            ),
-        },
-    }
+    # Staircase elongation with changing mass up to 210 deg
+    # only regard samples with 0g payload mass
+    experiment_id = "20230927_150929"
+    t_ss = jnp.array([
+        1.6,  # 0th step
+        68.0,
+        74.7,  # 1st step
+        138.0,
+        145.0,  # 2nd step
+        207.1,
+        211.4,  # 3rd step
+        273.6,
+        284.8,  # 4th step
+        344.9,
+        351.4,  # 5th step
+        415.0,
+    ])
+    mpl_ss = jnp.array([
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ])
 elif SYSTEM_ID_STEP == 2:
     optimization_type = "llq"
     params_to_be_idd_names = ["C_S_a"]
@@ -235,84 +180,76 @@ elif SYSTEM_ID_STEP == 2:
     # C_S_a = -0.01769041
 
     # previously identified parameters in steps 0 and 1
-    known_params["sigma_a_eq"] = 0.9067158 * ones_rod
     known_params["S_a_hat"] = 0.73610293 * ones_rod
     known_params["C_varepsilon"] = 0.01211987 * ones_rod
 
-    experiment_configs = {
-        # Staircase elongation with changing mass up to 210 deg
-        # At each step, first 0g payload mass, then 200g, then 400g, then 200 g, then 0g
-        "20230927_150929": {
-            "t_ss": jnp.array(
-                [
-                    5.0,  # 0th step
-                    13.2,
-                    21.3,
-                    29.5,
-                    55.3,
-                    76.1,  # 1st step
-                    92.0,
-                    104.4,
-                    119.3,
-                    138.3,
-                    145.1,  # 2nd step
-                    160.2,
-                    177.5,
-                    190.8,
-                    207.5,
-                    211.6,  # 3rd step
-                    227.0,
-                    239.4,
-                    248.8,
-                    276.8,
-                    286.6,  # 4th step
-                    298.4,
-                    311.8,
-                    323.3,
-                    346.2,
-                    353.5,  # 5th step
-                    370.0,
-                    382.2,
-                    390.8,
-                    414.5,
-                ]
-            ),
-            "mpl_ss": jnp.array(
-                [
-                    0.0,
-                    0.2,
-                    0.4,
-                    0.2,
-                    0.0,
-                    0.0,
-                    0.2,
-                    0.4,
-                    0.2,
-                    0.0,
-                    0.0,
-                    0.2,
-                    0.4,
-                    0.2,
-                    0.0,
-                    0.0,
-                    0.2,
-                    0.4,
-                    0.2,
-                    0.0,
-                    0.0,
-                    0.2,
-                    0.4,
-                    0.2,
-                    0.0,
-                    0.0,
-                    0.2,
-                    0.4,
-                    0.2,
-                    0.0,
-                ]
-            ),
-        },
-    }
+    # Staircase elongation with changing mass up to 210 deg
+    # At each step, first 0g payload mass, then 200g, then 400g, then 200 g, then 0g
+    experiment_id = "20230927_150929"
+    t_ss = jnp.array([
+        5.0,  # 0th step
+        13.2,
+        21.3,
+        29.5,
+        55.3,
+        76.1,  # 1st step
+        92.0,
+        104.4,
+        119.3,
+        138.3,
+        145.1,  # 2nd step
+        160.2,
+        177.5,
+        190.8,
+        207.5,
+        211.6,  # 3rd step
+        227.0,
+        239.4,
+        248.8,
+        276.8,
+        286.6,  # 4th step
+        298.4,
+        311.8,
+        323.3,
+        346.2,
+        353.5,  # 5th step
+        370.0,
+        382.2,
+        390.8,
+        414.5,
+    ])
+    mpl_ss = jnp.array([
+        0.0,
+        0.2,
+        0.4,
+        0.2,
+        0.0,
+        0.0,
+        0.2,
+        0.4,
+        0.2,
+        0.0,
+        0.0,
+        0.2,
+        0.4,
+        0.2,
+        0.0,
+        0.0,
+        0.2,
+        0.4,
+        0.2,
+        0.0,
+        0.0,
+        0.2,
+        0.4,
+        0.2,
+        0.0,
+        0.0,
+        0.2,
+        0.4,
+        0.2,
+        0.0,
+    ])
 
 else:
     raise ValueError("SYSTEM_ID_STEP must be 0, 1, or 2.")
@@ -330,6 +267,65 @@ if __name__ == "__main__":
         sys_helpers,
     ) = planar_hsa.factory(sym_exp_filepath)
 
+    print("Processing experiment: ", experiment_id)
+    experiment_data_path = (
+        Path(__file__).parent.parent.parent.parent
+        / "data"
+        / "system_identification"
+        / experiment_id
+    )
+    experiment_data_ts = preprocess_data(
+        inverse_kinematics_end_effector_fn,
+        experiment_data_path,
+        known_params,
+        mocap_body_ids,
+        resampling_dt=resampling_dt,
+        filter=True,
+        derivative_method="savgol_filter",
+        plotting=PLOT_DATASET,
+    )
+
+    # identify axial rest strain
+    if SYSTEM_ID_STEP != 0:
+        known_params["sigma_a_eq"] = identify_rest_strain_for_system_id_dataset(
+            sym_exp_filepath,
+            sys_helpers,
+            known_params,
+            experiment_data_ts,
+        )
+
+    t_ts = experiment_data_ts[
+        "t_ts"
+    ]  # array of timestamps of entire trajectory [s]
+
+    # for each entry of t_ss, find the closest entry in t_ts
+    t_ss = jnp.array([t_ts[jnp.argmin(jnp.abs(t_ts - t_ss_i))] for t_ss_i in t_ss])
+    print("Selected the following timestamps for steady-state data: ", t_ss)
+    # select all values of t_ts with entries in t_ss
+    t_ts_selector = jnp.isin(t_ts, t_ss)
+
+    data_ts = {
+        "t_ts": t_ss,
+        "xi_ts": experiment_data_ts["xi_ts"][t_ts_selector, ...],
+        "xi_d_ts": experiment_data_ts["xi_d_ts"][t_ts_selector, ...],
+        "xi_dd_ts": experiment_data_ts["xi_dd_ts"][t_ts_selector, ...],
+        "phi_ts": experiment_data_ts["phi_ts"][t_ts_selector, ...],
+        "mpl_ts": mpl_ss,
+    }
+
+    # manually set bending and shear strains to zero
+    data_ts["xi_ts"] = (
+        data_ts["xi_ts"]
+        .at[:, 0]
+        .set(1e-4 * jnp.ones((len(t_ss),)))
+    )  # almost zero to avoid singularities
+    data_ts["xi_ts"] = (
+        data_ts["xi_ts"]
+        .at[:, 1]
+        .set(jnp.zeros((len(t_ss),)))
+    )
+
+    print("Running linear least-squares optimization...")
     Pi_syms, cal_a_fn, cal_b_fn = linear_lq_optim_problem_factory(
         sym_exp_filepath,
         sys_helpers,
@@ -337,72 +333,6 @@ if __name__ == "__main__":
         params_to_be_idd_names,
         mode="static",
     )
-
-    data_ts = None
-    for experiment_idx, (experiment_id, experiment_config) in enumerate(
-        experiment_configs.items()
-    ):
-        print("Processing experiment: ", experiment_id)
-        experiment_data_path = (
-            Path(__file__).parent.parent.parent.parent
-            / "data"
-            / "system_identification"
-            / experiment_id
-        )
-        experiment_data_ts = preprocess_data(
-            inverse_kinematics_end_effector_fn,
-            experiment_data_path,
-            known_params,
-            mocap_body_ids,
-            resampling_dt=resampling_dt,
-            filter=True,
-            derivative_method="savgol_filter",
-            plotting=PLOT_DATASET,
-        )
-
-        t_ts = experiment_data_ts[
-            "t_ts"
-        ]  # array of timestamps of entire trajectory [s]
-        t_ss = experiment_config[
-            "t_ss"
-        ]  # array of timestamps of steady-state data we want to select [s]
-
-        # for each entry of t_ss, find the closest entry in t_ts
-        t_ss = jnp.array([t_ts[jnp.argmin(jnp.abs(t_ts - t_ss_i))] for t_ss_i in t_ss])
-        print("Selected the following timestamps for steady-state data: ", t_ss)
-        # select all values of t_ts with entries in t_ss
-        t_ts_selector = jnp.isin(t_ts, t_ss)
-
-        experiment_selected_ss_data_ts = {
-            "t_ts": t_ss,
-            "xi_ts": experiment_data_ts["xi_ts"][t_ts_selector, ...],
-            "xi_d_ts": experiment_data_ts["xi_d_ts"][t_ts_selector, ...],
-            "xi_dd_ts": experiment_data_ts["xi_dd_ts"][t_ts_selector, ...],
-            "phi_ts": experiment_data_ts["phi_ts"][t_ts_selector, ...],
-            "mpl_ts": experiment_config["mpl_ss"],
-        }
-
-        # manually set bending and shear strains to zero
-        experiment_selected_ss_data_ts["xi_ts"] = (
-            experiment_selected_ss_data_ts["xi_ts"]
-            .at[:, 0]
-            .set(1e-4 * jnp.ones((len(t_ss),)))
-        )  # almost zero to avoid singularities
-        experiment_selected_ss_data_ts["xi_ts"] = (
-            experiment_selected_ss_data_ts["xi_ts"]
-            .at[:, 1]
-            .set(jnp.zeros((len(t_ss),)))
-        )
-
-        if data_ts is None:
-            data_ts = experiment_selected_ss_data_ts
-        else:
-            data_ts = {
-                k: jnp.concatenate((v, experiment_selected_ss_data_ts[k]))
-                for k, v in data_ts.items()
-            }
-
-    print("Running linear least-squares optimization...")
     Pi_est = optimize_with_closed_form_linear_lq(
         cal_a_fn,
         cal_b_fn,
