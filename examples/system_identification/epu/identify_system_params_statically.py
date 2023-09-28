@@ -88,11 +88,13 @@ known_params = {
     "CoGpl": jnp.array([0.0, -12e-3 - 13.5e-3]),
 }
 
+main_deformation_mode = None
 if SYSTEM_ID_STEP == 0:
     params_to_be_idd_names = ["sigma_a_eq", "S_a_hat"]
     # identified parameters from step 0:
     # sigma_a_eq = 0.81200092
     # S_a_hat = 0.73610293
+    main_deformation_mode = "elongation"
 
     # set dummy parameters for C_varepsilon and C_S_a
     known_params["C_varepsilon"] = 0.0 * ones_rod
@@ -136,10 +138,10 @@ if SYSTEM_ID_STEP == 0:
         0.0,
     ])
 elif SYSTEM_ID_STEP == 1:
-    optimization_type = "llq"
     params_to_be_idd_names = ["C_varepsilon"]
     # identified parameters from step 1:
     # C_varepsilon = 0.0079049
+    main_deformation_mode = "elongation"
 
     # previously identified parameters in step 0
     known_params["S_a_hat"] = 0.73610293 * ones_rod
@@ -177,10 +179,10 @@ elif SYSTEM_ID_STEP == 1:
         0.0,
     ])
 elif SYSTEM_ID_STEP == 2:
-    optimization_type = "llq"
     params_to_be_idd_names = ["C_S_a"]
     # identified parameters from step 2:
     # C_S_a = 0.00981059
+    main_deformation_mode = "elongation"
 
     # previously identified parameters in steps 0 and 1
     known_params["S_a_hat"] = 0.73610293 * ones_rod
@@ -253,9 +255,91 @@ elif SYSTEM_ID_STEP == 2:
         0.2,
         0.0,
     ])
+elif SYSTEM_ID_STEP == 3:
+    params_to_be_idd_names = ["S_b_hat", "S_sh_hat", "S_b_sh", "C_S_b", "C_S_sh"]
+    # identified parameters from step 3:
+    # S_b_hat = -2.53938133e-05, S_sh_hat = 4.28135773e-02, S_b_sh = 5.04204068e-04,
+    # C_S_b = 3.90666351e-07, C_S_sh = 2.93344701e-03
+    main_deformation_mode = "bending"
 
+    # previously identified parameters in steps 0, 1, and 2
+    known_params["S_a_hat"] = 0.73610293 * ones_rod
+    known_params["C_varepsilon"] = 0.0079049 * ones_rod
+    known_params["C_S_a"] = 0.00981059 * ones_rod
+
+    # Staircase bending cw with changing mass up to 270 deg
+    # At each step, first 0g payload mass, then 200g, then 400g, then 200 g, then 0g
+    experiment_id = "20230927_171719"
+    t_ss = jnp.array(
+        [
+            2.7,  # 0th step
+            15.5,
+            25.7,
+            33.2,
+            69.1,
+            74.6,  # 1st step
+            87.0,
+            99.5,
+            107.0,
+            138.7,
+            144.3,  # 2nd step
+            155.2,
+            164.7,
+            173.8,
+            208.0,
+            218.8,  # 3rd step
+            232.7,
+            244.8,
+            252.9,
+            276.0,
+            285.4,  # 4th step
+            301.1,
+            314.0,
+            321.0,
+            346.0,
+            353.9,  # 5th step
+            365.6,
+            378.0,
+            388.5,
+            416.0,
+        ]
+    )
+    mpl_ss = jnp.array(
+        [
+            0.0,
+            0.2,
+            0.4,
+            0.2,
+            0.0,
+            0.0,
+            0.2,
+            0.4,
+            0.2,
+            0.0,
+            0.0,
+            0.2,
+            0.4,
+            0.2,
+            0.0,
+            0.0,
+            0.2,
+            0.4,
+            0.2,
+            0.0,
+            0.0,
+            0.2,
+            0.4,
+            0.2,
+            0.0,
+            0.0,
+            0.2,
+            0.4,
+            0.2,
+            0.0,
+        ]
+    )
 else:
-    raise ValueError("SYSTEM_ID_STEP must be 0, 1, or 2.")
+    raise ValueError("SYSTEM_ID_STEP must be 0, 1, 2, or 3.")
 
 mocap_body_ids = {"base": 3, "platform": 4}
 resampling_dt = 0.01  # [s]
@@ -289,7 +373,7 @@ if __name__ == "__main__":
     )
 
     # identify axial rest strain
-    if SYSTEM_ID_STEP != 0:
+    if "sigma_a_eq" not in params_to_be_idd_names:
         known_params["sigma_a_eq"] = identify_rest_strain_for_system_id_dataset(
             sym_exp_filepath,
             sys_helpers,
@@ -316,17 +400,23 @@ if __name__ == "__main__":
         "mpl_ts": mpl_ss,
     }
 
-    # manually set bending and shear strains to zero
-    data_ts["xi_ts"] = (
-        data_ts["xi_ts"]
-        .at[:, 0]
-        .set(1e-4 * jnp.ones((len(t_ss),)))
-    )  # almost zero to avoid singularities
-    data_ts["xi_ts"] = (
-        data_ts["xi_ts"]
-        .at[:, 1]
-        .set(jnp.zeros((len(t_ss),)))
-    )
+    if main_deformation_mode == "elongation":
+        # manually set bending and shear strains to zero
+        data_ts["xi_ts"] = (
+            data_ts["xi_ts"]
+            .at[:, 0]
+            .set(1e-4 * jnp.ones((len(t_ss),)))
+        )  # almost zero to avoid singularities
+        data_ts["xi_ts"] = (
+            data_ts["xi_ts"]
+            .at[:, 1]
+            .set(jnp.zeros((len(t_ss),)))
+        )
+    elif main_deformation_mode == "bending":
+        # subtract shear and bending of first time step to zero
+        experiment_data_ts["xi_ts"] = (
+            experiment_data_ts["xi_ts"].at[:, :2].add(-experiment_data_ts["xi_ts"][0, :2])
+        )
 
     print("Running linear least-squares optimization...")
     Pi_syms, cal_a_fn, cal_b_fn = linear_lq_optim_problem_factory(
