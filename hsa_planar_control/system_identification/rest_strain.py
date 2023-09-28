@@ -45,7 +45,7 @@ def identify_rest_strain_for_system_id_dataset(
     Pi_est = optimize_with_closed_form_linear_lq(
         cal_a_fn,
         cal_b_fn,
-        data_ts,
+        select_data_ts,
         verbose=False,
     )
     sigma_a_eq_scalar = Pi_est[0]
