@@ -6,7 +6,7 @@ from functools import partial
 from jax import Array, jit, lax, vmap
 from jax import numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_FPU_SYSTEM_ID
+from jsrm.parameters.hsa_params import PARAMS_FPU_SYSTEM_ID, PARAMS_EPU_SYSTEM_ID
 from jsrm.systems import planar_hsa
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -16,6 +16,7 @@ from hsa_planar_control.collocated_form import mapping_into_collocated_form_fact
 from hsa_planar_control.rendering.opencv_renderer import animate_robot
 from hsa_planar_control.simulation import simulate_closed_loop_system
 from hsa_planar_control.system_identification.preprocessing import preprocess_data
+from hsa_planar_control.system_identification.rest_strain import identify_rest_strain_for_system_id_dataset
 
 num_segments = 1
 num_rods_per_segment = 4
@@ -27,9 +28,6 @@ sym_exp_filepath = (
     / f"planar_hsa_ns-{num_segments}_nrs-{num_rods_per_segment}.dill"
 )
 
-# set parameters
-params = PARAMS_FPU_SYSTEM_ID.copy()
-
 # experiment id
 # experiment_id = "20230621_153408"  # staircase elongation
 experiment_id = "20230621_165020"  # staircase bending ccw
@@ -37,15 +35,19 @@ experiment_id = "20230621_165020"  # staircase bending ccw
 # experiment_id = "20230621_171345"  # step bending cw 180 deg
 # experiment_id = "20230621_182829"  # GBN elongation 180 deg
 # experiment_id = "20230621_183620"  # GBN bending combined 180 deg
-if experiment_id == "20230621_153408":
-    params["sigma_a_eq"] = 1.0388612 * jnp.ones_like(params["sigma_a_eq"])
-elif experiment_id == "20230621_165020":
-    params["sigma_a_eq"] = 1.03195326 * jnp.ones_like(params["sigma_a_eq"])
-elif experiment_id == "20230621_183620":
-    params["sigma_a_eq"] = 1.102869 * jnp.ones_like(params["sigma_a_eq"])
+hsa_material = "fpu"
+
+# set parameters
+if hsa_material == "fpu":
+    params = PARAMS_FPU_SYSTEM_ID.copy()
+elif hsa_material == "epu":
+    params = PARAMS_EPU_SYSTEM_ID.copy()
 
 # settings for simulation
-mocap_body_ids = {"base": 4, "platform": 5}
+if hsa_material == "fpu":
+    mocap_body_ids = {"base": 4, "platform": 5}
+else:
+    mocap_body_ids = {"base": 3, "platform": 4}
 sim_dt = 5e-5  # time step for simulation [s]
 
 if __name__ == "__main__":
@@ -73,6 +75,13 @@ if __name__ == "__main__":
         derivative_method="savgol_filter",
         plotting=False,
     )
+    # identify axial rest strain
+    params["sigma_a_eq"] = identify_rest_strain_for_system_id_dataset(
+        sym_exp_filepath,
+        sys_helpers,
+        params,
+        data_ts,
+    )
 
     data_dt = data_ts["t_ts"][1] - data_ts["t_ts"][0]
     # shift time stamps to start at zero
@@ -85,11 +94,13 @@ if __name__ == "__main__":
 
     def control_fn(
         t: Array, q: Array, q_d: Array, phi: Array, controller_state: Dict[str, Array]
-    ) -> Tuple[Array, Dict[str, Array]]:
+    ) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
         time_idx = (t / data_dt).astype(int)
         phi_des = data_ts["phi_ts"][time_idx]
 
-        return phi_des, controller_state
+        controller_info = {}
+
+        return phi_des, controller_state, controller_info
 
     sim_ts = simulate_closed_loop_system(
         dynamical_matrices_fn,
