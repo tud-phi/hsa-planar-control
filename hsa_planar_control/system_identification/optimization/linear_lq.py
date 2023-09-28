@@ -62,6 +62,9 @@ def linear_lq_optim_problem_factory(
 
     # substitute the parameters with the known values
     subs_params_syms_exps = deepcopy(params_syms)
+    # do not substitute the params that we want to actually identify
+    for param_name in params_to_be_idd_names:
+        subs_params_syms_exps.pop(param_name)
     # do not substitute the payload mass `mpl` as we want to change it at runtime
     subs_params_syms_exps.pop("mpl")
     lhs = substitute_params_into_single_symbolic_expression(
