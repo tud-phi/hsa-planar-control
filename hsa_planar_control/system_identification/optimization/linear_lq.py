@@ -14,7 +14,6 @@ from .utils import isolateVariablesToLeftHandSide
 
 def linear_lq_optim_problem_factory(
     sym_exp_filepath: PathLike,
-    dynamical_matrices_fn: Callable,
     sys_helpers: Dict,
     known_params: Dict[str, Array],
     params_to_be_idd_names: List[str],
@@ -24,7 +23,6 @@ def linear_lq_optim_problem_factory(
     Factory function for designing the least-squares optimization problem for the system identification.
     Arguments:
         sym_exp_filepath: path to the file with saved symbolic expressions
-        dynamical_matrices_fn: function for evaluating the dynamical matrices
         sys_helpers: dictionary with helper entries for the HSA system
         known_params: dictionary with known robot parameters
         params_to_be_idd_names: list with the names of the parameters to be identified. Needs to match

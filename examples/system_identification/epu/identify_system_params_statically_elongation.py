@@ -15,10 +15,6 @@ from hsa_planar_control.system_identification.optimization.linear_lq import (
     linear_lq_optim_problem_factory,
     optimize_with_closed_form_linear_lq,
 )
-from hsa_planar_control.system_identification.optimization.nonlinear_lq import (
-    nonlinear_lq_optim_problem_factory,
-    optimize_with_nonlinear_lq,
-)
 from hsa_planar_control.system_identification.preprocessing import preprocess_data
 
 
@@ -336,15 +332,6 @@ if __name__ == "__main__":
 
     Pi_syms, cal_a_fn, cal_b_fn = linear_lq_optim_problem_factory(
         sym_exp_filepath,
-        dynamical_matrices_fn,
-        sys_helpers,
-        known_params,
-        params_to_be_idd_names,
-        mode="static",
-    )
-    eom_residual_fn = nonlinear_lq_optim_problem_factory(
-        sym_exp_filepath,
-        dynamical_matrices_fn,
         sys_helpers,
         known_params,
         params_to_be_idd_names,

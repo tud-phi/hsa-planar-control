@@ -10,7 +10,6 @@ from typing import Callable, Dict, List, Tuple
 
 
 def nonlinear_lq_optim_problem_factory(
-    sym_exp_filepath: PathLike,
     dynamical_matrices_fn: Callable,
     sys_helpers: Dict,
     known_params: Dict[str, Array],
@@ -20,7 +19,6 @@ def nonlinear_lq_optim_problem_factory(
     """
     Factory function for designing the least-squares optimization problem for the system identification.
     Arguments:
-        sym_exp_filepath: path to the file with saved symbolic expressions
         dynamical_matrices_fn: function for evaluating the dynamical matrices
         sys_helpers: dictionary with helper entries for the HSA system
         known_params: dictionary with known robot parameters
@@ -31,9 +29,6 @@ def nonlinear_lq_optim_problem_factory(
         residual_fn: function for evaluating the residual of the optimization problem
 
     """
-    # load saved symbolic data
-    sym_exps = dill.load(open(str(sym_exp_filepath), "rb"))
-
     # these are just dummy values
     # they will not be used during the actual identification procedure
     # they are just used to determine the data shapes and structure

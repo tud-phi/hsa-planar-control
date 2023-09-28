@@ -73,7 +73,6 @@ class CalibrationNode(Node):
         params_to_be_idd_names = ["sigma_a_eq"]
         self.Pi_syms, self.cal_a_fn, self.cal_b_fn = linear_lq_optim_problem_factory(
             sym_exp_filepath,
-            dynamical_matrices_fn,
             sys_helpers,
             self.known_params,
             params_to_be_idd_names,

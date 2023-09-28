@@ -339,14 +339,12 @@ if __name__ == "__main__":
 
     Pi_syms, cal_a_fn, cal_b_fn = linear_lq_optim_problem_factory(
         sym_exp_filepath,
-        dynamical_matrices_fn,
         sys_helpers,
         known_params,
         params_to_be_idd_names,
         mode="static",
     )
     eom_residual_fn = nonlinear_lq_optim_problem_factory(
-        sym_exp_filepath,
         dynamical_matrices_fn,
         sys_helpers,
         known_params,
