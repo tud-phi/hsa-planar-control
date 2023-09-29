@@ -184,6 +184,11 @@ def optimize_with_closed_form_linear_lq(
             f"Checking the rank of the cal_a matrices, each of shape {cal_A.shape[1:]}: "
             f"min = {ranks_cal_a.min()}, max = {ranks_cal_a.max()}, mean = {ranks_cal_a.mean()}"
         )
+    if ranks_cal_a.min() < cal_A.shape[-1]:
+        raise ValueError(
+            f"The column rank of the cal_a matrices is not full. "
+            f"min = {ranks_cal_a.min()}, max = {ranks_cal_a.max()}, mean = {ranks_cal_a.mean()}"
+        )
 
     cal_A = cal_A.reshape(-1, cal_A.shape[-1])
     if verbose:
