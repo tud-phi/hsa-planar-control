@@ -77,8 +77,8 @@ if __name__ == "__main__":
         derivative_method="savgol_filter",
         plotting=False,
     )
-    # identify axial rest strain
-    params["sigma_a_eq"] = identify_rest_strain_for_system_id_dataset(
+    # identify rest strains
+    params["kappa_b_eq"], params["sigma_sh_eq"], params["sigma_a_eq"] = identify_rest_strain_for_system_id_dataset(
         sym_exp_filepath,
         sys_helpers,
         params,

@@ -481,8 +481,10 @@ def preprocess_data(
         plt.show()
 
     # run inverse kinematics
-    # set dummy values for the axial rest strains
+    # set dummy values for the rest strains
     known_params = known_params.copy()
+    known_params["kappa_b_eq"] = jnp.zeros_like(known_params["roff"])
+    known_params["sigma_sh_eq"] = jnp.zeros_like(known_params["roff"])
     known_params["sigma_a_eq"] = jnp.zeros_like(known_params["roff"])
     data_res_ts["xi_ts"] = vmap(
         partial(inverse_kinematics_end_effector_fn, known_params),

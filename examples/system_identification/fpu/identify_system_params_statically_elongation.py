@@ -43,6 +43,9 @@ known_params = {
     "lpc": 25e-3 * jnp.ones((num_segments,)),
     # length of the rigid distal caps of the rods connecting to the platform [m]
     "ldc": 14e-3 * jnp.ones((num_segments,)),
+    "kappa_b_eq": 0.0 * ones_rod,  # bending rest strain [rad/m]
+    "sigma_sh_eq": 0.0 * ones_rod,  # shear rest strain [-]
+    "sigma_a_eq": 1.0 * ones_rod,  # axial rest strain [-]
     # outside radius of each rod [m]. The rows correspond to the segments.
     "rout": 25.4e-3 / 2 * ones_rod,  # this is for FPU rods
     # inside radius of each rod [m]. The rows correspond to the segments.

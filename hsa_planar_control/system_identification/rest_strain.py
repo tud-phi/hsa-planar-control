@@ -1,7 +1,7 @@
 from jax import Array
 import jax.numpy as jnp
 from os import PathLike
-from typing import Dict
+from typing import Dict, Tuple
 
 from .optimization.linear_lq import linear_lq_optim_problem_factory, optimize_with_closed_form_linear_lq
 
@@ -12,7 +12,7 @@ def identify_rest_strain_for_system_id_dataset(
     params: Dict[str, Array],
     data_ts: Dict[str, Array],
     num_time_steps: int = 5,
-) -> Array:
+) -> Tuple[Array, Array, Array]:
     """
     Identify the axial rest strain for a system identification dataset.
     We take two key assumptions:
@@ -33,7 +33,7 @@ def identify_rest_strain_for_system_id_dataset(
         sym_exp_filepath,
         sys_helpers,
         params,
-        params_to_be_idd_names=["sigma_a_eq"],
+        params_to_be_idd_names=["kappa_b_eq", "sigma_sh_eq", "sigma_a_eq"],
         mode="static",
     )
 
@@ -48,9 +48,12 @@ def identify_rest_strain_for_system_id_dataset(
         select_data_ts,
         verbose=False,
     )
-    sigma_a_eq_scalar = Pi_est[0]
-    print("Identified scalar axial rest strain: ", sigma_a_eq_scalar)
+    kappa_b_eq_scalar, sigma_sh_eq_scalar, sigma_a_eq_scalar = Pi_est[0], Pi_est[1], Pi_est[2]
+    print(f"Identified scalar rest strains:\n"
+          f"kappa_b_eq={kappa_b_eq_scalar}, sigma_sh_eq={sigma_sh_eq_scalar}, sigma_a_eq={sigma_a_eq_scalar}")
 
+    kappa_b_eq = kappa_b_eq_scalar * jnp.ones_like(params["rout"])
+    sigma_sh_eq = sigma_sh_eq_scalar * jnp.ones_like(params["rout"])
     sigma_a_eq = sigma_a_eq_scalar * jnp.ones_like(params["rout"])
 
-    return sigma_a_eq
+    return kappa_b_eq, sigma_sh_eq, sigma_a_eq

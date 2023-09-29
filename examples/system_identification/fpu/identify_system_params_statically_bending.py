@@ -38,6 +38,8 @@ known_params = {
     "lpc": 25e-3 * jnp.ones((num_segments,)),
     # length of the rigid distal caps of the rods connecting to the platform [m]
     "ldc": 14e-3 * jnp.ones((num_segments,)),
+    "kappa_b_eq": 0.0 * ones_rod,  # bending rest strains [rad/m]
+    "sigma_sh_eq": 0.0 * ones_rod,  # shear rest strains [-]
     "sigma_a_eq": 1.0753753 * ones_rod,  # axial rest strains of each rod
     # scale factor for the rest length as a function of the twist strain [1/(rad/m) = m / rad]
     "C_varepsilon": 0.00984819 * ones_rod,  # Average: 0.009118994, Std: 0.000696435

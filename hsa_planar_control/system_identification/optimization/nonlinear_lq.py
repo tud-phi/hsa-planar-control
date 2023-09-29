@@ -34,6 +34,8 @@ def nonlinear_lq_optim_problem_factory(
     # they are just used to determine the data shapes and structure
     ones_rod = jnp.ones_like(known_params["h"])
     dummy_to_be_identified_params = {
+        "kappa_b_eq": 0 * ones_rod,  # bending rest strains of each rod
+        "sigma_sh_eq": 0 * ones_rod,  # shear rest strains of each rod
         "sigma_a_eq": 0 * ones_rod,  # axial rest strains of each rod
         # scale factor for the rest length as a function of the twist strain [1/(rad/m) = m / rad]
         "C_varepsilon": 0 * ones_rod,
