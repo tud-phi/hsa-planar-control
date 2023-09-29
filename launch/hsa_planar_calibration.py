@@ -53,7 +53,7 @@ def generate_launch_description():
             executable="planar_cs_ik_node",
             name="inverse_kinematics",
             arguments=["--ros-args", "--log-level", LOG_LEVEL],
-            parameters={ros_params},
+            parameters=[ros_params],
         ),
         Node(
             package="hsa_planar_control",
