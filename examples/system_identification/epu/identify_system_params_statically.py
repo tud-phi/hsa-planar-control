@@ -17,7 +17,7 @@ from hsa_planar_control.system_identification.optimization.linear_lq import (
     optimize_with_closed_form_linear_lq,
 )
 from hsa_planar_control.system_identification.preprocessing import preprocess_data
-from hsa_planar_control.system_identification.rest_strain import identify_rest_strain_for_system_id_dataset
+from hsa_planar_control.system_identification.rest_strain import identify_axial_rest_strain_for_system_id_dataset
 
 
 num_segments = 1
@@ -41,6 +41,9 @@ known_params = {
     "lpc": 25e-3 * jnp.ones((num_segments,)),
     # length of the rigid distal caps of the rods connecting to the platform [m]
     "ldc": 14e-3 * jnp.ones((num_segments,)),
+    "kappa_b_eq": 0.0 * ones_rod,  # bending rest strain [rad/m]
+    "sigma_sh_eq": 0.0 * ones_rod,  # shear rest strain [-]
+    "sigma_a_eq": 1.0 * ones_rod,  # axial rest strain [-]
     # scale factor for the rest length as a function of the twist strain [1/(rad/m) = m / rad]
     "C_varepsilon": 0.0 * ones_rod,
     # outside radius of each rod [m]. The rows correspond to the segments.
@@ -74,6 +77,8 @@ known_params = {
     "S_b_hat": 0.0 * ones_rod,
     # Nominal shear stiffness of each rod [N]
     "S_sh_hat": 0.0 * ones_rod,
+    # Nominal axial stiffness of each rod [N]
+    "S_a_hat": 0.0 * ones_rod,
     # Elastic coupling between bending and shear [Nm/rad]
     "S_b_sh": 0.0 * ones_rod,
     # Scaling of axial stiffness with twist strain [Nm/rad]
@@ -374,7 +379,7 @@ if __name__ == "__main__":
 
     # identify axial rest strain
     if "sigma_a_eq" not in params_to_be_idd_names:
-        known_params["sigma_a_eq"] = identify_rest_strain_for_system_id_dataset(
+         known_params["sigma_a_eq"] = identify_axial_rest_strain_for_system_id_dataset(
             sym_exp_filepath,
             sys_helpers,
             known_params,
