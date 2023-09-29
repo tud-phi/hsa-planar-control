@@ -99,8 +99,18 @@ def linear_lq_optim_problem_factory(
     # the parameters are now isolated in lhs
     lhs, rhs = eq.args[0], eq.args[1]
 
+    # remove rows that are zeros on the left-hand side
+    # this might be the case if the to-be-identified parameters are not acting on some strains
+    lhs_reduced = lhs.copy()
+    rhs_reduced = rhs.copy()
+    for row_idx in reversed(range(lhs.shape[0])):
+        if len(lhs[row_idx, :].free_symbols) == 0:
+            # there are no symbols in this row on the left-hand side (i.e. the side that should have the parameters)
+            lhs_reduced = lhs_reduced.row_del(row_idx)
+            rhs_reduced = rhs_reduced.row_del(row_idx)
+
     # symbolic expression
-    cal_a = lhs.jacobian(Pi_syms)
+    cal_a = lhs_reduced.jacobian(Pi_syms)
 
     cal_a_lambda = sp.lambdify(
         (state_syms["xi"] + state_syms["xi_d"] + state_syms["phi"]),
@@ -115,7 +125,7 @@ def linear_lq_optim_problem_factory(
             + state_syms["phi"]
             + [params_syms["mpl"]]
         ),
-        rhs,
+        rhs_reduced,
         "jax",
     )
 
