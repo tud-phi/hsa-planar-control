@@ -37,6 +37,8 @@ LOG_LEVEL = "warn"
 """
 controller_type = "P_satI_D_collocated_form_plus_steady_state_actuation"
 hsa_material = "fpu"
+kappa_b_eq = 0.0
+sigma_sh_eq = 0.0
 sigma_a_eq = 1.0
 payload_mass = 0.0  # kg
 
@@ -49,6 +51,8 @@ else:
 
 common_params = {
     "hsa_material": hsa_material,
+    "kappa_b_eq": kappa_b_eq,
+    "sigma_sh_eq": sigma_sh_eq,
     "sigma_a_eq": sigma_a_eq,
     "phi_max": phi_max,
     "payload_mass": payload_mass

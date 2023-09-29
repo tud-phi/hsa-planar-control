@@ -63,9 +63,19 @@ class StaticInversionPlanningNode(Node):
         else:
             raise ValueError(f"Unknown HSA material: {hsa_material}")
 
-        # parameter for specifying a different axial rest strain
+        # parameters for specifying different rest strains
+        self.declare_parameter("kappa_b_eq", self.params["kappa_b_eq"].mean().item())
+        self.declare_parameter("sigma_sh_eq", self.params["sigma_sh_eq"].mean().item())
         self.declare_parameter("sigma_a_eq", self.params["sigma_a_eq"].mean().item())
+        kappa_b_eq = self.get_parameter("kappa_b_eq").value
+        sigma_sh_eq = self.get_parameter("sigma_sh_eq").value
         sigma_a_eq = self.get_parameter("sigma_a_eq").value
+        self.params["kappa_b_eq"] = kappa_b_eq * jnp.ones_like(
+            self.params["kappa_b_eq"]
+        )
+        self.params["sigma_sh_eq"] = sigma_sh_eq * jnp.ones_like(
+            self.params["sigma_sh_eq"]
+        )
         self.params["sigma_a_eq"] = sigma_a_eq * jnp.ones_like(
             self.params["sigma_a_eq"]
         )
