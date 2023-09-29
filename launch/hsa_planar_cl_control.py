@@ -58,12 +58,12 @@ common_params = {
     "payload_mass": payload_mass
 }
 inverse_kinematics_params = common_params.copy()
-planning_params = common_params |{
+planning_params = common_params | {
     "setpoint_mode": "manual",  # "manual", "image"
     "image_type": "star",
 }
 
-control_params = {
+control_params = common_params | {
     "controller_type": controller_type,
 }
 if controller_type == "basic_operational_space_pid":
