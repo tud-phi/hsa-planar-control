@@ -38,8 +38,14 @@ LOG_LEVEL = "warn"
 controller_type = "P_satI_D_collocated_form_plus_steady_state_actuation"
 hsa_material = "fpu"
 sigma_a_eq = 1.0
-phi_max = 200 / 180 * np.pi
 payload_mass = 0.0  # kg
+
+if hsa_material == "fpu":
+    phi_max = 200 / 180 * np.pi
+elif hsa_material == "epu":
+    phi_max = 270 / 180 * np.pi
+else:
+    raise ValueError(f"Unknown HSA material: {hsa_material}")
 
 common_params = {
     "hsa_material": hsa_material,
@@ -144,6 +150,7 @@ def generate_launch_description():
             package="hsa_visualization",
             executable="planar_viz_node",
             name="visualization",
+            parameters=[common_params],
         ),
     ]
 
