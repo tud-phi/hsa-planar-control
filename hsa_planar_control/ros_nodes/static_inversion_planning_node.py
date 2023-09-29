@@ -99,33 +99,67 @@ class StaticInversionPlanningNode(Node):
         setpoint_mode = self.get_parameter("setpoint_mode").value
 
         if setpoint_mode == "manual":
-            # use accurate but slow scipy rootfinding for manual setpoints
-            self.planning_fn = partial(
-                statically_invert_actuation_to_task_space_scipy_rootfinding,
-                params=self.params,
-                residual_fn=self.residual_fn,
-                inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
-                maxiter=10000,
-                verbose=False,
-            )
+            if hsa_material == "fpu":
+                # use accurate but slow scipy rootfinding for FPU material
+                self.planning_fn = partial(
+                    statically_invert_actuation_to_task_space_scipy_rootfinding,
+                    params=self.params,
+                    residual_fn=self.residual_fn,
+                    inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
+                    maxiter=10000,
+                    verbose=False,
+                )
+            elif hsa_material == "epu":
+                # for EPU system params, the scipy rootfinding finds solutions outside the allowed actuation range
+                # therefore, we use projected descent instead
+                self.planning_fn = jit(
+                    partial(
+                        statically_invert_actuation_to_task_space_projected_descent,
+                        params=self.params,
+                        residual_fn=self.residual_fn,
+                        inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
+                        maxiter=10000,
+                        verbose=False,
+                    )
+                )
+            else:
+                raise ValueError(f"Unknown HSA material: {hsa_material}")
 
             default_planning_frequency = 0.1
             # desired end-effector positions
-            self.pee_des_sps = jnp.array(
-                [
-                    [0.0, 0.120],
-                    [+0.00479247, 0.12781018],
-                    [-0.035, 0.122],
-                    [-0.00782133, 0.13024847],
-                    [0.00823294, 0.117643],
-                    [-0.01417039, 0.12388105],
-                    [0.0, 0.140],
-                    [0.02524261, 0.1304036],
-                    [-0.0059703, 0.13986947],
-                    [0.0073023, 0.11779653],
-                    [0.00567301, 0.1271345],
-                ]
-            )
+            if hsa_material == "fpu":
+                self.pee_des_sps = jnp.array(
+                    [
+                        [0.0, 0.120],
+                        [+0.00479247, 0.12781018],
+                        [-0.035, 0.122],
+                        [-0.00782133, 0.13024847],
+                        [0.00823294, 0.117643],
+                        [-0.01417039, 0.12388105],
+                        [0.0, 0.140],
+                        [0.02524261, 0.1304036],
+                        [-0.0059703, 0.13986947],
+                        [0.0073023, 0.11779653],
+                        [0.00567301, 0.1271345],
+                    ]
+                )
+            elif hsa_material == "epu":
+                self.pee_des_sps = jnp.array(
+                    [
+                        [-0.00479247, 0.12781018],
+                        [-0.00782133, 0.13024847],
+                        [ 0.00823294, 0.114643  ],
+                        [-0.0004829, 0.13777381],
+                        [-0.0059703, 0.13986947],
+                        [ 0.04237015,  0.11799567],
+                        [ 0.00567301, 0.1271345 ],
+                        [-0.00941272, 0.12826198],
+                        [-0.00638759, 0.1418955 ],
+                        [ 0.00232733, 0.14214571],
+                    ]
+                )
+            else:
+                raise ValueError(f"Unknown HSA material: {hsa_material}")
         elif setpoint_mode == "image":
             # use fast but slightly inaccurate projected descent for image setpoints
             self.planning_fn = jit(
