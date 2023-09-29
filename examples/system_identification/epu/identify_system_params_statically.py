@@ -262,7 +262,10 @@ elif SYSTEM_ID_STEP == 2:
     ])
 elif SYSTEM_ID_STEP == 3:
     params_to_be_idd_names = ["S_b_hat", "S_sh_hat", "S_b_sh", "C_S_b", "C_S_sh"]
-    # identified parameters from step 3:
+    # identified parameters based on 20230927_170823:
+    # S_b_hat = 4.02729650e-05, S_sh_hat = 9.69715686e-03, S_b_sh = 5.68054241e-05,
+    # C_S_b = -2.93841224e-06, C_S_sh = 8.36960975e-03
+    # identified parameters based on 20230927_171719:
     # S_b_hat = -2.53938133e-05, S_sh_hat = 4.28135773e-02, S_b_sh = 5.04204068e-04,
     # C_S_b = 3.90666351e-07, C_S_sh = 2.93344701e-03
     main_deformation_mode = "bending"
@@ -272,6 +275,57 @@ elif SYSTEM_ID_STEP == 3:
     known_params["C_varepsilon"] = 0.0079049 * ones_rod
     known_params["C_S_a"] = 0.00981059 * ones_rod
 
+    # # Staircase bending cw with changing mass up to 210 deg
+    # # At each step, first 0g payload mass, then 200g, then 400g, then 200 g, then 0g
+    # experiment_id = "20230927_170823"
+    # t_ss = jnp.array(
+    #     [
+    #         2.7,  # 0th step
+    #         20.7,
+    #         31.3,
+    #         40.8,
+    #         69.4,
+    #         73.5,  # 1st step
+    #         85.7,
+    #         97.1,
+    #         105.0,
+    #         138.7,
+    #         219.6,  # 3rd step
+    #         235.8,
+    #         248.7,
+    #         259.0,
+    #         277.2,
+    #         284.2,  # 4th step
+    #         301.4,
+    #         312.8,
+    #         321.8,
+    #         346.4,
+    #     ]
+    # )
+    # mpl_ss = jnp.array(
+    #     [
+    #         0.0,
+    #         0.2,
+    #         0.4,
+    #         0.2,
+    #         0.0,
+    #         0.0,
+    #         0.2,
+    #         0.4,
+    #         0.2,
+    #         0.0,
+    #         0.0,
+    #         0.2,
+    #         0.4,
+    #         0.2,
+    #         0.0,
+    #         0.0,
+    #         0.2,
+    #         0.4,
+    #         0.2,
+    #         0.0,
+    #     ]
+    # )
     # Staircase bending cw with changing mass up to 270 deg
     # At each step, first 0g payload mass, then 200g, then 400g, then 200 g, then 0g
     experiment_id = "20230927_171719"
