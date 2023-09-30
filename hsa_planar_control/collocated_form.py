@@ -126,6 +126,8 @@ def mapping_into_collocated_form_factory(
     phi1, phi2 = tuple(sym_exps["state_syms"]["phi"])
 
     l1 = sym_exps["params_syms"]["l"][0]
+    kappa_b_eq1, kappa_b_eq2 = tuple(sym_exps["params_syms"]["kappa_b_eq"])
+    sigma_sh_eq1, sigma_sh_eq2 = tuple(sym_exps["params_syms"]["sigma_sh_eq"])
     sigma_a_eq1, sigma_a_eq2 = tuple(sym_exps["params_syms"]["sigma_a_eq"])
     C_varepsilon1, C_varepsilon2 = tuple(sym_exps["params_syms"]["C_varepsilon"])
     rout1, rout2 = tuple(sym_exps["params_syms"]["rout"])
@@ -153,7 +155,9 @@ def mapping_into_collocated_form_factory(
                     - C_S_a1 * l1 * roff1 * xi1 * xi3
                     + C_S_a1 * l1 * sigma_a_eq1 * xi3
                     - C_S_a1 * l1 * xi3**2 / 2
+                    + C_S_b1 * l1 * kappa_b_eq1 * xi1
                     - C_S_b1 * l1 * xi1**2 / 2
+                    + C_S_sh1 * l1 * sigma_sh_eq1 * xi2
                     - C_S_sh1 * l1 * xi2**2 / 2
                     + C_varepsilon1 * S_a_hat1 * l1 * roff1 * xi1
                     + C_varepsilon1 * S_a_hat1 * l1 * xi3
@@ -170,7 +174,9 @@ def mapping_into_collocated_form_factory(
                     - C_S_a2 * l1 * roff2 * xi1 * xi3
                     + C_S_a2 * l1 * sigma_a_eq2 * xi3
                     - C_S_a2 * l1 * xi3**2 / 2
+                    + C_S_b2 * l1 * kappa_b_eq2 * xi1
                     - C_S_b2 * l1 * xi1**2 / 2
+                    + C_S_sh2 * l1 * sigma_sh_eq2 * xi2
                     - C_S_sh2 * l1 * xi2**2 / 2
                     + C_varepsilon2 * S_a_hat2 * l1 * roff2 * xi1
                     + C_varepsilon2 * S_a_hat2 * l1 * xi3
