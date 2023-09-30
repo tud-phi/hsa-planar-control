@@ -121,6 +121,6 @@ if __name__ == "__main__":
         q_ss_sps = q_ss_sps.at[setpoint_idx].set(q_ss)
         phi_ss_sps = phi_ss_sps.at[setpoint_idx].set(phi_ss)
 
-    print("pee_des_sps:\n", pee_ss_sps)
-    print("q_des_sps:\n", q_ss_sps)
+    print("pee_ss_sps:\n", pee_ss_sps)
+    print("q_ss_sps:\n", q_ss_sps)
     print("phi_ss_sps:\n", phi_ss_sps)
