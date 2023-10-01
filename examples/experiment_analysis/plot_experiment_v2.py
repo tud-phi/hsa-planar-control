@@ -19,8 +19,8 @@ plt.rcParams.update(
     }
 )
 
-EXPERIMENT_NAME = "20230925_094023"  # experiment name
-TRAJECTORY_TYPE = "manual"  # trajectory type
+EXPERIMENT_NAME = "20230925_113825"  # experiment name
+TRAJECTORY_TYPE = "tud-star"  # trajectory type
 PLOT_STEADY_STATE_ACTUATION = True
 
 DURATION = None

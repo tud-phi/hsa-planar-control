@@ -18,7 +18,7 @@ plt.rcParams.update(
     }
 )
 
-TRAJ_TYPE = "star"
+TRAJ_TYPE = "mit-csail"
 
 START_TIME = 0.0
 END_TIME = None
@@ -31,15 +31,19 @@ if TRAJ_TYPE == "star":
         "20230925_095851": {"linestyle": "-", "label": "P-satI-D+GC"},
     }
 elif TRAJ_TYPE == "tud-flame":
+    START_TIME = 1.0
+    END_TIME = 60.0
     experiments = {
         "20230925_101931": {"linestyle": "-", "label": "PID"},
         "20230925_102428": {"linestyle": "-", "label": "P-satI-D"},
         "20230925_102856": {"linestyle": "-", "label": "P-satI-D+GC"},
     }
 elif TRAJ_TYPE == "mit-csail":
+    START_TIME = 0.0
+    END_TIME = 49.0
     experiments = {
-        "20230925_113431": {"linestyle": "-", "label": "PID"},
-        "20230925_113826": {"linestyle": "-", "label": "P-satI-D"},
+        "20230925_113430": {"linestyle": "-", "label": "PID"},
+        "20230925_113825": {"linestyle": "-", "label": "P-satI-D"},
         "20230925_114328": {"linestyle": "-", "label": "P-satI-D+GC"},
     }
 else:
@@ -97,6 +101,6 @@ if __name__ == "__main__":
     plt.ylabel(r"$y$ [mm]")
     plt.grid(True)
     plt.box(True)
-    plt.legend(ncols=2, labelspacing=0.4, columnspacing=0.8)
+    plt.legend(loc="lower center", ncols=2, labelspacing=0.4, columnspacing=0.8)
     plt.tight_layout()
     plt.show()
