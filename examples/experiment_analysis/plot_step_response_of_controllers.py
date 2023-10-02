@@ -21,9 +21,9 @@ plt.rcParams.update(
 START_TIME = 59.0
 END_TIME = 67.0
 experiments = {
-    "20230925_092200": {"linestyle": "dotted", "label": "PID"},
-    "20230925_093236": {"linestyle": "dashed", "label": "P-satI-D"},
-    "20230925_094023": {"linestyle": "dashdot", "label": "P-satI-D+GC"},
+    "20230925_092200": {"linestyle": "solid", "marker": "o", "label": "PID"},
+    "20230925_093236": {"linestyle": "dashed", "marker": "^", "label": "P-satI-D"},
+    "20230925_094023": {"linestyle": "dashdot", "marker": "s", "label": "P-satI-D+GC"},
 }
 
 
@@ -53,9 +53,11 @@ if __name__ == "__main__":
 
     figsize = (4.5, 3)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    lw_ref = 1.9  # linewidth for reference trajectory
-    lw = 2.1  # linewidth for the actual trajectory
-    dashes = (1.2, 0.8)
+    lw_ref = 2.5  # linewidth for reference trajectory
+    lw = 2.0  # linewidth for the actual trajectory
+    # dashes = (1.2, 0.8)
+    markevery = 10
+    ms = 4.5  # marker size
 
     plt.figure(figsize=figsize, num="Step response: End-effector position")
     ax1 = plt.gca()
@@ -68,19 +70,19 @@ if __name__ == "__main__":
                 ci_ts["ts"],
                 ci_ts["chiee_des"][:, 0]*1e3,
                 color=colors[0],
-                linestyle="solid",
+                linestyle="dotted",
                 linewidth=lw_ref,
                 # dashes=dashes,
-                label=r"$p_\mathrm{x}^\mathrm{d}$",
+                label=r"$p_\mathrm{x}^\mathrm{d}$ Reference",
             )
             ax2.plot(
                 ci_ts["ts"],
                 ci_ts["chiee_des"][:, 1]*1e3,
                 color=colors[1],
-                linestyle="solid",
+                linestyle="dotted",
                 linewidth=lw_ref,
                 # dashes=dashes,
-                label=r"$p_\mathrm{y}^\mathrm{d}$",
+                label=r"$p_\mathrm{y}^\mathrm{d}$ Reference",
             )
         ax1.plot(
             ci_ts["ts"],
@@ -88,7 +90,11 @@ if __name__ == "__main__":
             color=colors[0],
             linestyle=experiments[experiment_id]["linestyle"],
             linewidth=lw,
-            # label=r"$p_\mathrm{x}$",
+            marker=experiments[experiment_id]["marker"],
+            markeredgecolor="black",
+            markevery=markevery,
+            markersize=ms,
+            label=r"$p_\mathrm{x}$ " + experiments[experiment_id]["label"],
         )
         ax2.plot(
             ci_ts["ts"],
@@ -96,14 +102,20 @@ if __name__ == "__main__":
             color=colors[1],
             linestyle=experiments[experiment_id]["linestyle"],
             linewidth=lw,
-            # label=r"$p_\mathrm{y}$",
+            marker=experiments[experiment_id]["marker"],
+            markeredgecolor="black",
+            markevery=markevery,
+            markersize=ms,
+            label=r"$p_\mathrm{y}$ " + experiments[experiment_id]["label"],
         )
 
-    ax1.set_xlabel(r"$t$ [s]")
+    ax1.set_xlabel(r"Time $t$ [s]")
     ax1.set_ylabel(r"x-position $p_{\mathrm{ee},x}$ [mm]")
     ax2.set_ylabel(r"y-position $p_{\mathrm{ee},y}$ [mm]")
-    ax1.legend(loc="lower center")
-    ax2.legend(loc="lower right")
+    ax1.set_ylim([-17.0, 18.0])
+    ax2.set_ylim([100.0, 142.5])
+    ax1.legend(loc="lower right")
+    ax2.legend(loc=(0.5, 0.5))
     plt.grid(True)
     plt.box(True)
     plt.tight_layout()
