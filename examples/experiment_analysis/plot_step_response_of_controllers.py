@@ -51,7 +51,7 @@ if __name__ == "__main__":
         experiments[experiment_id]["data_ts"] = data_ts
         experiments[experiment_id]["ci_ts"] = ci_ts
 
-    figsize = (4.5, 3)
+    figsize = (5.0, 3)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     lw_ref = 2.5  # linewidth for reference trajectory
     lw = 2.0  # linewidth for the actual trajectory
@@ -114,8 +114,8 @@ if __name__ == "__main__":
     ax2.set_ylabel(r"y-position $p_{\mathrm{ee},y}$ [mm]")
     ax1.set_ylim([-17.0, 18.0])
     ax2.set_ylim([100.0, 142.5])
-    ax1.legend(loc="lower right")
-    ax2.legend(loc=(0.5, 0.5))
+    ax1.legend(loc=(0.57, 0.05), labelspacing=0.3)
+    ax2.legend(loc=(0.57, 0.55), labelspacing=0.3)
     plt.grid(True)
     plt.box(True)
     plt.tight_layout()
@@ -135,7 +135,7 @@ if __name__ == "__main__":
                 linestyle="dotted",
                 linewidth=lw_ref,
                 dashes=dots,
-                label=r"$\kappa_\mathrm{b}^\mathrm{d}$",
+                label=r"$\kappa_\mathrm{b}^\mathrm{d}$ Ref",
             )
             ax2.plot(
                 ci_ts["ts"],
@@ -144,7 +144,7 @@ if __name__ == "__main__":
                 linestyle="dotted",
                 linewidth=lw_ref,
                 dashes=dots,
-                label=r"$\sigma_\mathrm{sh}^\mathrm{d}$",
+                label=r"$\sigma_\mathrm{sh}^\mathrm{d}$ Ref",
             )
             ax2.plot(
                 ci_ts["ts"],
@@ -153,7 +153,7 @@ if __name__ == "__main__":
                 linestyle="dotted",
                 linewidth=lw_ref,
                 dashes=dots,
-                label=r"$\sigma_\mathrm{ax}^\mathrm{d}$",
+                label=r"$\sigma_\mathrm{ax}^\mathrm{d}$ Ref",
             )
         ax1.plot(
             ci_ts["ts"],
@@ -165,7 +165,7 @@ if __name__ == "__main__":
             markeredgecolor="black",
             markevery=markevery,
             markersize=ms,
-            # label=r"$\kappa_\mathrm{b}$",
+            label=r"$\kappa_\mathrm{b}$ " + experiments[experiment_id]["label"],
         )
         ax2.plot(
             ci_ts["ts"],
@@ -177,7 +177,7 @@ if __name__ == "__main__":
             markeredgecolor="black",
             markevery=markevery,
             markersize=ms,
-            # label=r"$\sigma_\mathrm{sh}$",
+            label=r"$\sigma_\mathrm{sh}$ " + experiments[experiment_id]["label"],
         )
         ax2.plot(
             ci_ts["ts"],
@@ -189,7 +189,7 @@ if __name__ == "__main__":
             markeredgecolor="black",
             markevery=markevery,
             markersize=ms,
-            # label=r"$\sigma_\mathrm{ax}$",
+            label=r"$\sigma_\mathrm{ax}$ " + experiments[experiment_id]["label"],
         )
 
     ax1.set_xlabel(r"Time $t$ [s]")
@@ -197,8 +197,8 @@ if __name__ == "__main__":
     ax2.set_ylabel(r"Linear strains $\sigma$ [-]")
     ax1.set_ylim([-7.0, 4.0])
     ax2.set_ylim([-0.05, 1.1])
-    ax1.legend(loc="center")
-    ax2.legend(loc="center right")
+    ax1.legend(loc=(0.4, 0.7), fontsize="small", labelspacing=0.3)
+    ax2.legend(loc=(0.4, 0.1), ncols=2, fontsize="small",  columnspacing=0.5, labelspacing=0.3)
     plt.grid(True)
     plt.box(True)
     plt.tight_layout()
