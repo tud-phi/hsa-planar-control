@@ -56,7 +56,7 @@ def main():
     linewidth_dotted = 2.25
     dashes = (1.2, 0.8)
 
-    plt.figure(figsize=(4.5, 3), num="End-effector position")
+    plt.figure(figsize=figsize, num="End-effector position")
     ax = plt.gca()
     ax.plot(
         ts,
