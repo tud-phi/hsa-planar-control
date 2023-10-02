@@ -131,6 +131,7 @@ if __name__ == "__main__":
         controller_state_init={},
         ode_solver_class=Dopri5,
     )
+    sim_ts["xi_ts"] = xi_eq + sim_ts["q_ts"]
     sim_ts["chiee_ts"] = vmap(
         partial(forward_kinematics_end_effector_fn, params),
     )(sim_ts["q_ts"])
