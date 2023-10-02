@@ -60,7 +60,7 @@ def main():
     ax = plt.gca()
     ax.plot(
         ts,
-        ci_ts["chiee_des"][:, 0],
+        ci_ts["chiee_des"][:, 0] * 1e3,
         color=colors[0],
         linestyle=":",
         linewidth=linewidth_dotted,
@@ -69,7 +69,7 @@ def main():
     )
     ax.plot(
         ts,
-        ci_ts["chiee_des"][:, 1],
+        ci_ts["chiee_des"][:, 1] * 1e3,
         color=colors[1],
         linestyle=":",
         linewidth=linewidth_dotted,
@@ -78,18 +78,18 @@ def main():
     )
     ax.plot(
         ts,
-        ci_ts["chiee"][:, 0],
+        ci_ts["chiee"][:, 0] * 1e3,
         color=colors[0],
         label=r"$p_\mathrm{x}$",
     )
     ax.plot(
         ts,
-        ci_ts["chiee"][:, 1],
+        ci_ts["chiee"][:, 1] * 1e3,
         color=colors[1],
         label=r"$p_\mathrm{y}$",
     )
     plt.xlabel(r"$t$ [s]")
-    plt.ylabel(r"End-effector position $p_\mathrm{ee}$ [m]")
+    plt.ylabel(r"End-effector position $p_\mathrm{ee}$ [mm]")
     plt.legend()
     plt.grid(True)
     plt.box(True)
