@@ -1,3 +1,4 @@
+import dill
 from jax import config as jax_config
 
 jax_config.update("jax_enable_x64", True)  # double precision
@@ -117,8 +118,15 @@ if __name__ == "__main__":
         duration=data_ts["t_ts"][-1].item(),
         control_fn=control_fn,
         controller_state_init={},
-        ode_solver_class=Euler,
+        ode_solver_class=Dopri5,
     )
+    sim_ts["chiee_ts"] = vmap(
+        partial(forward_kinematics_end_effector_fn, params),
+    )(sim_ts["q_ts"])
+    with open(
+        experiment_data_path / f"model_inference_history.dill", "wb"
+    ) as sim_ts_file:
+        dill.dump(sim_ts, sim_ts_file)
 
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     B_xi = sys_helpers["B_xi"]
