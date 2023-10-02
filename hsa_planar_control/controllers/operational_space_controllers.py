@@ -22,7 +22,7 @@ def basic_operational_space_pid(
     **kwargs,
 ) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
     """
-    Implement a basic PID controller in operational space. 
+    Implement a basic PID controller in operational space.
     Args:
         t: time [s]
         chiee: current end effector pose of shape (3, )
@@ -81,7 +81,7 @@ def basic_operational_space_pid_configuration_input(
     **kwargs,
 ) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
     """
-    Implement a basic PID controller in operational space. 
+    Implement a basic PID controller in operational space.
     Takes the robot configuration as input and uses forward kinematics to compute the end-effector pose.
     Args:
         t: time [s]

@@ -19,6 +19,7 @@ ros_params = {
     "payload_mass": 0.0,  # kg
 }
 
+
 def generate_launch_description():
     # Create the NatNet client node
     natnet_config = os.path.join(

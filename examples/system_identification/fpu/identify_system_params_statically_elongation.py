@@ -84,7 +84,9 @@ known_params = {
     # Scaling of shear stiffness with twist strain [Nm/rad]
     "C_S_sh": -3.85580745914e-3 * ones_rod,
     # center of origin of the payload relative to end-effector [m]
-    "CoGpl": jnp.array([0.0, -12e-3 - 5e-3]),  # subtract 12 mm for the thickness of the platform
+    "CoGpl": jnp.array(
+        [0.0, -12e-3 - 5e-3]
+    ),  # subtract 12 mm for the thickness of the platform
 }
 
 if SYSTEM_ID_STEP == 0:
@@ -153,7 +155,9 @@ elif SYSTEM_ID_STEP == 1:
     # previously identified parameters in step 0
     known_params["sigma_a_eq"] = 1.06327873 * ones_rod
     known_params["S_a_hat"] = 5.66472469 * ones_rod
-    known_params["C_S_a"] = 0.0 * ones_rod  # we assume that change of S_a is negligible without payload
+    known_params["C_S_a"] = (
+        0.0 * ones_rod
+    )  # we assume that change of S_a is negligible without payload
 
     experiment_configs = {
         # Staircase elongation with changing mass up to 210 deg

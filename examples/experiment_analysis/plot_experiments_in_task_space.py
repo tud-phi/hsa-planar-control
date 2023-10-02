@@ -54,10 +54,17 @@ experiment_folder = Path("data") / "experiments"
 
 
 if __name__ == "__main__":
-    fig = plt.figure(figsize=(3.0, 3.0), num=f"End-effector position: {TRAJ_TYPE} trajectory")
+    fig = plt.figure(
+        figsize=(3.0, 3.0), num=f"End-effector position: {TRAJ_TYPE} trajectory"
+    )
     for experiment_idx, experiment_id in enumerate(experiments.keys()):
         with open(
-            str(experiment_folder / experiment_id / ("rosbag2_" + experiment_id + "_0.dill")), "rb"
+            str(
+                experiment_folder
+                / experiment_id
+                / ("rosbag2_" + experiment_id + "_0.dill")
+            ),
+            "rb",
         ) as f:
             data_ts = dill.load(f)
         ci_ts = data_ts["controller_info_ts"]

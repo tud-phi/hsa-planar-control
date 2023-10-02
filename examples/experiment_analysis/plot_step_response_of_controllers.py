@@ -33,7 +33,12 @@ experiment_folder = Path("data") / "experiments"
 if __name__ == "__main__":
     for experiment_idx, experiment_id in enumerate(experiments.keys()):
         with open(
-            str(experiment_folder / experiment_id / ("rosbag2_" + experiment_id + "_0.dill")), "rb"
+            str(
+                experiment_folder
+                / experiment_id
+                / ("rosbag2_" + experiment_id + "_0.dill")
+            ),
+            "rb",
         ) as f:
             data_ts = dill.load(f)
         ci_ts = data_ts["controller_info_ts"]
@@ -68,7 +73,7 @@ if __name__ == "__main__":
         if experiment_idx == 0:
             ax1.plot(
                 ci_ts["ts"],
-                ci_ts["chiee_des"][:, 0]*1e3,
+                ci_ts["chiee_des"][:, 0] * 1e3,
                 color=colors[0],
                 linestyle="dotted",
                 linewidth=lw_ref,
@@ -77,7 +82,7 @@ if __name__ == "__main__":
             )
             ax2.plot(
                 ci_ts["ts"],
-                ci_ts["chiee_des"][:, 1]*1e3,
+                ci_ts["chiee_des"][:, 1] * 1e3,
                 color=colors[1],
                 linestyle="dotted",
                 linewidth=lw_ref,
@@ -86,7 +91,7 @@ if __name__ == "__main__":
             )
         ax1.plot(
             ci_ts["ts"],
-            ci_ts["chiee"][:, 0]*1e3,
+            ci_ts["chiee"][:, 0] * 1e3,
             color=colors[0],
             linestyle=experiments[experiment_id]["linestyle"],
             linewidth=lw,
@@ -98,7 +103,7 @@ if __name__ == "__main__":
         )
         ax2.plot(
             ci_ts["ts"],
-            ci_ts["chiee"][:, 1]*1e3,
+            ci_ts["chiee"][:, 1] * 1e3,
             color=colors[1],
             linestyle=experiments[experiment_id]["linestyle"],
             linewidth=lw,
@@ -198,7 +203,9 @@ if __name__ == "__main__":
     ax1.set_ylim([-7.0, 4.0])
     ax2.set_ylim([-0.05, 1.1])
     ax1.legend(loc=(0.4, 0.7), fontsize="small", labelspacing=0.3)
-    ax2.legend(loc=(0.4, 0.1), ncols=2, fontsize="small",  columnspacing=0.5, labelspacing=0.3)
+    ax2.legend(
+        loc=(0.4, 0.1), ncols=2, fontsize="small", columnspacing=0.5, labelspacing=0.3
+    )
     plt.grid(True)
     plt.box(True)
     plt.tight_layout()

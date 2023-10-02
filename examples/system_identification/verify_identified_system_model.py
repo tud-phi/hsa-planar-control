@@ -17,7 +17,9 @@ from hsa_planar_control.collocated_form import mapping_into_collocated_form_fact
 from hsa_planar_control.rendering.opencv_renderer import animate_robot
 from hsa_planar_control.simulation import simulate_closed_loop_system
 from hsa_planar_control.system_identification.preprocessing import preprocess_data
-from hsa_planar_control.system_identification.rest_strain import identify_rest_strains_for_system_id_dataset
+from hsa_planar_control.system_identification.rest_strain import (
+    identify_rest_strains_for_system_id_dataset,
+)
 
 num_segments = 1
 num_rods_per_segment = 4
@@ -81,7 +83,11 @@ if __name__ == "__main__":
         plotting=False,
     )
     # identify rest strains
-    params["kappa_b_eq"], params["sigma_sh_eq"], params["sigma_a_eq"] = identify_rest_strains_for_system_id_dataset(
+    (
+        params["kappa_b_eq"],
+        params["sigma_sh_eq"],
+        params["sigma_a_eq"],
+    ) = identify_rest_strains_for_system_id_dataset(
         sym_exp_filepath,
         sys_helpers,
         params,

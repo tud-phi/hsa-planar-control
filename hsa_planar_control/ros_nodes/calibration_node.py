@@ -62,7 +62,7 @@ class CalibrationNode(Node):
             self.known_params = PARAMS_EPU_SYSTEM_ID.copy()
         else:
             raise ValueError(f"Unknown HSA material: {hsa_material}")
-        
+
         # rest strains used for inverse kinematics
         self.xi_eq_ik = sys_helpers["rest_strains_fn"](self.known_params)
 
@@ -124,7 +124,9 @@ class CalibrationNode(Node):
         )
 
         # self.get_logger().info(f"Pi_est: {Pi_est}")
-        self.get_logger().info(f"kappa_b_eq: {Pi_est[0]}, sigma_sh_eq: {Pi_est[1]}, sigma_a_eq: {Pi_est[2]}")
+        self.get_logger().info(
+            f"kappa_b_eq: {Pi_est[0]}, sigma_sh_eq: {Pi_est[1]}, sigma_a_eq: {Pi_est[2]}"
+        )
 
 
 def main(args=None):

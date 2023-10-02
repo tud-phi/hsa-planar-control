@@ -72,7 +72,9 @@ if __name__ == "__main__":
 
     pee_ss_sps = jnp.zeros((num_setpoints, 2))  # desired end-effector positions
     q_ss_sps = jnp.zeros((num_setpoints, q0.shape[0]))  # desired configurations
-    phi_ss_sps = jnp.zeros((num_setpoints, phi0.shape[0]))  # steady-state control inputs
+    phi_ss_sps = jnp.zeros(
+        (num_setpoints, phi0.shape[0])
+    )  # steady-state control inputs
     for setpoint_idx in range(num_setpoints):
         rng, sample_key = random.split(rng)
         phi_ss = random.uniform(

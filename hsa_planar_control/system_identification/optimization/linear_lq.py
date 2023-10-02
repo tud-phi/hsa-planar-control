@@ -198,21 +198,14 @@ def optimize_with_closed_form_linear_lq(
     cal_A = cal_A.reshape(-1, cal_A.shape[-1])
     rank_cal_A = jnp.linalg.matrix_rank(cal_A)
     if verbose:
-        print(
-            f"The entire cal_A matrix of shape {cal_A.shape} has rank: {rank_cal_A}"
-        )
+        print(f"The entire cal_A matrix of shape {cal_A.shape} has rank: {rank_cal_A}")
     if rank_cal_A < cal_A.shape[-1]:
         raise ValueError(
             f"The cal_A matrix of shape {cal_A.shape} has rank: {rank_cal_A}. "
             f"The system parameters are not identifiable."
         )
 
-    cal_B = vmap(
-        cal_b_fn,
-        in_axes=(0, 0, 0, 0),
-        axis_name="mpl",
-        out_axes=0,
-    )(
+    cal_B = vmap(cal_b_fn, in_axes=(0, 0, 0, 0), axis_name="mpl", out_axes=0,)(
         data_ts["xi_ts"],
         data_ts["xi_d_ts"],
         data_ts["xi_dd_ts"],

@@ -55,7 +55,7 @@ common_params = {
     "sigma_sh_eq": sigma_sh_eq,
     "sigma_a_eq": sigma_a_eq,
     "phi_max": phi_max,
-    "payload_mass": payload_mass
+    "payload_mass": payload_mass,
 }
 inverse_kinematics_params = common_params.copy()
 planning_params = common_params | {
@@ -67,29 +67,29 @@ control_params = common_params | {
     "controller_type": controller_type,
 }
 if controller_type == "basic_operational_space_pid":
-    control_params.update({
-        "Kp": 1.0e1,  # [rad/m]
-        "Ki": 1.1e2,  # [rad/(ms)]
-        "Kd": 2.5e-1,  # [rad s/m]
-    })
+    control_params.update(
+        {
+            "Kp": 1.0e1,  # [rad/m]
+            "Ki": 1.1e2,  # [rad/(ms)]
+            "Kd": 2.5e-1,  # [rad s/m]
+        }
+    )
 elif controller_type == "P_satI_D_collocated_form_plus_steady_state_actuation":
-    control_params.update({
-        "Kp": 3.0e-1,  # [-]
-        "Ki": 5.0e-2,  # [1/s]
-        "Kd": 2.0e-2,  # [s]
-        "gamma": 1e2
-    })
-elif controller_type == "P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation":
-    control_params.update({
-        "Kp": 3.0e-1,  # [-]
-        "Ki": 5.0e-2,  # [1/s]
-        "Kd": 2.0e-2,  # [s]
-        "gamma": 1e2
-    })
+    control_params.update(
+        {"Kp": 3.0e-1, "Ki": 5.0e-2, "Kd": 2.0e-2, "gamma": 1e2}  # [-]  # [1/s]  # [s]
+    )
+elif (
+    controller_type
+    == "P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation"
+):
+    control_params.update(
+        {"Kp": 3.0e-1, "Ki": 5.0e-2, "Kd": 2.0e-2, "gamma": 1e2}  # [-]  # [1/s]  # [s]
+    )
 else:
     raise ValueError(f"Unknown controller type: {controller_type}")
 
 print("Control parameters:\n", control_params, "\n")
+
 
 def generate_launch_description():
     # Create the NatNet client node
@@ -161,7 +161,17 @@ def generate_launch_description():
     if RECORD:
         launch_actions.append(
             ExecuteProcess(
-                cmd=["ros2", "bag", "record", "-a", "-o", BAG_PATH, "-s", "sqlite3", "-x /rendering"],
+                cmd=[
+                    "ros2",
+                    "bag",
+                    "record",
+                    "-a",
+                    "-o",
+                    BAG_PATH,
+                    "-s",
+                    "sqlite3",
+                    "-x /rendering",
+                ],
                 output="screen",
             )
         )

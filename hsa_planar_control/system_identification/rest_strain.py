@@ -3,7 +3,10 @@ import jax.numpy as jnp
 from os import PathLike
 from typing import Dict, Tuple
 
-from .optimization.linear_lq import linear_lq_optim_problem_factory, optimize_with_closed_form_linear_lq
+from .optimization.linear_lq import (
+    linear_lq_optim_problem_factory,
+    optimize_with_closed_form_linear_lq,
+)
 
 
 def identify_axial_rest_strain_for_system_id_dataset(
@@ -98,9 +101,15 @@ def identify_rest_strains_for_system_id_dataset(
         select_data_ts,
         verbose=False,
     )
-    kappa_b_eq_scalar, sigma_sh_eq_scalar, sigma_a_eq_scalar = Pi_est[0], Pi_est[1], Pi_est[2]
-    print(f"Identified scalar rest strains:\n"
-          f"kappa_b_eq={kappa_b_eq_scalar}, sigma_sh_eq={sigma_sh_eq_scalar}, sigma_a_eq={sigma_a_eq_scalar}")
+    kappa_b_eq_scalar, sigma_sh_eq_scalar, sigma_a_eq_scalar = (
+        Pi_est[0],
+        Pi_est[1],
+        Pi_est[2],
+    )
+    print(
+        f"Identified scalar rest strains:\n"
+        f"kappa_b_eq={kappa_b_eq_scalar}, sigma_sh_eq={sigma_sh_eq_scalar}, sigma_a_eq={sigma_a_eq_scalar}"
+    )
 
     kappa_b_eq = kappa_b_eq_scalar * jnp.ones_like(params["rout"])
     sigma_sh_eq = sigma_sh_eq_scalar * jnp.ones_like(params["rout"])

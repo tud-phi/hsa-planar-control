@@ -18,7 +18,11 @@ from rclpy.time import Time
 from pathlib import Path
 
 from geometry_msgs.msg import Pose2D
-from hsa_control_interfaces.msg import PlanarSetpoint, PlanarSetpointControllerInfo, Pose2DStamped
+from hsa_control_interfaces.msg import (
+    PlanarSetpoint,
+    PlanarSetpointControllerInfo,
+    Pose2DStamped,
+)
 from mocap_optitrack_interfaces.msg import PlanarCsConfiguration
 
 from hsa_actuation.hsa_actuation_base_node import HsaActuationBaseNode
@@ -124,7 +128,9 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         )
         # history of end-effector poses
         # the longer the history, the more delays we introduce, but the less noise we get
-        self.tchiee_hs = jnp.zeros((self.get_parameter("history_length_for_diff").value,))
+        self.tchiee_hs = jnp.zeros(
+            (self.get_parameter("history_length_for_diff").value,)
+        )
         self.chiee_hs = jnp.zeros(
             (self.get_parameter("history_length_for_diff").value, self.chiee.shape[0])
         )
@@ -150,13 +156,15 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.phi_ss = jnp.zeros_like(phi0)
         self.setpoint_msg = None
         self.declare_parameter("reset_integral_error_on_setpoint_change", False)
-        self.reset_integral_error = self.get_parameter("reset_integral_error_on_setpoint_change").value
+        self.reset_integral_error = self.get_parameter(
+            "reset_integral_error_on_setpoint_change"
+        ).value
 
         self.declare_parameter(
             "controller_type", "P_satI_D_collocated_form_plus_steady_state_actuation"
         )
         self.controller_type = self.get_parameter("controller_type").value
-         # it seems that roughly 45 Hz is the maximum at the moment
+        # it seems that roughly 45 Hz is the maximum at the moment
         self.declare_parameter("control_frequency", 40)
         self.control_frequency = self.get_parameter("control_frequency").value
         control_dt = 1 / self.control_frequency
@@ -310,7 +318,9 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
         if self.reset_integral_error:
             # reset integral error
-            self.controller_state["integral_error"] = jnp.zeros_like(self.controller_state["integral_error"])
+            self.controller_state["integral_error"] = jnp.zeros_like(
+                self.controller_state["integral_error"]
+            )
 
     def compute_q_d(self) -> Array:
         """
@@ -339,7 +349,6 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         self.configuration_velocity_pub.publish(q_d_msg)
 
         return q_d
-    
 
     def compute_chiee_d(self) -> Array:
         """
@@ -361,7 +370,6 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             chiee_d = chiee_d.at[i].set(chiee_d_hs[-1])
 
         return chiee_d
-
 
     def map_motor_angles_to_actuation_coordinates(self, motor_angles: Array) -> Array:
         """
@@ -472,10 +480,16 @@ class ModelBasedControlNode(HsaActuationBaseNode):
         controller_info_msg.header.stamp = self.get_clock().now().to_msg()
         controller_info_msg.planar_setpoint = self.setpoint_msg
         controller_info_msg.q = PlanarCsConfiguration(
-            header=controller_info_msg.header, kappa_b=q[0].item(), sigma_sh=q[1].item(), sigma_a=q[2].item()
+            header=controller_info_msg.header,
+            kappa_b=q[0].item(),
+            sigma_sh=q[1].item(),
+            sigma_a=q[2].item(),
         )
         controller_info_msg.q_d = PlanarCsConfiguration(
-            header=controller_info_msg.header, kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item()
+            header=controller_info_msg.header,
+            kappa_b=q_d[0].item(),
+            sigma_sh=q_d[1].item(),
+            sigma_a=q_d[2].item(),
         )
         controller_info_msg.chiee = Pose2DStamped(
             header=controller_info_msg.header,
@@ -483,7 +497,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 x=self.chiee[0].item(),
                 y=self.chiee[1].item(),
                 theta=self.chiee[2].item(),
-            )
+            ),
         )
         controller_info_msg.chiee_d = Pose2DStamped(
             header=controller_info_msg.header,
@@ -491,7 +505,7 @@ class ModelBasedControlNode(HsaActuationBaseNode):
                 x=self.chiee_d[0].item(),
                 y=self.chiee_d[1].item(),
                 theta=self.chiee_d[2].item(),
-            )
+            ),
         )
         if "e_int" in controller_info:
             controller_info_msg.e_int = controller_info["e_int"].tolist()
