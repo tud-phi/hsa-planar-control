@@ -55,7 +55,7 @@ if __name__ == "__main__":
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     lw_ref = 2.5  # linewidth for reference trajectory
     lw = 2.0  # linewidth for the actual trajectory
-    # dashes = (1.2, 0.8)
+    dots = (1.2, 0.8)
     markevery = 10
     ms = 4.5  # marker size
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
                 color=colors[0],
                 linestyle="dotted",
                 linewidth=lw_ref,
-                # dashes=dashes,
+                dashes=dots,
                 label=r"$p_\mathrm{x}^\mathrm{d}$ Reference",
             )
             ax2.plot(
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                 color=colors[1],
                 linestyle="dotted",
                 linewidth=lw_ref,
-                # dashes=dashes,
+                dashes=dots,
                 label=r"$p_\mathrm{y}^\mathrm{d}$ Reference",
             )
         ax1.plot(
@@ -132,27 +132,27 @@ if __name__ == "__main__":
                 ci_ts["ts"],
                 ci_ts["q_des"][:, 0],
                 color=colors[0],
-                linestyle="solid",
+                linestyle="dotted",
                 linewidth=lw_ref,
-                # dashes=dashes,
+                dashes=dots,
                 label=r"$\kappa_\mathrm{b}^\mathrm{d}$",
             )
             ax2.plot(
                 ci_ts["ts"],
                 ci_ts["q_des"][:, 1],
                 color=colors[1],
-                linestyle="solid",
+                linestyle="dotted",
                 linewidth=lw_ref,
-                # dashes=dashes,
+                dashes=dots,
                 label=r"$\sigma_\mathrm{sh}^\mathrm{d}$",
             )
             ax2.plot(
                 ci_ts["ts"],
                 ci_ts["q_des"][:, 2],
                 color=colors[2],
-                linestyle="solid",
+                linestyle="dotted",
                 linewidth=lw_ref,
-                # dashes=dashes,
+                dashes=dots,
                 label=r"$\sigma_\mathrm{ax}^\mathrm{d}$",
             )
         ax1.plot(
@@ -161,6 +161,10 @@ if __name__ == "__main__":
             color=colors[0],
             linestyle=experiments[experiment_id]["linestyle"],
             linewidth=lw,
+            marker=experiments[experiment_id]["marker"],
+            markeredgecolor="black",
+            markevery=markevery,
+            markersize=ms,
             # label=r"$\kappa_\mathrm{b}$",
         )
         ax2.plot(
@@ -169,6 +173,10 @@ if __name__ == "__main__":
             color=colors[1],
             linestyle=experiments[experiment_id]["linestyle"],
             linewidth=lw,
+            marker=experiments[experiment_id]["marker"],
+            markeredgecolor="black",
+            markevery=markevery,
+            markersize=ms,
             # label=r"$\sigma_\mathrm{sh}$",
         )
         ax2.plot(
@@ -177,12 +185,18 @@ if __name__ == "__main__":
             color=colors[2],
             linestyle=experiments[experiment_id]["linestyle"],
             linewidth=lw,
+            marker=experiments[experiment_id]["marker"],
+            markeredgecolor="black",
+            markevery=markevery,
+            markersize=ms,
             # label=r"$\sigma_\mathrm{ax}$",
         )
 
-    ax1.set_xlabel(r"$t$ [s]")
+    ax1.set_xlabel(r"Time $t$ [s]")
     ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{b}$ [rad/m]")
     ax2.set_ylabel(r"Linear strains $\sigma$ [-]")
+    ax1.set_ylim([-7.0, 4.0])
+    ax2.set_ylim([-0.05, 1.1])
     ax1.legend(loc="center")
     ax2.legend(loc="center right")
     plt.grid(True)
