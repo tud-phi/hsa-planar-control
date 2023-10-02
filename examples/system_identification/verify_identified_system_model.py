@@ -82,6 +82,11 @@ if __name__ == "__main__":
         derivative_method="savgol_filter",
         plotting=False,
     )
+    with open(
+        experiment_data_path / f"preprocessed_data_history.dill", "wb"
+    ) as data_ts_file:
+        dill.dump(data_ts, data_ts_file)
+
     # identify rest strains
     (
         params["kappa_b_eq"],
