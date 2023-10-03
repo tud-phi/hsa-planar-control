@@ -3,7 +3,7 @@ from jax import Array, debug, jit, lax, vmap
 from jax import numpy as jnp
 from functools import partial
 from jsrm.systems import planar_hsa
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, Tuple
 
 
 def simulate_closed_loop_system(
@@ -89,3 +89,54 @@ def simulate_closed_loop_system(
     last_carry, sim_ts = lax.scan(scan_fn, init_carry, control_ts)
 
     return sim_ts
+
+
+def simulate_steady_state(
+    dynamical_matrices_fn: Callable,
+    params: Dict[str, Array],
+    phi_ss: Array,
+    sim_dt: float = 1e-3,
+    duration: float = 5.0,
+    ode_solver_class=Dopri5,
+) -> Tuple[Array, Array]:
+    """
+    Simulate the steady-state response of the system.
+    Args:
+        dynamical_matrices_fn: function that returns the dynamical matrices
+        params: dictionary of system parameters
+        phi_ss: steady-state control inputs
+        sim_dt: time step for simulation
+        duration: duration of simulation. This is the time we expect the system to take to reach steady-state.
+        ode_solver_class: ODE solver class
+
+    Returns:
+        q_ss: steady-state configuration
+        q_d_ss: steady-state configuration velocity. Should be almost zero, otherwise duration is too short.
+    """
+    num_segments = params["l"].shape[0]
+    n_q = 3 * num_segments  # number of generalized coordinates
+    # initial condition
+    q0 = jnp.zeros((n_q,))  # initial configuration
+    q_d0 = jnp.zeros((n_q,))  # initial velocity
+    x0 = jnp.concatenate((q0, q_d0))
+
+    ode_fn = planar_hsa.ode_factory(dynamical_matrices_fn, params=params)
+    ode_term = ODETerm(partial(ode_fn, u=phi_ss))
+    ode_solver = ode_solver_class()
+
+    sol = diffeqsolve(
+        ode_term,
+        solver=ode_solver,
+        t0=0.0,
+        t1=duration,
+        dt0=sim_dt,
+        y0=x0,
+        max_steps=int(duration // sim_dt) + 100,
+    )
+
+    # last (i.e. steady-state) configuration
+    q_ss = sol.ys[-1][:n_q]
+    # also return the last configuration velocity so that we can check that it is (almost) zero
+    q_d_ss = sol.ys[-1][n_q:]
+
+    return q_ss, q_d_ss
