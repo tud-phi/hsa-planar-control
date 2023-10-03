@@ -3,7 +3,7 @@ from functools import partial
 from jax import config as jax_config
 
 jax_config.update("jax_enable_x64", True)  # double precision
-from jax import Array, jit, vmap
+from jax import Array, jit, random, vmap
 import jax.numpy as jnp
 import jsrm
 from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL, PARAMS_EPU_CONTROL
@@ -21,6 +21,10 @@ sym_exp_filepath = (
     / "symbolic_expressions"
     / f"planar_hsa_ns-{num_segments}_nrs-{num_rods_per_segment}.dill"
 )
+
+# seed random number generator
+seed = 0
+rng = random.PRNGKey(seed)
 
 # set parameters
 hsa_material = "fpu"
@@ -61,9 +65,8 @@ if __name__ == "__main__":
     phi_max = params["phi_max"].flatten()
 
     # generate max actuation samples
-    phi_mid = 0.5 * phi_max
-    u = jnp.linspace(-phi_mid.mean(), phi_mid.mean(), 50)
-    phi_ss = jnp.stack([phi_mid[0] + u, phi_mid[1] - u], axis=1)
+    u = jnp.linspace(-phi_max.mean(), phi_max.mean(), 50)
+    phi_ss = jnp.clip(jnp.stack([phi_max[0] + u, phi_max[1] - u], axis=1), None, phi_max)
     max_actuation_samples = {"phi_ss": phi_ss}
     max_actuation_samples["q_ss"], max_actuation_samples["q_d_ss"] = batched_simulate_steady_state_fn(
         max_actuation_samples["phi_ss"]
@@ -79,9 +82,24 @@ if __name__ == "__main__":
     )
     min_actuation_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(min_actuation_samples["q_ss"])
 
+    # generate random samples for plotting colors of axial strain
+    rng, sample_key = random.split(rng)
+    phi_ss = random.uniform(
+        sample_key,
+        (10000, phi_max.shape[0]),
+        minval=0.0,
+        maxval=phi_max,
+    )
+    random_samples = {"phi_ss": phi_ss}
+    random_samples["q_ss"], random_samples["q_d_ss"] = batched_simulate_steady_state_fn(
+        random_samples["phi_ss"],
+    )
+    random_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(random_samples["q_ss"])
+
     operational_workspace_samples = {
         "max_actuation": max_actuation_samples,
         "min_actuation": min_actuation_samples,
+        "random": random_samples,
     }
 
     data_folder = Path(__file__).parent.parent.parent / "data" / "kinematics"
