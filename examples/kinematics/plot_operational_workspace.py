@@ -295,6 +295,8 @@ if __name__ == "__main__":
     plt.xlabel(r"$p_{\mathrm{ee},x}$ [m]")
     plt.ylabel(r"$p_{\mathrm{ee},y}$ [m]")
     plt.axis("equal")
+    ax.invert_xaxis()
+    ax.invert_yaxis()
     plt.colorbar(label=r"Mean steady-state actuation $\frac{\phi_1^\mathrm{ss}+\phi_2^\mathrm{ss}}{2}$ [rad]")
     plt.grid(True)
     plt.box(True)

@@ -18,7 +18,7 @@ plt.rcParams.update(
     }
 )
 
-TRAJ_TYPE = "mit-csail"
+TRAJ_TYPE = "star"  # "star", "tud-flame", "mit-csail
 
 START_TIME = 0.0
 END_TIME = None
@@ -57,6 +57,7 @@ if __name__ == "__main__":
     fig = plt.figure(
         figsize=(3.0, 3.0), num=f"End-effector position: {TRAJ_TYPE} trajectory"
     )
+    ax = plt.gca()
     for experiment_idx, experiment_id in enumerate(experiments.keys()):
         with open(
             str(
@@ -88,7 +89,7 @@ if __name__ == "__main__":
                 ci_ts["chiee_des"][:, 1] * 1e3,
                 color="black",
                 linestyle="--",
-                # linewidth=1.5,
+                linewidth=2.25,
                 # dashes=(1.2, 0.8),
                 label=r"Ref",
             )
@@ -106,8 +107,10 @@ if __name__ == "__main__":
     plt.axis("equal")
     plt.xlabel(r"$x$ [mm]")
     plt.ylabel(r"$y$ [mm]")
+    ax.invert_xaxis()
+    ax.invert_yaxis()
     plt.grid(True)
     plt.box(True)
-    plt.legend(loc="lower center", ncols=2, labelspacing=0.4, columnspacing=0.8)
+    plt.legend(loc="upper center", ncols=2, labelspacing=0.4, columnspacing=0.8)
     plt.tight_layout()
     plt.show()
