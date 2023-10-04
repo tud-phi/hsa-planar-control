@@ -27,13 +27,13 @@ seed = 0
 rng = random.PRNGKey(seed)
 
 # set parameters
-hsa_material = "fpu"
-if hsa_material == "fpu":
+HSA_MATERIAL = "fpu"
+if HSA_MATERIAL == "fpu":
     params = PARAMS_FPU_CONTROL.copy()
-elif hsa_material == "epu":
+elif HSA_MATERIAL == "epu":
     params = PARAMS_EPU_CONTROL.copy()
 else:
-    raise ValueError(f"Unknown hsa_material: {hsa_material}")
+    raise ValueError(f"Unknown hsa_material: {HSA_MATERIAL}")
 
 sim_dt = 1e-3  # time step for simulation [s]
 duration = 5.0  # duration of simulation [s]
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     phi_max = params["phi_max"].flatten()
 
     # generate max actuation samples
-    u = jnp.linspace(-phi_max.mean(), phi_max.mean(), 50)
+    u = jnp.linspace(-phi_max.mean(), phi_max.mean(), 101)
     phi_ss = jnp.clip(jnp.stack([phi_max[0] + u, phi_max[1] - u], axis=1), None, phi_max)
     max_actuation_samples = {"phi_ss": phi_ss}
     max_actuation_samples["q_ss"], max_actuation_samples["q_d_ss"] = batched_simulate_steady_state_fn(
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     max_actuation_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(max_actuation_samples["q_ss"])
 
     # generate min actuation samples
-    u = jnp.linspace(-phi_max.mean(), phi_max.mean(), 50)
+    u = jnp.linspace(-phi_max.mean(), phi_max.mean(), 101)
     phi_ss = jnp.clip(jnp.stack([u, -u], axis=1), 0.0, None)
     min_actuation_samples = {"phi_ss": phi_ss}
     min_actuation_samples["q_ss"], min_actuation_samples["q_d_ss"] = batched_simulate_steady_state_fn(
@@ -100,6 +100,6 @@ if __name__ == "__main__":
     data_folder = Path(__file__).parent.parent.parent / "data" / "kinematics"
     data_folder.mkdir(parents=True, exist_ok=True)
     with open(
-        str(data_folder / f"operational_workspace_{hsa_material}.dill"), "wb"
+        str(data_folder / f"operational_workspace_{HSA_MATERIAL}.dill"), "wb"
     ) as f:
         dill.dump(operational_workspace_samples, f)

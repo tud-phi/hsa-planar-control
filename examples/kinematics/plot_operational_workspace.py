@@ -156,7 +156,9 @@ if __name__ == "__main__":
     )
 
     if SHOW_ROBOT_CONFIGS:
-        def plot_robot_configuration(idx: int, _q: Array, _ax: plt.Axes, _color: str = "CN"):
+        def visualize_robot_configuration(idx: int, _q: Array, _ax: plt.Axes, _color: str = "CN"):
+            print(f"Visualizing configuration q = {_q}")
+
             s_ps = jnp.linspace(0, jnp.sum(params["l"]), 100)
             lw = 8.0
             alpha = 0.25
@@ -275,20 +277,20 @@ if __name__ == "__main__":
                 chiee[1],
                 marker="o",
                 color=_color,
-                alpha=alpha,
+                alpha=min(alpha + 0.2, 1.0),
                 zorder=(idx + 1) * 10 + 2
             )
 
         # neutral configuration
-        plot_robot_configuration(
+        visualize_robot_configuration(
             0,
             min_actuation_samples["q_ss"][min_actuation_samples["q_ss"].shape[0] // 2],
             ax, colors[0]
         )
         # maximum bending left
-        plot_robot_configuration(1, max_actuation_samples["q_ss"][0], ax, colors[2])
+        visualize_robot_configuration(1, max_actuation_samples["q_ss"][0], ax, colors[2])
         # maximum bending right
-        plot_robot_configuration(2, max_actuation_samples["q_ss"][-1], ax, colors[3])
+        visualize_robot_configuration(2, max_actuation_samples["q_ss"][-1], ax, colors[3])
 
     plt.xlabel(r"$p_{\mathrm{ee},x}$ [m]")
     plt.ylabel(r"$p_{\mathrm{ee},y}$ [m]")
