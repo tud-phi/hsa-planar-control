@@ -30,11 +30,6 @@ rng = random.PRNGKey(seed)
 hsa_material = "fpu"
 if hsa_material == "fpu":
     params = PARAMS_FPU_CONTROL.copy()
-    params.update(
-        {
-            "phi_max": 200 / 180 * jnp.pi * jnp.ones_like(params["phi_max"]),
-        }
-    )
 elif hsa_material == "epu":
     params = PARAMS_EPU_CONTROL.copy()
 else:

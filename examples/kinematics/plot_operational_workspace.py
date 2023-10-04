@@ -41,11 +41,6 @@ SHOW_ROBOT_CONFIGS = True
 # set parameters
 if HSA_MATERIAL == "fpu":
     params = PARAMS_FPU_CONTROL.copy()
-    params.update(
-        {
-            "phi_max": 200 / 180 * jnp.pi * jnp.ones_like(params["phi_max"]),
-        }
-    )
 elif HSA_MATERIAL == "epu":
     params = PARAMS_EPU_CONTROL.copy()
 else:
