@@ -89,6 +89,9 @@ def main():
         caps=dict(x_show=False, y_show=False, z_show=False),  # no caps
         slices_z=dict(show=True, locations=[thee_sol]),
     ))
+    fig.update_layout(scene=dict(
+        xaxis_title="phi1 [rad]", yaxis_title="phi2 [rad]", zaxis_title="theta [rad]"
+    ))
     fig.show()
 
 
