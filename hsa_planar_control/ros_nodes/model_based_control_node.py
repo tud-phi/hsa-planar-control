@@ -25,7 +25,7 @@ from hsa_control_interfaces.msg import (
 )
 from mocap_optitrack_interfaces.msg import PlanarCsConfiguration
 
-from hsa_actuation.hsa_actuation_base_node import HsaActuationBaseNode
+from hsa_actuation.hsa_planar_actuation_base_node import HsaPlanarActuationBaseNode
 from hsa_planar_control.collocated_form import mapping_into_collocated_form_factory
 from hsa_planar_control.controllers.configuration_space_controllers import (
     P_satI_D_plus_steady_state_actuation,
@@ -38,7 +38,7 @@ from hsa_planar_control.controllers.operational_space_controllers import (
 from hsa_planar_control.controllers.saturation import saturate_control_inputs
 
 
-class ModelBasedControlNode(HsaActuationBaseNode):
+class ModelBasedControlNode(HsaPlanarActuationBaseNode):
     def __init__(self):
         super().__init__("model_based_control_node")
         self.declare_parameter("configuration_topic", "configuration")
@@ -80,6 +80,11 @@ class ModelBasedControlNode(HsaActuationBaseNode):
             self.params = PARAMS_EPU_CONTROL.copy()
         else:
             raise ValueError(f"Unknown HSA material: {hsa_material}")
+        
+        # set handedness of rods in control model
+        self.control_handedness = self.params["h"][
+            0
+        ]  # handedness of rods in first segment in control model
 
         # parameters for specifying different rest strains
         self.declare_parameter("kappa_b_eq", self.params["kappa_b_eq"].mean().item())
@@ -371,50 +376,6 @@ class ModelBasedControlNode(HsaActuationBaseNode):
 
         return chiee_d
 
-    def map_motor_angles_to_actuation_coordinates(self, motor_angles: Array) -> Array:
-        """
-        Map the motor angles to the actuation coordinates. The actuation coordinates are defined as twist angle
-        of an imagined rod on the left and right respectively.
-        """
-        control_handedness = self.params["h"][
-            0
-        ]  # handedness of rods in first segment in control model
-        phi = jnp.stack(
-            [
-                (
-                    motor_angles[2] * self.rod_handedness[2]
-                    + motor_angles[3] * self.rod_handedness[3]
-                )
-                * control_handedness[0]
-                / 2,
-                (
-                    motor_angles[0] * self.rod_handedness[0]
-                    + motor_angles[1] * self.rod_handedness[1]
-                )
-                * control_handedness[1]
-                / 2,
-            ]
-        )
-        return phi
-
-    def map_actuation_coordinates_to_motor_angles(self, phi: Array) -> Array:
-        """
-        We devise the control input in positive actuation coordinates of shape (2, ). However, we need to actuate
-        four motors. This function maps the two actuation coordinates to the four motor angles.
-        """
-        control_handedness = self.params["h"][
-            0
-        ]  # handedness of rods in first segment in control model
-
-        motor_angles = jnp.stack(
-            [
-                phi[1] * control_handedness[1] * self.rod_handedness[0],
-                phi[1] * control_handedness[1] * self.rod_handedness[1],
-                phi[0] * control_handedness[0] * self.rod_handedness[2],
-                phi[0] * control_handedness[0] * self.rod_handedness[3],
-            ]
-        )
-        return motor_angles
 
     def call_controller(self):
         t = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
