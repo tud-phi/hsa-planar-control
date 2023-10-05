@@ -29,11 +29,11 @@ sym_exp_filepath = (
 
 pee_des = jnp.array([0.0195418, 0.13252665])
 # these are the values we should get for the setpoint pee_des = (0.0195418, 0.13252665) and the EPU material
-thee_des = -0.28864607  # [rad]
-# q_ss = (-4.89230524e+00, 2.28753141e-03, 4.20002605e-01)
-# phi_ss = (3.96219014, 2.11047887)
-hsa_material = "epu"
+thee_sol = jnp.array(-0.28864607)  # [rad]
+# q_ss_sol = (-4.89230524e+00, 2.28753141e-03, 4.20002605e-01)
+phi_ss_sol = jnp.array([3.96219014, 2.11047887])
 
+hsa_material = "epu"
 # set parameters
 if hsa_material == "fpu":
     params = PARAMS_FPU_CONTROL.copy()
@@ -63,9 +63,13 @@ def main():
     )
     batched_residual_fn = jit(vmap(residual_fn))
 
-    th_ss = jnp.linspace(th_range[0], th_range[1], 15)
-    phi1_ss = jnp.linspace(phi_range[0], phi_range[1], 15)
-    phi2_ss = jnp.linspace(phi_range[0], phi_range[1], 15)
+    # residual at the solution
+    res_sol = residual_fn(jnp.array([thee_sol, *phi_ss_sol]))
+    print("Residual at the solution:", res_sol, "norm:", jnp.linalg.norm(res_sol))
+
+    th_ss = jnp.linspace(th_range[0], th_range[1], 25)
+    phi1_ss = jnp.linspace(phi_range[0], phi_range[1], 25)
+    phi2_ss = jnp.linspace(phi_range[0], phi_range[1], 25)
     th_mesh, phi1_mesh, phi2_mesh = jnp.meshgrid(th_ss, phi1_ss, phi2_ss)
     thv, phi1v, phi2v = th_mesh.flatten(), phi1_mesh.flatten(), phi2_mesh.flatten()
     xv = jnp.stack([thv, phi1v, phi2v], axis=-1)
@@ -83,7 +87,7 @@ def main():
         surface_count=21,  # needs to be a large number for good volume rendering
         surface=dict(fill=0.7, pattern='odd'),
         caps=dict(x_show=False, y_show=False, z_show=False),  # no caps
-        slices_z=dict(show=True, locations=[thee_des]),
+        slices_z=dict(show=True, locations=[thee_sol]),
     ))
     fig.show()
 
