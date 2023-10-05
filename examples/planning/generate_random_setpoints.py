@@ -96,7 +96,6 @@ if __name__ == "__main__":
             control_fn=control_fn,
             ode_solver_class=Euler,
         )
-        print("keys of sim_ts:", sim_ts.keys())
         # extract the last time step
         q_ss = sim_ts["q_ts"][-1]
 
