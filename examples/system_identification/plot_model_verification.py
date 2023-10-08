@@ -20,7 +20,8 @@ plt.rcParams.update(
 
 
 # experiment_id = "20230621_165020"  # FPU staircase bending ccw
-experiment_id = "20230621_183620"  # FPU GBN bending combined 180 deg
+# experiment_id = "20230621_183620"  # FPU GBN bending combined 180 deg
+experiment_id = "20230927_150452"  # EPU GBN bending combined 270 deg
 START_TIME = 0.0
 END_TIME = 4.0
 
@@ -60,7 +61,7 @@ if __name__ == "__main__":
     lw_hat = 2.6
     dashes = (1.2, 0.8)
 
-    plt.figure(figsize=(4.5, 3), num="Model-verification: End-effector pose")
+    plt.figure(figsize=figsize, num="Model-verification: End-effector pose")
     ax1 = plt.gca()
     ax2 = ax1.twinx()
     ax1.plot(

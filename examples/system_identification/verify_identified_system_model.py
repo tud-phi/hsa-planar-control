@@ -40,7 +40,9 @@ sym_exp_filepath = (
 # experiment_id = "20230927_143724"  # EPU staircase bending cw 210 deg
 # experiment_id = "20230927_143824"  # EPU staircase bending cw 270 deg
 # experiment_id = "20230927_144354"  # EPU staircase bending ccw 210 deg
-experiment_id = "20230927_144511"  # EPU staircase bending ccw 270 deg
+# experiment_id = "20230927_144511"  # EPU staircase bending ccw 270 deg
+# experiment_id = "20230927_150331"  # EPU GBN bending combined 210 deg
+experiment_id = "20230927_150452"  # EPU GBN bending combined 270 deg
 hsa_material = "epu"
 
 # set parameters
