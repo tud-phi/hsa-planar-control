@@ -18,6 +18,7 @@ def linear_lq_optim_problem_factory(
     known_params: Dict[str, Array],
     params_to_be_idd_names: List[str],
     mode: str = "dynamic",
+    shared_params_mapping: Dict[str, List] = None,
 ) -> Tuple[List[sp.Symbol], Callable, Callable]:
     """
     Factory function for designing the least-squares optimization problem for the system identification.
@@ -28,6 +29,9 @@ def linear_lq_optim_problem_factory(
         params_to_be_idd_names: list with the names of the parameters to be identified. Needs to match
             the keys in the params_syms dictionary in the saved symbolic expressions.
         mode: "dynamic" or "static". Default: "dynamic".
+        shared_params_mapping: dictionary with the mapping of which parameters should be identified jointly. Examples:
+            {"S_a_hat": ["S_a_hat1", "S_a_hat2", "S_a_hat3", "S_a_hat4"]}
+            then the parameters S_a_hat1 to S_a_hat4 are all replaced with S_a_hat
     Returns:
         Pi_syms: list with symbols for the parameters to be identified
         cal_a_fn: function for evaluating the unknown parts of the equations of motion to be multiplied by the
@@ -53,18 +57,39 @@ def linear_lq_optim_problem_factory(
     # substitute the parameters of each rod with jointly-shared parameters
     # for example S_a_hat1 to S_a_hat4 are all replaced with S_a_hat
     Pi_syms = []
+    if shared_params_mapping is None:
+        shared_params_mapping = {}
     for param_name in params_to_be_idd_names:
-        shared_param = sp.Symbol(param_name)
-        for rod_param in sym_exps["params_syms"][param_name]:
-            lhs = lhs.subs(rod_param, shared_param)
-            rhs = rhs.subs(rod_param, shared_param)
-        Pi_syms.append(shared_param)
+        param_symbol = sp.Symbol(param_name)
+        Pi_syms.append(param_symbol)
+
+        if param_name in shared_params_mapping.keys():
+            # we have a custom configuration of which symbols should be replaced with the joint-shared symbol
+            for param_name_to_be_replaced in shared_params_mapping[param_name]:
+                param_symbol_to_be_replaced = sp.Symbol(param_name_to_be_replaced)
+                lhs = lhs.subs(
+                    param_symbol_to_be_replaced, param_symbol,
+                )
+                rhs = rhs.subs(
+                    param_symbol_to_be_replaced, param_symbol,
+                )
+        elif param_name in sym_exps["params_syms"].keys():
+            for rod_param in sym_exps["params_syms"][param_name]:
+                lhs = lhs.subs(rod_param, param_symbol)
+                rhs = rhs.subs(rod_param, param_symbol)
+        else:
+            warnings.warn(f"Not creating joint-shared parameter for parameter: {param_name}")
 
     # substitute the parameters with the known values
     subs_params_syms_exps = deepcopy(params_syms)
-    # do not substitute the params that we want to actually identify
     for param_name in params_to_be_idd_names:
-        subs_params_syms_exps.pop(param_name)
+        # do not substitute the params that we want to actually identify
+        if param_name in subs_params_syms_exps.keys():
+            subs_params_syms_exps.pop(param_name)
+        # do not substitute a param group if we want to identify one of its members
+        if param_name[-1].isdigit():
+            param_group_name = param_name[:-1]
+            subs_params_syms_exps.pop(param_group_name)
     # do not substitute the payload mass `mpl` as we want to change it at runtime
     subs_params_syms_exps.pop("mpl")
     lhs = substitute_params_into_single_symbolic_expression(

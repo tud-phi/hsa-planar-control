@@ -13,12 +13,11 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Callable, Dict, Tuple
 
-from hsa_planar_control.collocated_form import mapping_into_collocated_form_factory
 from hsa_planar_control.rendering.opencv_renderer import animate_robot
 from hsa_planar_control.simulation import simulate_closed_loop_system
 from hsa_planar_control.system_identification.preprocessing import preprocess_data
 from hsa_planar_control.system_identification.rest_strain import (
-    identify_rest_strains_for_system_id_dataset,
+    identify_axial_rest_strain_for_system_id_dataset,
 )
 
 num_segments = 1
@@ -88,16 +87,15 @@ if __name__ == "__main__":
         dill.dump(data_ts, data_ts_file)
 
     # identify rest strains
-    (
-        params["kappa_b_eq"],
-        params["sigma_sh_eq"],
-        params["sigma_a_eq"],
-    ) = identify_rest_strains_for_system_id_dataset(
+    params["sigma_a_eq"] = identify_axial_rest_strain_for_system_id_dataset(
         sym_exp_filepath,
         sys_helpers,
         params,
         data_ts,
+        num_time_steps=1,
+        separate_rods=True
     )
+    print(f"Using axial rest strains:\n{params['sigma_a_eq']}")
 
     data_dt = data_ts["t_ts"][1] - data_ts["t_ts"][0]
     # shift time stamps to start at zero
