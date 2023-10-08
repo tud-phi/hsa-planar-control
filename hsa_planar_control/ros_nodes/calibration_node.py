@@ -70,7 +70,7 @@ class CalibrationNode(Node):
         self.declare_parameter("payload_mass", 0.0)
         self.known_params["mpl"] = self.get_parameter("payload_mass").value
 
-        params_to_be_idd_names = ["kappa_b_eq", "sigma_sh_eq", "sigma_a_eq"]
+        params_to_be_idd_names = ["sigma_a_eq1", "sigma_a_eq2"]
         self.Pi_syms, self.cal_a_fn, self.cal_b_fn = linear_lq_optim_problem_factory(
             sym_exp_filepath,
             sys_helpers,
@@ -123,10 +123,10 @@ class CalibrationNode(Node):
             data_hs,
         )
 
-        # self.get_logger().info(f"Pi_est: {Pi_est}")
-        self.get_logger().info(
-            f"kappa_b_eq: {Pi_est[0]}, sigma_sh_eq: {Pi_est[1]}, sigma_a_eq: {Pi_est[2]}"
-        )
+        param_to_est_mapping = {}
+        for param_est_idx, param_sym in enumerate(self.Pi_syms):
+            param_to_est_mapping[param_sym.name] = Pi_est[param_est_idx].item()
+        self.get_logger().info(f"Identified parameters:\n{param_to_est_mapping}")
 
 
 def main(args=None):
