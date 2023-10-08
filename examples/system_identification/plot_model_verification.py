@@ -19,10 +19,10 @@ plt.rcParams.update(
 )
 
 
-experiment_id = "20230621_165020"  # FPU staircase bending ccw
-# experiment_id = "20230621_171345"  # FPU GBN bending combined 180 deg
+# experiment_id = "20230621_165020"  # FPU staircase bending ccw
+experiment_id = "20230621_183620"  # FPU GBN bending combined 180 deg
 START_TIME = 0.0
-END_TIME = 30.0
+END_TIME = 4.0
 
 if __name__ == "__main__":
     experiment_data_path = (
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     figsize = (5.0, 3)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     lw_gt = 2.0
-    lw_hat = 2.4
+    lw_hat = 2.6
     dashes = (1.2, 0.8)
 
     plt.figure(figsize=(4.5, 3), num="Model-verification: End-effector pose")
@@ -114,8 +114,8 @@ if __name__ == "__main__":
     ax1.set_xlabel(r"Time $t$ [s]")
     ax1.set_ylabel(r"End effector position $p_{\mathrm{ee}}$ [mm]")
     ax2.set_ylabel(r"End effector orientation $\theta_{\mathrm{ee}}$ [rad]")
-    ax1.legend(loc="upper left", ncols=2, columnspacing=0.5, labelspacing=0.3)
-    ax2.legend(loc="upper right", columnspacing=0.5, labelspacing=0.3)
+    ax1.legend(loc="lower left", ncols=2, columnspacing=0.5, labelspacing=0.3)
+    ax2.legend(loc="lower right", columnspacing=0.5, labelspacing=0.3)
     plt.grid(True)
     plt.box(True)
     plt.tight_layout()
