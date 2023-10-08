@@ -68,17 +68,21 @@ def linear_lq_optim_problem_factory(
             for param_name_to_be_replaced in shared_params_mapping[param_name]:
                 param_symbol_to_be_replaced = sp.Symbol(param_name_to_be_replaced)
                 lhs = lhs.subs(
-                    param_symbol_to_be_replaced, param_symbol,
+                    param_symbol_to_be_replaced,
+                    param_symbol,
                 )
                 rhs = rhs.subs(
-                    param_symbol_to_be_replaced, param_symbol,
+                    param_symbol_to_be_replaced,
+                    param_symbol,
                 )
         elif param_name in sym_exps["params_syms"].keys():
             for rod_param in sym_exps["params_syms"][param_name]:
                 lhs = lhs.subs(rod_param, param_symbol)
                 rhs = rhs.subs(rod_param, param_symbol)
         else:
-            warnings.warn(f"Not creating joint-shared parameter for parameter: {param_name}")
+            warnings.warn(
+                f"Not creating joint-shared parameter for parameter: {param_name}"
+            )
 
     # substitute the parameters with the known values
     subs_params_syms_exps = deepcopy(params_syms)

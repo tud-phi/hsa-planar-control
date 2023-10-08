@@ -85,14 +85,26 @@ if __name__ == "__main__":
     min_actuation_samples = data["min_actuation"]
     random_samples = data["random"]
 
-    fig = plt.figure(figsize=(4.0, 3.0), num=f"Operational workspace of {HSA_MATERIAL} HSA")
+    fig = plt.figure(
+        figsize=(4.0, 3.0), num=f"Operational workspace of {HSA_MATERIAL} HSA"
+    )
     ax = fig.add_subplot(111)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
     # fit polynomial to the max actuation samples
-    xmin, xmax = jnp.min(max_actuation_samples["chiee_ss"][:, 0]), jnp.max(max_actuation_samples["chiee_ss"][:, 0])
-    pmax = jnp.polyfit(max_actuation_samples["chiee_ss"][:, 0], max_actuation_samples["chiee_ss"][:, 1], 20)
-    pmin = jnp.polyfit(min_actuation_samples["chiee_ss"][:, 0], min_actuation_samples["chiee_ss"][:, 1], 20)
+    xmin, xmax = jnp.min(max_actuation_samples["chiee_ss"][:, 0]), jnp.max(
+        max_actuation_samples["chiee_ss"][:, 0]
+    )
+    pmax = jnp.polyfit(
+        max_actuation_samples["chiee_ss"][:, 0],
+        max_actuation_samples["chiee_ss"][:, 1],
+        20,
+    )
+    pmin = jnp.polyfit(
+        min_actuation_samples["chiee_ss"][:, 0],
+        min_actuation_samples["chiee_ss"][:, 1],
+        20,
+    )
     xp = jnp.linspace(xmin, xmax, 50)
     # plt.plot(
     #     xp,
@@ -156,7 +168,10 @@ if __name__ == "__main__":
     )
 
     if SHOW_ROBOT_CONFIGS:
-        def visualize_robot_configuration(idx: int, _q: Array, _ax: plt.Axes, _color: str = "CN"):
+
+        def visualize_robot_configuration(
+            idx: int, _q: Array, _ax: plt.Axes, _color: str = "CN"
+        ):
             print(f"Visualizing configuration q = {_q}")
 
             s_ps = jnp.linspace(0, jnp.sum(params["l"]), 100)
@@ -164,22 +179,28 @@ if __name__ == "__main__":
             alpha = 0.25
 
             # derive the curve of the rods
-            chiL_ps = batched_forward_kinematics_rod_fn(params, _q, s_ps, 0)  # poses of left rod
-            chiR_ps = batched_forward_kinematics_rod_fn(params, _q, s_ps, 1)  # poses of right rod
+            chiL_ps = batched_forward_kinematics_rod_fn(
+                params, _q, s_ps, 0
+            )  # poses of left rod
+            chiR_ps = batched_forward_kinematics_rod_fn(
+                params, _q, s_ps, 1
+            )  # poses of right rod
             # add the first point of the proximal cap and the last point of the distal cap
             chiL_ps = jnp.concatenate(
                 [
-                    (chiL_ps[:, 0] - jnp.array([0.0, params["lpc"][0], 0.0])).reshape(3, 1),
+                    (chiL_ps[:, 0] - jnp.array([0.0, params["lpc"][0], 0.0])).reshape(
+                        3, 1
+                    ),
                     chiL_ps,
                     (
-                            chiL_ps[:, -1]
-                            + jnp.array(
-                        [
-                            -jnp.sin(chiL_ps[2, -1]) * params["ldc"][-1],
-                            jnp.cos(chiL_ps[2, -1]) * params["ldc"][-1],
-                            chiL_ps[2, -1],
-                        ]
-                    )
+                        chiL_ps[:, -1]
+                        + jnp.array(
+                            [
+                                -jnp.sin(chiL_ps[2, -1]) * params["ldc"][-1],
+                                jnp.cos(chiL_ps[2, -1]) * params["ldc"][-1],
+                                chiL_ps[2, -1],
+                            ]
+                        )
                     ).reshape(3, 1),
                 ],
                 axis=1,
@@ -187,17 +208,19 @@ if __name__ == "__main__":
             # add the first point of the proximal cap and the last point of the distal cap
             chiR_ps = jnp.concatenate(
                 [
-                    (chiR_ps[:, 0] - jnp.array([0.0, params["lpc"][0], 0.0])).reshape(3, 1),
+                    (chiR_ps[:, 0] - jnp.array([0.0, params["lpc"][0], 0.0])).reshape(
+                        3, 1
+                    ),
                     chiR_ps,
                     (
-                            chiR_ps[:, -1]
-                            + jnp.array(
-                        [
-                            -jnp.sin(chiR_ps[2, -1]) * params["ldc"][-1],
-                            jnp.cos(chiR_ps[2, -1]) * params["ldc"][-1],
-                            chiR_ps[2, -1],
-                        ]
-                    )
+                        chiR_ps[:, -1]
+                        + jnp.array(
+                            [
+                                -jnp.sin(chiR_ps[2, -1]) * params["ldc"][-1],
+                                jnp.cos(chiR_ps[2, -1]) * params["ldc"][-1],
+                                chiR_ps[2, -1],
+                            ]
+                        )
                     ).reshape(3, 1),
                 ],
                 axis=1,
@@ -210,7 +233,7 @@ if __name__ == "__main__":
                 color=_color,
                 alpha=alpha,
                 label=f"q = {_q}",
-                zorder=(idx + 1) * 10
+                zorder=(idx + 1) * 10,
             )
             _ax.plot(
                 chiR_ps[0, :],
@@ -218,7 +241,7 @@ if __name__ == "__main__":
                 linewidth=lw,
                 color=_color,
                 alpha=alpha,
-                zorder=(idx + 1) * 10
+                zorder=(idx + 1) * 10,
             )
 
             # draw the platform
@@ -259,7 +282,13 @@ if __name__ == "__main__":
                     ]
                 )  # lower right corner of the platform
                 platform_curve = jnp.stack(
-                    [platform_llc, platform_ulc, platform_urc, platform_lrc, platform_llc],
+                    [
+                        platform_llc,
+                        platform_ulc,
+                        platform_urc,
+                        platform_lrc,
+                        platform_llc,
+                    ],
                     axis=1,
                 )
                 _ax.fill(
@@ -267,7 +296,7 @@ if __name__ == "__main__":
                     platform_curve[1],
                     color=_color,
                     alpha=alpha,
-                    zorder=(idx + 1) * 10 + 1
+                    zorder=(idx + 1) * 10 + 1,
                 )
 
             # draw the end-effector
@@ -278,26 +307,33 @@ if __name__ == "__main__":
                 marker="o",
                 color=_color,
                 alpha=min(alpha + 0.2, 1.0),
-                zorder=(idx + 1) * 10 + 2
+                zorder=(idx + 1) * 10 + 2,
             )
 
         # neutral configuration
         visualize_robot_configuration(
             0,
             min_actuation_samples["q_ss"][min_actuation_samples["q_ss"].shape[0] // 2],
-            ax, colors[0]
+            ax,
+            colors[0],
         )
         # maximum bending left
-        visualize_robot_configuration(1, max_actuation_samples["q_ss"][0], ax, colors[2])
+        visualize_robot_configuration(
+            1, max_actuation_samples["q_ss"][0], ax, colors[2]
+        )
         # maximum bending right
-        visualize_robot_configuration(2, max_actuation_samples["q_ss"][-1], ax, colors[3])
+        visualize_robot_configuration(
+            2, max_actuation_samples["q_ss"][-1], ax, colors[3]
+        )
 
     plt.xlabel(r"$p_{\mathrm{ee},x}$ [m]")
     plt.ylabel(r"$p_{\mathrm{ee},y}$ [m]")
     plt.axis("equal")
     ax.invert_xaxis()
     ax.invert_yaxis()
-    plt.colorbar(label=r"Mean steady-state actuation $\frac{\phi_1^\mathrm{ss}+\phi_2^\mathrm{ss}}{2}$ [rad]")
+    plt.colorbar(
+        label=r"Mean steady-state actuation $\frac{\phi_1^\mathrm{ss}+\phi_2^\mathrm{ss}}{2}$ [rad]"
+    )
     plt.grid(True)
     plt.box(True)
     plt.tight_layout()

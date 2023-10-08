@@ -93,7 +93,7 @@ if __name__ == "__main__":
         params,
         data_ts,
         num_time_steps=1,
-        separate_rods=True
+        separate_rods=True,
     )
     print(f"Using axial rest strains:\n{params['sigma_a_eq']}")
 

@@ -26,10 +26,10 @@ END_TIME = 4.0
 
 if __name__ == "__main__":
     experiment_data_path = (
-            Path(__file__).parent.parent.parent
-            / "data"
-            / "system_identification"
-            / experiment_id
+        Path(__file__).parent.parent.parent
+        / "data"
+        / "system_identification"
+        / experiment_id
     )
 
     with open(str(experiment_data_path / "preprocessed_data_history.dill"), "rb") as f:
@@ -119,8 +119,12 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.box(True)
     plt.tight_layout()
-    plt.savefig(str(experiment_data_path / f"{experiment_id}_model_verification_pee.pdf"))
-    plt.savefig(str(experiment_data_path / f"{experiment_id}_model_verification_pee.eps"))
+    plt.savefig(
+        str(experiment_data_path / f"{experiment_id}_model_verification_pee.pdf")
+    )
+    plt.savefig(
+        str(experiment_data_path / f"{experiment_id}_model_verification_pee.eps")
+    )
     plt.show()
 
     fig = plt.figure(figsize=figsize, num="Model-verification: Strains")
