@@ -89,7 +89,8 @@ def linear_lq_optim_problem_factory(
         # do not substitute a param group if we want to identify one of its members
         if param_name[-1].isdigit():
             param_group_name = param_name[:-1]
-            subs_params_syms_exps.pop(param_group_name)
+            if param_group_name in subs_params_syms_exps.keys():
+                subs_params_syms_exps.pop(param_group_name)
     # do not substitute the payload mass `mpl` as we want to change it at runtime
     subs_params_syms_exps.pop("mpl")
     lhs = substitute_params_into_single_symbolic_expression(
