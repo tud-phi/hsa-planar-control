@@ -54,7 +54,7 @@ if hsa_material == "fpu":
     mocap_body_ids = {"base": 4, "platform": 5}
 else:
     mocap_body_ids = {"base": 3, "platform": 4}
-sim_dt = 5e-5  # time step for simulation [s]
+sim_dt = 1e-4  # time step for simulation [s]
 
 if __name__ == "__main__":
     (
