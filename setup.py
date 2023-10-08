@@ -35,6 +35,7 @@ setup(
         "numpy",
         "opencv-python",
         "pandas",
+        "plotly",
         "setuptools",
         "sympy>=1.11",
         "tornado",
