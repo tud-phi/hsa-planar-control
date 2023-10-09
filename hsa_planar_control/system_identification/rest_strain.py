@@ -48,9 +48,13 @@ def identify_axial_rest_strain_for_system_id_dataset(
                 for j in range(num_rods_per_segment):
                     if jnp.sign(params["roff"][i, j]) == 1:
                         # positive x-coordinates means that the rod is on the right side of the robot
-                        shared_params_mapping["sigma_a_eqR"].append(f"sigma_a_eq{rod_idx+1}")
+                        shared_params_mapping["sigma_a_eqR"].append(
+                            f"sigma_a_eq{rod_idx+1}"
+                        )
                     else:
-                        shared_params_mapping["sigma_a_eqL"].append(f"sigma_a_eq{rod_idx+1}")
+                        shared_params_mapping["sigma_a_eqL"].append(
+                            f"sigma_a_eq{rod_idx+1}"
+                        )
                     rod_idx += 1
         else:
             params_to_be_idd_names = ["sigma_a_eq1", "sigma_a_eq2"]
@@ -87,16 +91,20 @@ def identify_axial_rest_strain_for_system_id_dataset(
         param_to_est_mapping = {}
         for param_est_idx, param_sym in enumerate(Pi_syms):
             param_to_est_mapping[param_sym.name] = Pi_est[param_est_idx].item()
-        print(
-            f"Identified axial rest strains:\n{param_to_est_mapping}"
-        )
+        print(f"Identified axial rest strains:\n{param_to_est_mapping}")
 
         if "sigma_a_eqL" and "sigma_a_eqR" in param_to_est_mapping.keys():
             sigma_a_eq = jnp.ones_like(params["roff"])
-            sigma_a_eq = sigma_a_eq.at[params["roff"] >= 0].mul(param_to_est_mapping["sigma_a_eqR"])
-            sigma_a_eq = sigma_a_eq.at[params["roff"] < 0].mul(param_to_est_mapping["sigma_a_eqL"])
+            sigma_a_eq = sigma_a_eq.at[params["roff"] >= 0].mul(
+                param_to_est_mapping["sigma_a_eqR"]
+            )
+            sigma_a_eq = sigma_a_eq.at[params["roff"] < 0].mul(
+                param_to_est_mapping["sigma_a_eqL"]
+            )
         else:
-            sigma_a_eq = jnp.repeat(jnp.array([[sigma_a_eq1, sigma_a_eq2]]), params["roff"].shape[0], axis=0)
+            sigma_a_eq = jnp.repeat(
+                jnp.array([[sigma_a_eq1, sigma_a_eq2]]), params["roff"].shape[0], axis=0
+            )
     else:
         sigma_a_eq_scalar = Pi_est[0]
         print("Identified scalar axial rest strain: ", sigma_a_eq_scalar)

@@ -19,17 +19,18 @@ plt.rcParams.update(
 )
 
 
-experiment_id = "20230621_165020"  # FPU staircase bending ccw
-# experiment_id = "20230621_171345"  # FPU GBN bending combined 180 deg
+# experiment_id = "20230621_165020"  # FPU staircase bending ccw
+# experiment_id = "20230621_183620"  # FPU GBN bending combined 180 deg
+experiment_id = "20230927_150452"  # EPU GBN bending combined 270 deg
 START_TIME = 0.0
-END_TIME = 30.0
+END_TIME = 4.0
 
 if __name__ == "__main__":
     experiment_data_path = (
-            Path(__file__).parent.parent.parent
-            / "data"
-            / "system_identification"
-            / experiment_id
+        Path(__file__).parent.parent.parent
+        / "data"
+        / "system_identification"
+        / experiment_id
     )
 
     with open(str(experiment_data_path / "preprocessed_data_history.dill"), "rb") as f:
@@ -57,10 +58,10 @@ if __name__ == "__main__":
     figsize = (5.0, 3)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     lw_gt = 2.0
-    lw_hat = 2.4
+    lw_hat = 2.6
     dashes = (1.2, 0.8)
 
-    plt.figure(figsize=(4.5, 3), num="Model-verification: End-effector pose")
+    plt.figure(figsize=figsize, num="Model-verification: End-effector pose")
     ax1 = plt.gca()
     ax2 = ax1.twinx()
     ax1.plot(
@@ -114,13 +115,17 @@ if __name__ == "__main__":
     ax1.set_xlabel(r"Time $t$ [s]")
     ax1.set_ylabel(r"End effector position $p_{\mathrm{ee}}$ [mm]")
     ax2.set_ylabel(r"End effector orientation $\theta_{\mathrm{ee}}$ [rad]")
-    ax1.legend(loc="upper left", ncols=2, columnspacing=0.5, labelspacing=0.3)
-    ax2.legend(loc="upper right", columnspacing=0.5, labelspacing=0.3)
+    ax1.legend(loc="lower left", ncols=2, columnspacing=0.5, labelspacing=0.3)
+    ax2.legend(loc="lower right", columnspacing=0.5, labelspacing=0.3)
     plt.grid(True)
     plt.box(True)
     plt.tight_layout()
-    plt.savefig(str(experiment_data_path / f"{experiment_id}_model_verification_pee.pdf"))
-    plt.savefig(str(experiment_data_path / f"{experiment_id}_model_verification_pee.eps"))
+    plt.savefig(
+        str(experiment_data_path / f"{experiment_id}_model_verification_pee.pdf")
+    )
+    plt.savefig(
+        str(experiment_data_path / f"{experiment_id}_model_verification_pee.eps")
+    )
     plt.show()
 
     fig = plt.figure(figsize=figsize, num="Model-verification: Strains")

@@ -80,7 +80,7 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
             self.params = PARAMS_EPU_CONTROL.copy()
         else:
             raise ValueError(f"Unknown HSA material: {hsa_material}")
-        
+
         # set handedness of rods in control model
         self.control_handedness = self.params["h"][
             0
@@ -375,7 +375,6 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
             chiee_d = chiee_d.at[i].set(chiee_d_hs[-1])
 
         return chiee_d
-
 
     def call_controller(self):
         t = (self.get_clock().now() - self.start_time).nanoseconds / 1e9

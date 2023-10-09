@@ -40,7 +40,9 @@ sym_exp_filepath = (
 # experiment_id = "20230927_143724"  # EPU staircase bending cw 210 deg
 # experiment_id = "20230927_143824"  # EPU staircase bending cw 270 deg
 # experiment_id = "20230927_144354"  # EPU staircase bending ccw 210 deg
-experiment_id = "20230927_144511"  # EPU staircase bending ccw 270 deg
+# experiment_id = "20230927_144511"  # EPU staircase bending ccw 270 deg
+# experiment_id = "20230927_150331"  # EPU GBN bending combined 210 deg
+experiment_id = "20230927_150452"  # EPU GBN bending combined 270 deg
 hsa_material = "epu"
 
 # set parameters
@@ -54,7 +56,7 @@ if hsa_material == "fpu":
     mocap_body_ids = {"base": 4, "platform": 5}
 else:
     mocap_body_ids = {"base": 3, "platform": 4}
-sim_dt = 5e-5  # time step for simulation [s]
+sim_dt = 1e-4  # time step for simulation [s]
 
 if __name__ == "__main__":
     (
@@ -93,7 +95,7 @@ if __name__ == "__main__":
         params,
         data_ts,
         num_time_steps=1,
-        separate_rods=True
+        separate_rods=True,
     )
     print(f"Using axial rest strains:\n{params['sigma_a_eq']}")
 

@@ -52,30 +52,40 @@ if __name__ == "__main__":
         dynamical_matrices_fn,
         params,
         sim_dt=sim_dt,
-        duration=duration
+        duration=duration,
     )
     batched_simulate_steady_state_fn = jit(vmap(simulate_steady_state_fn))
-    batched_forward_kinematics_end_effector_fn = jit(vmap(partial(forward_kinematics_end_effector_fn, params)))
+    batched_forward_kinematics_end_effector_fn = jit(
+        vmap(partial(forward_kinematics_end_effector_fn, params))
+    )
 
     phi_max = params["phi_max"].flatten()
 
     # generate max actuation samples
     u = jnp.linspace(-phi_max.mean(), phi_max.mean(), 101)
-    phi_ss = jnp.clip(jnp.stack([phi_max[0] + u, phi_max[1] - u], axis=1), None, phi_max)
-    max_actuation_samples = {"phi_ss": phi_ss}
-    max_actuation_samples["q_ss"], max_actuation_samples["q_d_ss"] = batched_simulate_steady_state_fn(
-        max_actuation_samples["phi_ss"]
+    phi_ss = jnp.clip(
+        jnp.stack([phi_max[0] + u, phi_max[1] - u], axis=1), None, phi_max
     )
-    max_actuation_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(max_actuation_samples["q_ss"])
+    max_actuation_samples = {"phi_ss": phi_ss}
+    (
+        max_actuation_samples["q_ss"],
+        max_actuation_samples["q_d_ss"],
+    ) = batched_simulate_steady_state_fn(max_actuation_samples["phi_ss"])
+    max_actuation_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(
+        max_actuation_samples["q_ss"]
+    )
 
     # generate min actuation samples
     u = jnp.linspace(-phi_max.mean(), phi_max.mean(), 101)
     phi_ss = jnp.clip(jnp.stack([u, -u], axis=1), 0.0, None)
     min_actuation_samples = {"phi_ss": phi_ss}
-    min_actuation_samples["q_ss"], min_actuation_samples["q_d_ss"] = batched_simulate_steady_state_fn(
-        min_actuation_samples["phi_ss"]
+    (
+        min_actuation_samples["q_ss"],
+        min_actuation_samples["q_d_ss"],
+    ) = batched_simulate_steady_state_fn(min_actuation_samples["phi_ss"])
+    min_actuation_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(
+        min_actuation_samples["q_ss"]
     )
-    min_actuation_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(min_actuation_samples["q_ss"])
 
     # generate random samples for plotting colors of axial strain
     rng, sample_key = random.split(rng)
@@ -89,7 +99,9 @@ if __name__ == "__main__":
     random_samples["q_ss"], random_samples["q_d_ss"] = batched_simulate_steady_state_fn(
         random_samples["phi_ss"],
     )
-    random_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(random_samples["q_ss"])
+    random_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(
+        random_samples["q_ss"]
+    )
 
     operational_workspace_samples = {
         "max_actuation": max_actuation_samples,
