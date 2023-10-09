@@ -53,9 +53,10 @@ setup(
     tests_require=["codecov", "coverage", "pytest", "pytest-cov", "pytest-html", "tox"],
     entry_points={
         "console_scripts": [
-            "model_based_control_node = hsa_planar_control.ros_nodes.model_based_control_node:main",
-            "static_inversion_planning_node = hsa_planar_control.ros_nodes.static_inversion_planning_node:main",
             "calibration_node = hsa_planar_control.ros_nodes.calibration_node:main",
+            "model_based_control_node = hsa_planar_control.ros_nodes.model_based_control_node:main",
+            "random_setpoints_node = hsa_planar_control.ros_nodes.random_setpoints_node:main",
+            "static_inversion_planning_node = hsa_planar_control.ros_nodes.static_inversion_planning_node:main",
         ],
     },
 )
