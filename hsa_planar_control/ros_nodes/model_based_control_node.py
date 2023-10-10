@@ -25,7 +25,6 @@ from hsa_control_interfaces.msg import (
 )
 from mocap_optitrack_interfaces.msg import PlanarCsConfiguration
 
-from hsa_actuation.hsa_planar_actuation_base_node import HsaPlanarActuationBaseNode
 from hsa_planar_control.collocated_form import mapping_into_collocated_form_factory
 from hsa_planar_control.controllers.configuration_space_controllers import (
     P_satI_D_plus_steady_state_actuation,
@@ -38,7 +37,7 @@ from hsa_planar_control.controllers.operational_space_controllers import (
 from hsa_planar_control.controllers.saturation import saturate_control_inputs
 
 
-class ModelBasedControlNode(HsaPlanarActuationBaseNode):
+class ModelBasedControlNode(Node):
     def __init__(self):
         super().__init__("model_based_control_node")
         self.declare_parameter("configuration_topic", "configuration")
@@ -121,8 +120,17 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
         self.chiee = forward_kinematics_end_effector_fn(self.params, self.q)
         self.chiee_d = jnp.zeros_like(self.chiee)  # velocity of end-effector pose
 
-        # initial actuation coordinates
-        phi0 = self.map_motor_angles_to_actuation_coordinates(self.present_motor_angles)
+        # present actuation coordinates
+        self.phi = jnp.zeros_like(self.params["roff"].flatten())
+        self.declare_parameter("present_planar_actuation_topic", "present_planar_actuation")
+        self.phi_sub = self.create_subscription(
+            Float64MultiArray, self.get_parameter("present_planar_actuation_topic").value, self.actuation_coordinates_listener_callback, 10
+        )
+        # publisher of control input
+        self.declare_parameter("control_input_topic", "control_input")
+        self.control_input_pub = self.create_publisher(
+            Float64MultiArray, self.get_parameter("control_input_topic").value, 10
+        )
 
         # history of configurations
         # the longer the history, the more delays we introduce, but the less noise we get
@@ -158,7 +166,7 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
         )
         self.q_des = jnp.zeros_like(self.q)
         self.chiee_des = jnp.zeros((3,))
-        self.phi_ss = jnp.zeros_like(phi0)
+        self.phi_ss = jnp.zeros_like(self.phi)
         self.setpoint_msg = None
         self.declare_parameter("reset_integral_error_on_setpoint_change", False)
         self.reset_integral_error = self.get_parameter(
@@ -174,15 +182,15 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
         self.control_frequency = self.get_parameter("control_frequency").value
         control_dt = 1 / self.control_frequency
         self.declare_parameter("Kp", 0.0)
-        Kp = self.get_parameter("Kp").value * jnp.eye(phi0.shape[0])
+        Kp = self.get_parameter("Kp").value * jnp.eye(self.phi.shape[0])
         self.declare_parameter("Ki", 0.0)
-        Ki = self.get_parameter("Ki").value * jnp.eye(phi0.shape[0])
+        Ki = self.get_parameter("Ki").value * jnp.eye(self.phi.shape[0])
         self.declare_parameter("Kd", 0.0)
-        Kd = self.get_parameter("Kd").value * jnp.eye(phi0.shape[0])
+        Kd = self.get_parameter("Kd").value * jnp.eye(self.phi.shape[0])
         self.declare_parameter("gamma", 1.0)
-        gamma = self.get_parameter("gamma").value * jnp.ones_like(phi0)
+        gamma = self.get_parameter("gamma").value * jnp.ones_like(self.phi)
         self.controller_state = {
-            "integral_error": jnp.zeros_like(phi0),
+            "integral_error": jnp.zeros_like(self.phi),
         }
         map_into_collocated_form_fn, _ = mapping_into_collocated_form_factory(
             sym_exp_filepath, sys_helpers
@@ -249,15 +257,12 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
                 "Controller type {} not implemented".format(self.controller_type)
             )
 
-        phi_dummy = self.map_motor_angles_to_actuation_coordinates(
-            self.present_motor_angles
-        )
         if self.controller_type == "basic_operational_space_pid":
             phi_des_dummy, _, _ = self.control_fn(
                 0.0,
                 self.chiee,
                 self.chiee_d,
-                phi_dummy,
+                self.phi,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
             )
@@ -266,15 +271,12 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
                 0.0,
                 self.q,
                 self.q_d,
-                phi_dummy,
+                self.phi,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
                 q_des=self.q_des,
                 phi_ss=self.phi_ss,
             )
-        motor_goal_angles_dummy = self.map_actuation_coordinates_to_motor_angles(
-            phi_des_dummy
-        )
 
         # initialize publisher for controller info
         self.controller_info_pub = self.create_publisher(
@@ -310,6 +312,10 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
         self.tchiee_hs = self.tchiee_hs.at[-1].set(t)
         self.chiee_hs = jnp.roll(self.chiee_hs, shift=-1, axis=0)
         self.chiee_hs = self.chiee_hs.at[-1].set(self.chiee)
+
+    def actuation_coordinates_listener_callback(self, msg: Float64MultiArray):
+        # present actuation coordinates
+        self.phi = jnp.array(msg.data)
 
     def setpoint_listener_callback(self, msg: PlanarSetpoint):
         self.setpoint_msg = msg
@@ -387,9 +393,6 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
         self.q_d = self.compute_q_d()
         self.chiee_d = self.compute_chiee_d()
 
-        # map motor angles to actuation coordinates
-        phi = self.map_motor_angles_to_actuation_coordinates(self.present_motor_angles)
-
         # save the current configuration and velocity
         q, q_d = self.q, self.q_d
         chiee, chiee_d = self.chiee, self.chiee_d
@@ -400,7 +403,7 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
                 t,
                 chiee,
                 chiee_d,
-                phi,
+                self.phi,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
             )
@@ -409,7 +412,7 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
                 t,
                 q,
                 q_d,
-                phi,
+                self.phi,
                 controller_state=self.controller_state,
                 pee_des=self.chiee_des[:2],
                 q_des=self.q_des,
@@ -429,11 +432,9 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
 
         # self.get_logger().info(f"Saturated control inputs: {phi_sat}")
 
-        # map the actuation coordinates to motor angles
-        motor_goal_angles = self.map_actuation_coordinates_to_motor_angles(phi_sat)
-
-        # send motor goal angles to dynamixel motors
-        self.set_motor_goal_angles(motor_goal_angles)
+        # publish message with the control input
+        phi_msg = Float64MultiArray(data=phi_sat.tolist())
+        self.control_input_pub.publish(phi_msg)
 
         # publish controller info
         controller_info_msg = PlanarSetpointControllerInfo()
@@ -475,7 +476,6 @@ class ModelBasedControlNode(HsaPlanarActuationBaseNode):
             controller_info_msg.varphi_des = controller_info["varphi_des"].tolist()
         controller_info_msg.phi_des_unsat = phi_des_unsat.tolist()
         controller_info_msg.phi_des_sat = phi_sat.tolist()
-        controller_info_msg.motor_goal_angles = motor_goal_angles.tolist()
         self.controller_info_pub.publish(controller_info_msg)
 
 
