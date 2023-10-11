@@ -220,3 +220,76 @@ def operational_space_computed_torque(
     controller_info = {"e_pee": pee_des - pee}
 
     return u, controller_info
+
+def operational_space_impedance_control_linearized_actuation(
+    t: Array,
+    chiee: Array,
+    chiee_d: Array,
+    q: Array,
+    q_d: Array,
+    phi: Array,
+    *args,
+    jacobian_end_effector_fn,
+    dynamical_matrices_fn: Callable,
+    operational_space_dynamical_matrices_fn: Callable,
+    pee_des: Array,
+    Kp: Array,
+    Kd: Array,
+    logger = None,
+    **kwargs,
+) -> Tuple[Array, Dict[str, Array]]:
+    """
+    Implement an impedance controller in operational space with linearized actuation.
+    References:
+        - "A unified approach for motion and force control of robot manipulators: The operational space formulation"
+            by Oussama Khatib
+        - "Exact task execution in highly under-actuated soft limbs" by Della Santina et al.
+    Args:
+        t: time [s]
+        chiee: current end effector pose of shape (3, )
+        chiee_d: current end effector velocity of shape (3, )
+        q: configuration vector of shape (n_q, )
+        q_d: configuration velocity vector of shape (n_q, )
+        phi: current motor positions vector of shape (n_phi, )
+        jacobian_end_effector_fn: function that returns the Jacobian of the end effector of shape (3, n_q)
+        dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
+            Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, JB_pinv
+        pee_des: desired Cartesian-space position for end-effector of shape (2, )
+        Kp: proportional gain matrix of shape (2, 2)
+        Kd: derivative gain matrix of shape (2, 2)
+        logger: ROS2 logger
+    Returns:
+        u: input to the system. this is an array of shape (n_phi) with motor positions / twist angles of the proximal end of the rods
+        controller_info: dictionary with information about intermediate computations
+    """
+    # jacobian of the end-effector mapping velocities from configuration space to operational space
+    Jee = jacobian_end_effector_fn(q)
+
+    # current position and velocity of end-effector
+    pee, pee_d = chiee[:2], chiee_d[:2]
+    # error in operational space
+    e_pee = pee_des - pee
+
+    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
+    Lambda, nu, JB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+
+    # desired force in operational space
+    f_des = (
+        Lambda[:2, :2] @ (Kp @ e_pee - Kd @ pee_d)
+        + nu[:2]  # coriolis and centrifugal forces in operational space
+        + JB_pinv[:, :2].T @ D @ q_d
+    )
+
+    # project end-effector force into configuration space
+    tau_q_des = Jee[:2, :].T @ f_des
+
+    phi_des = map_configuration_space_torque_to_twist_angle(
+        q, phi, dynamical_matrices_fn, tau_q_des
+    )
+
+    controller_info = {"e_pee": e_pee, "f": f_des, "tau": tau_q_des}
+
+    logger.info(f"e_pee = {e_pee}, f_des = {f_des}, tau_q_des = {tau_q_des}, phi_des = {phi_des}")
+
+    return phi_des, controller_info

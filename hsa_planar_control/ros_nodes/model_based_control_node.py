@@ -33,6 +33,7 @@ from hsa_planar_control.controllers.configuration_space_controllers import (
 )
 from hsa_planar_control.controllers.operational_space_controllers import (
     basic_operational_space_pid,
+    operational_space_impedance_control_linearized_actuation
 )
 from hsa_planar_control.controllers.saturation import saturate_control_inputs
 
@@ -228,13 +229,27 @@ class ModelBasedControlNode(Node):
                 )
             )
         elif self.controller_type == "basic_operational_space_pid":
+            self.control_fn = jit(
+                partial(
+                    basic_operational_space_pid,
+                    dt=control_dt,
+                    phi_ss=self.params["phi_max"].squeeze() / 2,
+                    Kp=Kp,
+                    Ki=Ki,
+                    Kd=Kd,
+                )
+            )
+        elif self.controller_type == "operational_space_impedance_control_linearized_actuation":
             self.control_fn = partial(
-                basic_operational_space_pid,
-                dt=control_dt,
-                phi_ss=self.params["phi_max"].squeeze() / 2,
+                operational_space_impedance_control_linearized_actuation,
+                jacobian_end_effector_fn=partial(jacobian_end_effector_fn, self.params),
+                dynamical_matrices_fn=partial(dynamical_matrices_fn, self.params),
+                operational_space_dynamical_matrices_fn=partial(
+                    sys_helpers["operational_space_dynamical_matrices_fn"], self.params
+                ),
                 Kp=Kp,
-                Ki=Ki,
                 Kd=Kd,
+                logger=self.get_logger(),
             )
         else:
             raise NotImplementedError(
@@ -248,6 +263,16 @@ class ModelBasedControlNode(Node):
                 self.chiee_d,
                 self.phi,
                 controller_state=self.controller_state,
+                pee_des=self.chiee_des[:2],
+            )
+        elif self.controller_type == "operational_space_impedance_control_linearized_actuation":
+            phi_des_dummy, _= self.control_fn(
+                0.0,
+                self.chiee,
+                self.chiee_d,
+                self.q,
+                self.q_d,
+                self.phi,
                 pee_des=self.chiee_des[:2],
             )
         else:
@@ -328,6 +353,16 @@ class ModelBasedControlNode(Node):
                 chiee_d,
                 self.phi,
                 controller_state=self.controller_state,
+                pee_des=self.chiee_des[:2],
+            )
+        elif self.controller_type == "operational_space_impedance_control_linearized_actuation":
+            phi_des, controller_info = self.control_fn(
+                t,
+                chiee,
+                chiee_d,
+                q,
+                q_d,
+                self.phi,
                 pee_des=self.chiee_des[:2],
             )
         else:
