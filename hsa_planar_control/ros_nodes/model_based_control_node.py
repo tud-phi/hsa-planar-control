@@ -47,12 +47,26 @@ class ModelBasedControlNode(Node):
             self.configuration_listener_callback,
             10,
         )
+        self.declare_parameter("configuration_velocity_topic", "configuration_velocity")
+        self.configuration_velocity_sub = self.create_subscription(
+            PlanarCsConfiguration,
+            self.get_parameter("configuration_velocity_topic").value,
+            self.configuration_velocity_listener_callback,
+            10,
+        )
 
         self.declare_parameter("end_effector_pose_topic", "end_effector_pose")
         self.end_effector_pose_sub = self.create_subscription(
             Pose2DStamped,
             self.get_parameter("end_effector_pose_topic").value,
             self.end_effector_pose_listener_callback,
+            10,
+        )
+        self.declare_parameter("end_effector_velocity_topic", "end_effector_velocity")
+        self.end_effector_velocity_sub = self.create_subscription(
+            Pose2DStamped,
+            self.get_parameter("end_effector_velocity_topic").value,
+            self.end_effector_velocity_listener_callback,
             10,
         )
 
@@ -79,11 +93,6 @@ class ModelBasedControlNode(Node):
             self.params = PARAMS_EPU_CONTROL.copy()
         else:
             raise ValueError(f"Unknown HSA material: {hsa_material}")
-
-        # set handedness of rods in control model
-        self.control_handedness = self.params["h"][
-            0
-        ]  # handedness of rods in first segment in control model
 
         # parameters for specifying different rest strains
         self.declare_parameter("kappa_b_eq", self.params["kappa_b_eq"].mean().item())
@@ -130,31 +139,6 @@ class ModelBasedControlNode(Node):
         self.declare_parameter("control_input_topic", "control_input")
         self.control_input_pub = self.create_publisher(
             Float64MultiArray, self.get_parameter("control_input_topic").value, 10
-        )
-
-        # history of configurations
-        # the longer the history, the more delays we introduce, but the less noise we get
-        self.declare_parameter("history_length_for_diff", 16)
-        self.tq_hs = jnp.zeros((self.get_parameter("history_length_for_diff").value,))
-        self.q_hs = jnp.zeros(
-            (self.get_parameter("history_length_for_diff").value, self.n_q)
-        )
-        # history of end-effector poses
-        # the longer the history, the more delays we introduce, but the less noise we get
-        self.tchiee_hs = jnp.zeros(
-            (self.get_parameter("history_length_for_diff").value,)
-        )
-        self.chiee_hs = jnp.zeros(
-            (self.get_parameter("history_length_for_diff").value, self.chiee.shape[0])
-        )
-
-        # method for computing derivative
-        self.diff_method = derivative.Spline(s=1.0, k=3)
-        self.declare_parameter("configuration_velocity_topic", "configuration_velocity")
-        self.configuration_velocity_pub = self.create_publisher(
-            PlanarCsConfiguration,
-            self.get_parameter("configuration_velocity_topic").value,
-            10,
         )
 
         self.declare_parameter("setpoint_topic", "setpoint")
@@ -290,28 +274,20 @@ class ModelBasedControlNode(Node):
         self.start_time = self.get_clock().now()
 
     def configuration_listener_callback(self, msg: PlanarCsConfiguration):
-        t = Time.from_msg(msg.header.stamp).nanoseconds / 1e9
-
         # set the current configuration
         self.q = jnp.array([msg.kappa_b, msg.sigma_sh, msg.sigma_a])
 
-        # update history
-        self.tq_hs = jnp.roll(self.tq_hs, shift=-1, axis=0)
-        self.tq_hs = self.tq_hs.at[-1].set(t)
-        self.q_hs = jnp.roll(self.q_hs, shift=-1, axis=0)
-        self.q_hs = self.q_hs.at[-1].set(self.q)
+    def configuration_velocity_listener_callback(self, msg: PlanarCsConfiguration):
+        # set the current configuration velocity
+        self.q_d = jnp.array([msg.kappa_b, msg.sigma_sh, msg.sigma_a])
 
     def end_effector_pose_listener_callback(self, msg: Pose2DStamped):
-        t = Time.from_msg(msg.header.stamp).nanoseconds / 1e9
-
         # set the current end-effector pose
         self.chiee = jnp.array([msg.pose.x, msg.pose.y, msg.pose.theta])
 
-        # update history
-        self.tchiee_hs = jnp.roll(self.tchiee_hs, shift=-1, axis=0)
-        self.tchiee_hs = self.tchiee_hs.at[-1].set(t)
-        self.chiee_hs = jnp.roll(self.chiee_hs, shift=-1, axis=0)
-        self.chiee_hs = self.chiee_hs.at[-1].set(self.chiee)
+    def end_effector_velocity_listener_callback(self, msg: Pose2DStamped):
+        # set the current end-effector velocity
+        self.chiee_d = jnp.array([msg.pose.x, msg.pose.y, msg.pose.theta])
 
     def actuation_coordinates_listener_callback(self, msg: Float64MultiArray):
         # present actuation coordinates
@@ -333,65 +309,12 @@ class ModelBasedControlNode(Node):
                 self.controller_state["integral_error"]
             )
 
-    def compute_q_d(self) -> Array:
-        """
-        Compute the velocity of the generalized coordinates from the history of configurations.
-        """
-        # if the buffer is not full yet, return the current velocity
-        if jnp.any(self.tq_hs == 0.0):
-            return self.q_d
-
-        # subtract the first time stamp from all time stamps to avoid numerical issues
-        t_hs = self.tq_hs - self.tq_hs[0]
-
-        q_d = jnp.zeros_like(self.q)
-        # iterate through configuration variables
-        for i in range(self.q_hs.shape[-1]):
-            # derivative of all time stamps for configuration variable i
-            q_d_hs = self.diff_method.d(self.q_hs[:, i], t_hs)
-
-            q_d = q_d.at[i].set(q_d_hs[-1])
-
-        q_d_msg = PlanarCsConfiguration(
-            kappa_b=q_d[0].item(), sigma_sh=q_d[1].item(), sigma_a=q_d[2].item()
-        )
-        q_d_msg.header.stamp = self.get_clock().now().to_msg()
-
-        self.configuration_velocity_pub.publish(q_d_msg)
-
-        return q_d
-
-    def compute_chiee_d(self) -> Array:
-        """
-        Compute the velocity of the end-effector pose from the history of end-effector poses.
-        """
-        # if the buffer is not full yet, return the current velocity
-        if jnp.any(self.tchiee_hs == 0.0):
-            return self.chiee_d
-
-        # subtract the first time stamp from all time stamps to avoid numerical issues
-        tchiee_hs = self.tchiee_hs - self.tchiee_hs[0]
-
-        chiee_d = jnp.zeros_like(self.chiee)
-        # iterate through configuration variables
-        for i in range(self.chiee_hs.shape[-1]):
-            # derivative of all time stamps for configuration variable i
-            chiee_d_hs = self.diff_method.d(self.chiee_hs[:, i], tchiee_hs)
-
-            chiee_d = chiee_d.at[i].set(chiee_d_hs[-1])
-
-        return chiee_d
-
     def call_controller(self):
         t = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
 
         if self.setpoint_msg is None:
             # we have not received a setpoint yet so we cannot compute the control input
             return
-
-        # compute the velocity of the generalized coordinates and the end-effector pose
-        self.q_d = self.compute_q_d()
-        self.chiee_d = self.compute_chiee_d()
 
         # save the current configuration and velocity
         q, q_d = self.q, self.q_d
