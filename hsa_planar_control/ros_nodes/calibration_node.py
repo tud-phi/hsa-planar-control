@@ -8,7 +8,7 @@ jax_config.update("jax_platform_name", "cpu")  # use CPU
 from jax import Array, jit
 from jax import numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_FPU_SYSTEM_ID, PARAMS_EPU_SYSTEM_ID
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL, PARAMS_EPU_CONTROL
 from jsrm.systems import planar_hsa
 import rclpy
 from rclpy.node import Node
@@ -43,7 +43,7 @@ class CalibrationNode(Node):
         sym_exp_filepath = (
             Path(jsrm.__file__).parent
             / "symbolic_expressions"
-            / f"planar_hsa_ns-1_nrs-4.dill"
+            / f"planar_hsa_ns-1_nrs-2.dill"
         )
         (
             _,
@@ -57,9 +57,9 @@ class CalibrationNode(Node):
         self.declare_parameter("hsa_material", "fpu")
         hsa_material = self.get_parameter("hsa_material").value
         if hsa_material == "fpu":
-            self.known_params = PARAMS_FPU_SYSTEM_ID.copy()
+            self.known_params = PARAMS_FPU_CONTROL.copy()
         elif hsa_material == "epu":
-            self.known_params = PARAMS_EPU_SYSTEM_ID.copy()
+            self.known_params = PARAMS_EPU_CONTROL.copy()
         else:
             raise ValueError(f"Unknown HSA material: {hsa_material}")
 
@@ -86,10 +86,10 @@ class CalibrationNode(Node):
 
         # history of configurations
         # the longer the history, the more delays we introduce, but the less noise we get
-        self.declare_parameter("history_length_for_diff", 20)
-        self.t_hs = jnp.zeros((self.get_parameter("history_length_for_diff").value,))
+        self.declare_parameter("lhs", 20)
+        self.t_hs = jnp.zeros((self.get_parameter("lhs").value,))
         self.q_hs = jnp.zeros(
-            (self.get_parameter("history_length_for_diff").value, self.n_q)
+            (self.get_parameter("lhs").value, self.n_q)
         )
 
         self.timer = self.create_timer(0.1, self.timer_callback)
