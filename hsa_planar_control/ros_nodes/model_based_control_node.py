@@ -1,5 +1,3 @@
-from copy import deepcopy
-import derivative
 from example_interfaces.msg import Float64MultiArray
 from functools import partial
 from jax import config as jax_config
