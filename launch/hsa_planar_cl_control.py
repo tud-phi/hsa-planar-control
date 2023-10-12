@@ -128,9 +128,23 @@ def generate_launch_description():
             arguments=["--ros-args", "--log-level", LOG_LEVEL],
         ),
         Node(
+            package="hsa_velocity_estimation",
+            executable="planar_hsa_velocity_estimator_node",
+            name="velocity_estimator",
+            parameters=[common_params],
+            arguments=["--ros-args", "--log-level", LOG_LEVEL],
+        ),
+        Node(
             package="dynamixel_control",
             executable="sync_read_single_write_node",
             name="dynamixel_control",
+            arguments=["--ros-args", "--log-level", LOG_LEVEL],
+        ),
+        Node(
+            package="hsa_actuation",
+            executable="hsa_planar_actuation_by_msg_node",
+            name="actuation",
+            parameters=[common_params],
             arguments=["--ros-args", "--log-level", LOG_LEVEL],
         ),
         Node(
