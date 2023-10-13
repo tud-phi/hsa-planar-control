@@ -161,7 +161,7 @@ class ModelBasedControlNode(Node):
         )
         self.controller_type = self.get_parameter("controller_type").value
         # it seems that roughly 45 Hz is the maximum at the moment
-        self.declare_parameter("control_frequency", 40)
+        self.declare_parameter("control_frequency", 100.0)
         self.control_frequency = self.get_parameter("control_frequency").value
         control_dt = 1 / self.control_frequency
         self.declare_parameter("Kp", 0.0)
