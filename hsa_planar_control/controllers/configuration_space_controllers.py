@@ -45,7 +45,7 @@ def pd_plus_feedforward(
     tau_q_des = Kp @ (q_des - q) - Kd @ q_d + K_des + G_des
 
     phi_des = map_generalized_torques_to_actuation_with_linearized_model(
-        q, phi, dynamical_matrices_fn, tau_q_des
+        dynamical_matrices_fn, q, phi, tau_q_des
     )
 
     controller_info = {}
@@ -87,7 +87,7 @@ def pd_plus_potential_compensation(
     tau_q_des = Kp @ (q_des - q) - Kd @ q_d + G + K
 
     phi_des = map_generalized_torques_to_actuation_with_linearized_model(
-        q, phi, dynamical_matrices_fn, tau_q_des
+        dynamical_matrices_fn, q, phi, tau_q_des
     )
 
     controller_info = {}
@@ -127,7 +127,7 @@ def pd_plus_steady_state_actuation(
         controller_info: dictionary with information about intermediate computations
     """
     # linearize the system around the desired configuration
-    tau_eq, A = linearize_actuation(q_des, phi_ss, dynamical_matrices_fn)
+    tau_eq, A = linearize_actuation(dynamical_matrices_fn, q_des, phi_ss)
 
     # implement the underactuated PD + feedforward controller
     phi_des = phi_ss + Kp @ A.T @ (q_des - q) - Kd @ A.T @ q_d
@@ -178,7 +178,7 @@ def P_satI_D_plus_steady_state_actuation(
         controller_info: dictionary with information about intermediate computations
     """
     # linearize the system around the desired configuration
-    tau_eq, A = linearize_actuation(q, phi_ss, dynamical_matrices_fn)
+    tau_eq, A = linearize_actuation(dynamical_matrices_fn, q, phi_ss)
 
     # error
     e_phi = A.T @ (q_des - q)
@@ -239,7 +239,7 @@ def P_satI_D_collocated_form_plus_steady_state_actuation_for_constant_stiffness(
         controller_info: dictionary with information about intermediate computations
     """
     # linearize the system around the desired configuration
-    tau_eq, A = linearize_actuation(q_des, phi_ss, dynamical_matrices_fn)
+    tau_eq, A = linearize_actuation(dynamical_matrices_fn, q_des, phi_ss)
 
     def coordinate_transform_into_collocated_form(_q: Array) -> Array:
         """

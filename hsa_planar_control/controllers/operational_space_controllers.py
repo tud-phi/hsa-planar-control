@@ -201,7 +201,7 @@ def operational_space_computed_torque(
 
     if consider_underactuation_model:
         phi_des = map_generalized_torques_to_actuation_with_linearized_model(
-            q, phi, dynamical_matrices_fn, tau_q_des
+            dynamical_matrices_fn, q, phi, tau_q_des
         )
 
         u = phi_des
@@ -277,7 +277,7 @@ def operational_space_impedance_control_linearized_actuation(
     tau_q_des = Jee.T @ f_des
 
     phi_des = map_generalized_torques_to_actuation_with_linearized_model(
-        q, phi, dynamical_matrices_fn, tau_q_des
+        dynamical_matrices_fn, q, phi, tau_q_des
     )
 
     controller_info = {"e_pee": e_pee, "f": f_des, "tau": tau_q_des}

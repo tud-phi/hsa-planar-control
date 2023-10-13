@@ -4,14 +4,14 @@ from typing import Callable, Tuple
 
 
 def linearize_actuation(
-    q_eq: Array, phi_eq: Array, dynamical_matrices_fn: Callable
+    dynamical_matrices_fn: Callable, q_eq: Array, phi_eq: Array
 ) -> Tuple[Array, Array]:
     """
     Linearize the actuation vector.
     Args:
+        dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
         q_eq: configuration vector of shape (n_q, )
         phi_eq: current motor positions vector of shape (n_phi, )
-        dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
     Returns:
         tau_eq: actuation vector of shape (n_q, )
         A: linearized actuation vector of shape (n_q, n_phi)
@@ -29,20 +29,20 @@ def linearize_actuation(
 
 
 def map_generalized_torques_to_actuation_with_linearized_model(
-    q_eq: Array, phi_eq: Array, dynamical_matrices_fn: Callable, tau_q_des: Array
+    dynamical_matrices_fn: Callable, q_eq: Array, phi_eq: Array, tau_q_des: Array
 ) -> Array:
     """
     Map a desired torque in configuration space to a desired twist angle by linearizing the actuation vector.
     Args:
+        dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
         q_eq: configuration vector of shape (n_q, )
         phi_eq: current motor positions vector of shape (n_phi, )
-        dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
         tau_q_des: desired torque in configuration space of shape (n_q, )
     Returns:
         phi_des: desired motor positions (n_phi, )
     """
 
-    tau_eq, A = linearize_actuation(q_eq, phi_eq, dynamical_matrices_fn)
+    tau_eq, A = linearize_actuation(dynamical_matrices_fn, q_eq, phi_eq)
 
     # compute the desired phi
     phi_des = phi_eq + jnp.linalg.pinv(A) @ (tau_q_des - tau_eq)
