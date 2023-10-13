@@ -88,9 +88,7 @@ class CalibrationNode(Node):
         # the longer the history, the more delays we introduce, but the less noise we get
         self.declare_parameter("lhs", 20)
         self.t_hs = jnp.zeros((self.get_parameter("lhs").value,))
-        self.q_hs = jnp.zeros(
-            (self.get_parameter("lhs").value, self.n_q)
-        )
+        self.q_hs = jnp.zeros((self.get_parameter("lhs").value, self.n_q))
 
         self.timer = self.create_timer(0.1, self.timer_callback)
 

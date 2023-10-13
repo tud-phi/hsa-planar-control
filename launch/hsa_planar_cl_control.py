@@ -65,7 +65,7 @@ planning_params = common_params | {
 
 control_params = common_params | {
     "controller_type": controller_type,
-    "control_frequency": 40.0
+    "control_frequency": 40.0,
 }
 if controller_type == "basic_operational_space_pid":
     control_params.update(

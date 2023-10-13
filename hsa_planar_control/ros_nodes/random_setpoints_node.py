@@ -102,7 +102,7 @@ class RandonSetpointsNode(Node):
                 dynamical_matrices_fn,
                 self.params,
                 sim_dt=sim_dt,
-                duration=duration
+                duration=duration,
             )
         )
 
@@ -110,11 +110,13 @@ class RandonSetpointsNode(Node):
         phi_ss_dummy = self.params["phi_max"].flatten()
         q_ss_dummy, q_d_ss_dummy = self.simulate_steady_state_fn(phi_ss_dummy)
         assert q_d_ss_dummy.mean() < 1e-2, (
-            "The simulation hasn't converged to a steady state which means that likely the duration is too short." +
-            f"q_ss_dummy: {q_ss_dummy}, q_d_ss_dummy: {q_d_ss_dummy}"
+            "The simulation hasn't converged to a steady state which means that likely the duration is too short."
+            + f"q_ss_dummy: {q_ss_dummy}, q_d_ss_dummy: {q_d_ss_dummy}"
         )
         chiee_ss_dummy = self.forward_kinematics_end_effector_fn(q_ss_dummy)
-        self.get_logger().info(f"Finished jitting the forward kinematics and steady state simulation function.")
+        self.get_logger().info(
+            f"Finished jitting the forward kinematics and steady state simulation function."
+        )
 
         # initial setpoint index
         self.setpoint_idx = 0
@@ -140,10 +142,7 @@ class RandonSetpointsNode(Node):
             a_max=None,
         )  # upper bound for sampling
         phi_ss = random.uniform(
-            rng_setpoint,
-            shape=phi_ss_lb.shape,
-            minval=phi_ss_lb,
-            maxval=phi_ss_ub
+            rng_setpoint, shape=phi_ss_lb.shape, minval=phi_ss_lb, maxval=phi_ss_ub
         )
 
         rollout_start_time = self.get_clock().now()
@@ -156,9 +155,7 @@ class RandonSetpointsNode(Node):
         )
 
         # Log the setpoint
-        self.get_logger().info(
-            f"chiee_ss: {chiee_ss}, q_ss: {q_ss}, phi_ss: {phi_ss}"
-        )
+        self.get_logger().info(f"chiee_ss: {chiee_ss}, q_ss: {q_ss}, phi_ss: {phi_ss}")
 
         msg = PlanarSetpoint()
         msg.chiee_des.x = chiee_ss[0].item()

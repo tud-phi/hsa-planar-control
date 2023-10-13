@@ -5,7 +5,7 @@ from typing import Callable, Dict, Tuple
 
 from .generalized_torques_to_actuation import (
     map_generalized_torques_to_actuation_with_linearized_model,
-    map_generalized_torques_to_actuation_with_nonlinear_optimization
+    map_generalized_torques_to_actuation_with_nonlinear_optimization,
 )
 
 
@@ -349,10 +349,18 @@ def operational_space_impedance_control_nonlinear_actuation(
     # project end-effector force into configuration space
     tau_q_des = Jee.T @ f_des
 
-    phi_des, optimality_error = map_generalized_torques_to_actuation_with_nonlinear_optimization(
+    (
+        phi_des,
+        optimality_error,
+    ) = map_generalized_torques_to_actuation_with_nonlinear_optimization(
         dynamical_matrices_fn, q, tau_q_des, phi0=phi
     )
 
-    controller_info = {"e_pee": e_pee, "f": f_des, "tau_q": tau_q_des, "actuation_optimality_error": optimality_error}
+    controller_info = {
+        "e_pee": e_pee,
+        "f": f_des,
+        "tau_q": tau_q_des,
+        "actuation_optimality_error": optimality_error,
+    }
 
     return phi_des, controller_info

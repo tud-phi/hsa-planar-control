@@ -14,7 +14,7 @@ from typing import Callable, Dict, Tuple
 
 from hsa_planar_control.controllers.saturation import saturate_control_inputs
 from hsa_planar_control.controllers.operational_space_controllers import (
-    operational_space_impedance_control_linearized_actuation
+    operational_space_impedance_control_linearized_actuation,
 )
 from hsa_planar_control.rendering.opencv_renderer import animate_robot
 from hsa_planar_control.simulation import simulate_closed_loop_system
@@ -79,8 +79,6 @@ if __name__ == "__main__":
         dynamical_matrices_fn,
         sys_helpers,
     ) = planar_hsa.factory(sym_exp_filepath, strain_selector)
-
-
 
     controller_state_init = {
         # "e_y": jnp.zeros_like(phi0),
