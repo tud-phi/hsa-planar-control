@@ -28,7 +28,7 @@ def linearize_actuation(
     return tau_eq, A
 
 
-def map_configuration_space_torque_to_twist_angle(
+def map_generalized_torques_to_actuation_with_linearized_model(
     q_eq: Array, phi_eq: Array, dynamical_matrices_fn: Callable, tau_q_des: Array
 ) -> Array:
     """

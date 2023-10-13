@@ -3,7 +3,7 @@ from jax import Array, debug, jacfwd, jit
 import jax.numpy as jnp
 from typing import Callable, Dict, Tuple
 
-from .actuation_linearization import map_configuration_space_torque_to_twist_angle
+from .generalized_torques_to_actuation import map_generalized_torques_to_actuation_with_linearized_model
 
 
 def basic_operational_space_pid(
@@ -200,7 +200,7 @@ def operational_space_computed_torque(
     tau_q_des = Jee.T @ f_des
 
     if consider_underactuation_model:
-        phi_des = map_configuration_space_torque_to_twist_angle(
+        phi_des = map_generalized_torques_to_actuation_with_linearized_model(
             q, phi, dynamical_matrices_fn, tau_q_des
         )
 
@@ -276,7 +276,7 @@ def operational_space_impedance_control_linearized_actuation(
     # project end-effector force into configuration space
     tau_q_des = Jee.T @ f_des
 
-    phi_des = map_configuration_space_torque_to_twist_angle(
+    phi_des = map_generalized_torques_to_actuation_with_linearized_model(
         q, phi, dynamical_matrices_fn, tau_q_des
     )
 

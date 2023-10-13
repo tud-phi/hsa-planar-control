@@ -2,9 +2,9 @@ from jax import Array, debug, jacfwd
 import jax.numpy as jnp
 from typing import Callable, Dict, Tuple
 
-from .actuation_linearization import (
+from .generalized_torques_to_actuation import (
     linearize_actuation,
-    map_configuration_space_torque_to_twist_angle,
+    map_generalized_torques_to_actuation_with_linearized_model,
 )
 
 
@@ -44,7 +44,7 @@ def pd_plus_feedforward(
     )
     tau_q_des = Kp @ (q_des - q) - Kd @ q_d + K_des + G_des
 
-    phi_des = map_configuration_space_torque_to_twist_angle(
+    phi_des = map_generalized_torques_to_actuation_with_linearized_model(
         q, phi, dynamical_matrices_fn, tau_q_des
     )
 
@@ -86,7 +86,7 @@ def pd_plus_potential_compensation(
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
     tau_q_des = Kp @ (q_des - q) - Kd @ q_d + G + K
 
-    phi_des = map_configuration_space_torque_to_twist_angle(
+    phi_des = map_generalized_torques_to_actuation_with_linearized_model(
         q, phi, dynamical_matrices_fn, tau_q_des
     )
 
