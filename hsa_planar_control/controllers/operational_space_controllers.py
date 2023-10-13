@@ -189,29 +189,20 @@ def operational_space_computed_torque(
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
     Lambda, nu, JB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
-    # debug.print("Lambda = {Lambda}, nu={nu}, JB_pinv={JB_pinv}", Lambda=Lambda, nu=nu, JB_pinv=JB_pinv)
-
-    # debug.print("error p_ee = {error_p_ee}", error_p_ee=pee_des - pee)
-
-    # desired force in operational space
+    # desired force in operational space of shape (3, )
     f_des = (
-        Lambda[:2, :2] @ (Kp @ (pee_des - pee) - Kd @ p_d_ee)
-        + nu[:2]
-        + JB_pinv[:, :2].T @ (G + K + D @ q_d)
+        Lambda[:, :2] @ (Kp @ (pee_des - pee) - Kd @ p_d_ee)
+        + nu
+        + JB_pinv.T @ (G + K + D @ q_d)
     )
 
-    # debug.print("f_des = {f_des}", f_des=f_des)
-
     # project end-effector force into configuration space
-    tau_q_des = Jee[:2, :].T @ f_des
-
-    # debug.print("tau_q_des = {tau_q_des}", tau_q_des=tau_q_des)
+    tau_q_des = Jee.T @ f_des
 
     if consider_underactuation_model:
         phi_des = map_configuration_space_torque_to_twist_angle(
             q, phi, dynamical_matrices_fn, tau_q_des
         )
-        # debug.print("phi_des = {phi_des}", phi_des=phi_des)
 
         u = phi_des
     else:
@@ -274,15 +265,16 @@ def operational_space_impedance_control_linearized_actuation(
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
     Lambda, nu, JB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
-    # desired force in operational space
+    # desired force in operational space with respect to x, y and theta
     f_des = (
-        Lambda[:2, :2] @ (Kp @ e_pee - Kd @ pee_d)
-        + nu[:2]  # coriolis and centrifugal forces in operational space
-        + JB_pinv[:, :2].T @ D @ q_d
+        Lambda[:, :2] @ (Kp @ e_pee - Kd @ pee_d)
+        # + nu  # coriolis and centrifugal forces in operational space (this is quite unstable as it injects energy)
+        + JB_pinv.T @ (G + K)  # compensate for static elastic and gravitational forces
+        # + JB_pinv.T @ D @ q_d  # compensate for the damping forces (this is quite unstable as it injects energy)
     )
 
     # project end-effector force into configuration space
-    tau_q_des = Jee[:2, :].T @ f_des
+    tau_q_des = Jee.T @ f_des
 
     phi_des = map_configuration_space_torque_to_twist_angle(
         q, phi, dynamical_matrices_fn, tau_q_des
