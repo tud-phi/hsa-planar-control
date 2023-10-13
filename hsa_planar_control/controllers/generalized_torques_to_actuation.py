@@ -53,7 +53,7 @@ def map_generalized_torques_to_actuation_with_linearized_model(
 
 def map_generalized_torques_to_actuation_with_nonlinear_optimization(
     dynamical_matrices_fn: Callable, q: Array, tau_q_des: Array, phi0: Array
-) -> Array:
+) -> Tuple[Array, Array]:
     """
     Map a desired torque in configuration space to desired twist angles by performing nonlinear optimization
     Args:
@@ -76,10 +76,7 @@ def map_generalized_torques_to_actuation_with_nonlinear_optimization(
     # optimal phi
     phi_des = sol.params
 
-    # compute the optimality
-    optimality = lm.optimality_fun(sol.params)
+    # compute the L2 optimality
+    optimality_error = lm.l2_optimality_error(sol.params)
 
-    debug.print("optimality = {optimality}", optimality=optimality)
-    debug.print("sol = {sol}", sol=sol)
-
-    return phi_des
+    return phi_des, optimality_error

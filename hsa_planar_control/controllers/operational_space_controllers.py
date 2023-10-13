@@ -230,7 +230,6 @@ def operational_space_impedance_control_linearized_actuation(
     pee_des: Array,
     Kp: Array,
     Kd: Array,
-    logger=None,
     **kwargs,
 ) -> Tuple[Array, Dict[str, Array]]:
     """
@@ -253,7 +252,6 @@ def operational_space_impedance_control_linearized_actuation(
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
-        logger: ROS2 logger
     Returns:
         u: input to the system. this is an array of shape (n_phi) with motor positions / twist angles of the proximal end of the rods
         controller_info: dictionary with information about intermediate computations
@@ -284,9 +282,7 @@ def operational_space_impedance_control_linearized_actuation(
         dynamical_matrices_fn, q, phi, tau_q_des
     )
 
-    controller_info = {"e_pee": e_pee, "f": f_des, "tau": tau_q_des}
-
-    # logger.info(f"e_pee = {e_pee}, f_des = {f_des}, tau_q_des = {tau_q_des}, phi_des = {phi_des}")
+    controller_info = {"e_pee": e_pee, "f": f_des, "tau_q": tau_q_des}
 
     return phi_des, controller_info
 
@@ -305,7 +301,6 @@ def operational_space_impedance_control_nonlinear_actuation(
     pee_des: Array,
     Kp: Array,
     Kd: Array,
-    logger=None,
     **kwargs,
 ) -> Tuple[Array, Dict[str, Array]]:
     """
@@ -328,7 +323,6 @@ def operational_space_impedance_control_nonlinear_actuation(
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
-        logger: ROS2 logger
     Returns:
         u: input to the system. this is an array of shape (n_phi) with motor positions / twist angles of the proximal end of the rods
         controller_info: dictionary with information about intermediate computations
@@ -355,12 +349,10 @@ def operational_space_impedance_control_nonlinear_actuation(
     # project end-effector force into configuration space
     tau_q_des = Jee.T @ f_des
 
-    phi_des = map_generalized_torques_to_actuation_with_nonlinear_optimization(
+    phi_des, optimality_error = map_generalized_torques_to_actuation_with_nonlinear_optimization(
         dynamical_matrices_fn, q, tau_q_des, phi0=phi
     )
 
-    controller_info = {"e_pee": e_pee, "f": f_des, "tau": tau_q_des}
-
-    # logger.info(f"e_pee = {e_pee}, f_des = {f_des}, tau_q_des = {tau_q_des}, phi_des = {phi_des}")
+    controller_info = {"e_pee": e_pee, "f": f_des, "tau_q": tau_q_des, "actuation_optimality_error": optimality_error}
 
     return phi_des, controller_info
