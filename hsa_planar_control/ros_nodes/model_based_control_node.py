@@ -238,16 +238,18 @@ class ModelBasedControlNode(Node):
                 )
             )
         elif self.controller_type == "operational_space_impedance_control_linearized_actuation":
-            self.control_fn = partial(
-                operational_space_impedance_control_linearized_actuation,
-                jacobian_end_effector_fn=partial(jacobian_end_effector_fn, self.params),
-                dynamical_matrices_fn=partial(dynamical_matrices_fn, self.params),
-                operational_space_dynamical_matrices_fn=partial(
-                    sys_helpers["operational_space_dynamical_matrices_fn"], self.params
-                ),
-                Kp=Kp,
-                Kd=Kd,
-                logger=self.get_logger(),
+            self.control_fn = jit(
+                partial(
+                    operational_space_impedance_control_linearized_actuation,
+                    jacobian_end_effector_fn=partial(jacobian_end_effector_fn, self.params),
+                    dynamical_matrices_fn=partial(dynamical_matrices_fn, self.params),
+                    operational_space_dynamical_matrices_fn=partial(
+                        sys_helpers["operational_space_dynamical_matrices_fn"], self.params
+                    ),
+                    Kp=Kp,
+                    Kd=Kd,
+                    # logger=self.get_logger(),
+                )
             )
         else:
             raise NotImplementedError(

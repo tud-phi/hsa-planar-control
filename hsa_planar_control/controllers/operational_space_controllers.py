@@ -290,6 +290,6 @@ def operational_space_impedance_control_linearized_actuation(
 
     controller_info = {"e_pee": e_pee, "f": f_des, "tau": tau_q_des}
 
-    logger.info(f"e_pee = {e_pee}, f_des = {f_des}, tau_q_des = {tau_q_des}, phi_des = {phi_des}")
+    # logger.info(f"e_pee = {e_pee}, f_des = {f_des}, tau_q_des = {tau_q_des}, phi_des = {phi_des}")
 
     return phi_des, controller_info
