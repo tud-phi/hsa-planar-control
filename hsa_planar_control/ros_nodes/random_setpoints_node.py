@@ -84,9 +84,9 @@ class RandonSetpointsNode(Node):
         )
 
         # increase damping on the bending strain
-        self.params["zetab"] = 2 * self.params["zetab"]
-        self.params["zetash"] = 2 * self.params["zetash"]
-        self.params["zetaa"] = 2 * self.params["zetaa"]
+        self.params["zetab"] = 4 * self.params["zetab"]
+        self.params["zetash"] = 4 * self.params["zetash"]
+        self.params["zetaa"] = 4 * self.params["zetaa"]
 
         # specify a jitted version of the forward kinematics function
         self.forward_kinematics_end_effector_fn = jit(
@@ -94,8 +94,8 @@ class RandonSetpointsNode(Node):
         )
 
         # define residual function for static inversion optimization
-        sim_dt = 5e-4  # time step for simulation [s]
-        duration = 60.0  # duration of simulation [s]
+        sim_dt = 1e-4  # time step for simulation [s]
+        duration = 30.0  # duration of simulation [s]
         self.simulate_steady_state_fn = jit(
             partial(
                 simulate_steady_state,
