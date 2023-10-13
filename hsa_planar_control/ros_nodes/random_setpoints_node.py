@@ -90,7 +90,7 @@ class RandonSetpointsNode(Node):
 
         # define residual function for static inversion optimization
         sim_dt = 1e-3  # time step for simulation [s]
-        duration = 20.0  # duration of simulation [s]
+        duration = 50.0  # duration of simulation [s]
         self.simulate_steady_state_fn = jit(
             partial(
                 simulate_steady_state,
