@@ -216,7 +216,7 @@ def operational_space_computed_torque(
     return u, controller_info
 
 
-def operational_space_impedance_control_linearized_actuation(
+def operational_space_pd_plus_linearized_actuation(
     t: Array,
     chiee: Array,
     chiee_d: Array,
@@ -270,9 +270,7 @@ def operational_space_impedance_control_linearized_actuation(
     # desired force in operational space with respect to x, y and theta
     f_des = (
         Lambda[:, :2] @ (Kp @ e_pee - Kd @ pee_d)
-        # + nu  # coriolis and centrifugal forces in operational space (this is quite unstable as it injects energy)
         + JB_pinv.T @ (G + K)  # compensate for static elastic and gravitational forces
-        # + JB_pinv.T @ D @ q_d  # compensate for the damping forces (this is quite unstable as it injects energy)
     )
 
     # project end-effector force into configuration space
@@ -287,7 +285,7 @@ def operational_space_impedance_control_linearized_actuation(
     return phi_des, controller_info
 
 
-def operational_space_impedance_control_nonlinear_actuation(
+def operational_space_pd_plus_nonlinear_actuation(
     t: Array,
     chiee: Array,
     chiee_d: Array,
@@ -341,9 +339,7 @@ def operational_space_impedance_control_nonlinear_actuation(
     # desired force in operational space with respect to x, y and theta
     f_des = (
         Lambda[:, :2] @ (Kp @ e_pee - Kd @ pee_d)
-        # + nu  # coriolis and centrifugal forces in operational space (this is quite unstable as it injects energy)
         + JB_pinv.T @ (G + K)  # compensate for static elastic and gravitational forces
-        # + JB_pinv.T @ D @ q_d  # compensate for the damping forces (this is quite unstable as it injects energy)
     )
 
     # project end-effector force into configuration space
