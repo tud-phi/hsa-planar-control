@@ -43,7 +43,7 @@ sym_exp_filepath = (
 # set parameters
 params = PARAMS_FPU_CONTROL.copy()
 
-IMAGE_TYPE = "tud-flame"
+IMAGE_TYPE = "bat"
 
 if IMAGE_TYPE == "star":
     pee_centroid = jnp.array([0.0, 0.127])
@@ -54,6 +54,12 @@ elif IMAGE_TYPE == "tud-flame":
 elif IMAGE_TYPE == "mit-csail":
     pee_centroid = jnp.array([0.0, 0.127])
     max_radius = jnp.array(0.015)
+elif IMAGE_TYPE == "manta-ray":
+    pee_centroid = jnp.array([0.0, 0.129])
+    max_radius = jnp.array(0.027)
+elif IMAGE_TYPE == "bat":
+    pee_centroid = jnp.array([0.0, 0.1285])
+    max_radius = jnp.array(0.030)
 else:
     raise ValueError(f"Unknown image type: {IMAGE_TYPE}")
 

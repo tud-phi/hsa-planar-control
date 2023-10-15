@@ -71,6 +71,28 @@ def generate_task_space_trajectory_from_image_contour(
         # set the threshold for the binary image
         threshold = 140
         threshold_mode = cv2.THRESH_BINARY_INV
+    elif image_type == "manta-ray":
+        # https://www.flaticon.com/free-icon/manta-ray-shape_47440
+        if image_path is None:
+            image_path = (
+                Path(__file__).parent.parent.parent / "assets" / "manta_ray.png"
+            )
+
+        img = cv2.imread(str(image_path))
+
+        # set the threshold for the binary image
+        threshold = 140
+        threshold_mode = cv2.THRESH_BINARY_INV
+    elif image_type == "bat":
+        # https://www.freepik.com/icon/flying-bat_12311
+        if image_path is None:
+            image_path = Path(__file__).parent.parent.parent / "assets" / "bat.png"
+
+        img = cv2.imread(str(image_path))
+
+        # set the threshold for the binary image
+        threshold = 140
+        threshold_mode = cv2.THRESH_BINARY_INV
     else:
         raise ValueError(f"Unknown image type: {image_type}")
 
@@ -179,6 +201,11 @@ def generate_task_space_trajectory_from_image_contour(
         pee_sps_norm = -pee_sps_norm
     elif image_type == "mit-csail":
         sample_step = 8  # only take every 8th point
+        pee_sps_norm = pee_sps_norm[::sample_step, :]
+        # as the robot is facing upside-down, we need to flip the x-axis and y-axis
+        pee_sps_norm = -pee_sps_norm
+    elif image_type == "bat":
+        sample_step = 3  # only take every 3rd point
         pee_sps_norm = pee_sps_norm[::sample_step, :]
         # as the robot is facing upside-down, we need to flip the x-axis and y-axis
         pee_sps_norm = -pee_sps_norm
