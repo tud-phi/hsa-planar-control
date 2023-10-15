@@ -61,19 +61,19 @@ class RandonSetpointsNode(Node):
         # parameters for specifying different rest strains
         self.declare_parameter("kappa_b_eq", self.params["kappa_b_eq"].mean().item())
         self.declare_parameter("sigma_sh_eq", self.params["sigma_sh_eq"].mean().item())
-        self.declare_parameter("sigma_a_eq", self.params["sigma_a_eq"].mean().item())
+        self.declare_parameter("sigma_a_eq1", self.params["sigma_a_eq"][0, 0].item())
+        self.declare_parameter("sigma_a_eq2", self.params["sigma_a_eq"][0, 1].item())
         kappa_b_eq = self.get_parameter("kappa_b_eq").value
         sigma_sh_eq = self.get_parameter("sigma_sh_eq").value
-        sigma_a_eq = self.get_parameter("sigma_a_eq").value
+        sigma_a_eq1 = self.get_parameter("sigma_a_eq1").value
+        sigma_a_eq2 = self.get_parameter("sigma_a_eq2").value
         self.params["kappa_b_eq"] = kappa_b_eq * jnp.ones_like(
             self.params["kappa_b_eq"]
         )
         self.params["sigma_sh_eq"] = sigma_sh_eq * jnp.ones_like(
             self.params["sigma_sh_eq"]
         )
-        self.params["sigma_a_eq"] = sigma_a_eq * jnp.ones_like(
-            self.params["sigma_a_eq"]
-        )
+        self.params["sigma_a_eq"] = jnp.array([[sigma_a_eq1, sigma_a_eq2]])
         # external payload mass (assumed to be at end effector)
         self.declare_parameter("payload_mass", 0.0)
         self.params["mpl"] = self.get_parameter("payload_mass").value
