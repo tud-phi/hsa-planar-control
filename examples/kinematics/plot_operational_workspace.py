@@ -95,16 +95,19 @@ if __name__ == "__main__":
     xmin, xmax = jnp.min(max_actuation_samples["chiee_ss"][:, 0]), jnp.max(
         max_actuation_samples["chiee_ss"][:, 0]
     )
-    pmax = jnp.polyfit(
-        max_actuation_samples["chiee_ss"][:, 0],
-        max_actuation_samples["chiee_ss"][:, 1],
-        20,
-    )
+    print(f"xmin = {xmin}, xmax = {xmax}")
     pmin = jnp.polyfit(
         min_actuation_samples["chiee_ss"][:, 0],
         min_actuation_samples["chiee_ss"][:, 1],
         20,
     )
+    print(f"pmin =\n{pmin}")
+    pmax = jnp.polyfit(
+        max_actuation_samples["chiee_ss"][:, 0],
+        max_actuation_samples["chiee_ss"][:, 1],
+        20,
+    )
+    print(f"pmax =\n{pmax}")
     xp = jnp.linspace(xmin, xmax, 50)
     # plt.plot(
     #     xp,
@@ -326,8 +329,8 @@ if __name__ == "__main__":
             2, max_actuation_samples["q_ss"][-1], ax, colors[3]
         )
 
-    plt.xlabel(r"$p_{\mathrm{ee},x}$ [m]")
-    plt.ylabel(r"$p_{\mathrm{ee},y}$ [m]")
+    plt.xlabel(r"$x$ [m]")
+    plt.ylabel(r"$y$ [m]")
     plt.axis("equal")
     ax.invert_xaxis()
     ax.invert_yaxis()

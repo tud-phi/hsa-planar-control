@@ -26,7 +26,7 @@ from hsa_planar_control.planning.static_planning import (
     statically_invert_actuation_to_task_space_projected_descent,
 )
 from hsa_planar_control.planning.task_space_trajectory_generation import (
-    generate_task_space_trajectory_from_image,
+    generate_task_space_trajectory_from_image_contour,
 )
 
 
@@ -205,7 +205,7 @@ class StaticInversionPlanningNode(Node):
             else:
                 raise ValueError(f"Unknown image type: {image_type}")
 
-            self.pee_des_sps = generate_task_space_trajectory_from_image(
+            self.pee_des_sps = generate_task_space_trajectory_from_image_contour(
                 image_type=image_type,
                 image_path=image_path,
                 pee_centroid=pee_centroid,

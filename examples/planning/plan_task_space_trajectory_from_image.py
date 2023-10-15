@@ -19,7 +19,7 @@ from hsa_planar_control.planning.static_planning import (
     statically_invert_actuation_to_task_space_projected_descent_straight_config,
 )
 from hsa_planar_control.planning.task_space_trajectory_generation import (
-    generate_task_space_trajectory_from_image,
+    generate_task_space_trajectory_from_image_contour,
 )
 
 plt.rcParams.update(
@@ -59,7 +59,7 @@ else:
 
 
 def main():
-    pee_des_sps = generate_task_space_trajectory_from_image(
+    pee_des_sps = generate_task_space_trajectory_from_image_contour(
         image_type=IMAGE_TYPE,
         pee_centroid=pee_centroid,
         max_radius=max_radius,

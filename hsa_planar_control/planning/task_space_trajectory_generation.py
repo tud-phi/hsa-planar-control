@@ -5,10 +5,15 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from os import PathLike
 
+from hsa_planar_control.operational_workspace import (
+    get_operational_workspace_boundaries
+)
 
-def generate_task_space_trajectory_from_image(
+
+def generate_task_space_trajectory_from_image_contour(
     image_type: str,
     image_path: PathLike = None,
+    hsa_material: str = "fpu",
     pee_centroid: Array = jnp.array([0.0, 0.13]),
     max_radius: Array = jnp.array(0.01),
     verbose: bool = True,
@@ -18,6 +23,8 @@ def generate_task_space_trajectory_from_image(
     Generate a task space trajectory from an image.
     Args:
         image_type: either "star" or "tud-flame"
+        image_path: path to the image with the contour
+        hsa_material: material of the HSA (either "fpu" or "epu")
         pee_centroid: the end effector position matching the centroid of the contour [m]
         max_radius: maximum radius of the contour (i.e. largest distance from the centroid) [m]
         verbose: if True, print debug information
@@ -108,7 +115,6 @@ def generate_task_space_trajectory_from_image(
         # see the results
         cv2.imshow("None approximation", img_copy)
         cv2.waitKey(0)
-        cv2.imwrite("contours_none_image1.jpg", img_copy)
         cv2.destroyAllWindows()
 
     # find centroid of the contour
@@ -179,11 +185,25 @@ def generate_task_space_trajectory_from_image(
 
     pee_des_sps = pee_centroid + pee_sps_norm * max_radius
     if show_images:
+        # evaluate the operational workspace boundaries
+        pee_min_ps, pee_max_ps = get_operational_workspace_boundaries(
+            hsa_material=hsa_material
+        )
+
         plt.figure(num="Final trajectory")
-        plt.plot(pee_des_sps[:, 0], pee_des_sps[:, 1])
+        ax = plt.gca()
+        plt.plot(pee_des_sps[:, 0], pee_des_sps[:, 1], label="planned end-effector trajectory")
+        plt.plot(pee_min_ps[:, 0], pee_min_ps[:, 1], "k--", label="operational workspace boundary")
+        plt.plot(pee_max_ps[:, 0], pee_max_ps[:, 1], "k--")
         plt.axis("equal")
+        ax.invert_xaxis()
+        ax.invert_yaxis()
+        plt.xlabel("x [m]")
+        plt.ylabel("y [m]")
         plt.grid(True)
         plt.box(True)
+        plt.legend()
+        plt.tight_layout()
         plt.show()
 
     print("pee_des_sps:\n", pee_des_sps)
