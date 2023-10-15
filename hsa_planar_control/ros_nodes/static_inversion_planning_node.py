@@ -202,6 +202,14 @@ class StaticInversionPlanningNode(Node):
                 )
                 pee_centroid = jnp.array([0.0, 0.127])
                 max_radius = jnp.array(0.017)
+            elif image_type == "bat":
+                image_path = os.path.join(
+                    get_package_share_directory("hsa_planar_control"),
+                    "assets",
+                    "bat.png",
+                )
+                pee_centroid = jnp.array([0.0, 0.1285])
+                max_radius = jnp.array(0.030)
             else:
                 raise ValueError(f"Unknown image type: {image_type}")
 
