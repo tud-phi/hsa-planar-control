@@ -26,7 +26,7 @@ from hsa_planar_control.planning.static_planning import (
     statically_invert_actuation_to_task_space_projected_descent,
 )
 from hsa_planar_control.planning.task_space_trajectory_generation import (
-    generate_task_space_trajectory_from_image,
+    generate_task_space_trajectory_from_image_contour,
 )
 
 
@@ -202,10 +202,18 @@ class StaticInversionPlanningNode(Node):
                 )
                 pee_centroid = jnp.array([0.0, 0.127])
                 max_radius = jnp.array(0.017)
+            elif image_type == "bat":
+                image_path = os.path.join(
+                    get_package_share_directory("hsa_planar_control"),
+                    "assets",
+                    "bat.png",
+                )
+                pee_centroid = jnp.array([0.0, 0.1285])
+                max_radius = jnp.array(0.030)
             else:
                 raise ValueError(f"Unknown image type: {image_type}")
 
-            self.pee_des_sps = generate_task_space_trajectory_from_image(
+            self.pee_des_sps = generate_task_space_trajectory_from_image_contour(
                 image_type=image_type,
                 image_path=image_path,
                 pee_centroid=pee_centroid,

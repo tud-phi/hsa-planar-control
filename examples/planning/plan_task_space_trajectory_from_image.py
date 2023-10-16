@@ -19,7 +19,7 @@ from hsa_planar_control.planning.static_planning import (
     statically_invert_actuation_to_task_space_projected_descent_straight_config,
 )
 from hsa_planar_control.planning.task_space_trajectory_generation import (
-    generate_task_space_trajectory_from_image,
+    generate_task_space_trajectory_from_image_contour,
 )
 
 plt.rcParams.update(
@@ -43,7 +43,7 @@ sym_exp_filepath = (
 # set parameters
 params = PARAMS_FPU_CONTROL.copy()
 
-IMAGE_TYPE = "tud-flame"
+IMAGE_TYPE = "bat"
 
 if IMAGE_TYPE == "star":
     pee_centroid = jnp.array([0.0, 0.127])
@@ -54,12 +54,18 @@ elif IMAGE_TYPE == "tud-flame":
 elif IMAGE_TYPE == "mit-csail":
     pee_centroid = jnp.array([0.0, 0.127])
     max_radius = jnp.array(0.015)
+elif IMAGE_TYPE == "manta-ray":
+    pee_centroid = jnp.array([0.0, 0.129])
+    max_radius = jnp.array(0.027)
+elif IMAGE_TYPE == "bat":
+    pee_centroid = jnp.array([0.0, 0.1285])
+    max_radius = jnp.array(0.030)
 else:
     raise ValueError(f"Unknown image type: {IMAGE_TYPE}")
 
 
 def main():
-    pee_des_sps = generate_task_space_trajectory_from_image(
+    pee_des_sps = generate_task_space_trajectory_from_image_contour(
         image_type=IMAGE_TYPE,
         pee_centroid=pee_centroid,
         max_radius=max_radius,
@@ -118,12 +124,16 @@ def main():
     print("phi_ss_sps:\n", phi_ss_sps)
 
     plt.figure(num="Desired end-effector positions")
+    ax = plt.gca()
     plt.plot(pee_des_sps[:, 0], pee_des_sps[:, 1], "k--")
     plt.axis("equal")
+    ax.invert_xaxis()
+    ax.invert_yaxis()
     plt.xlabel("$x$ [m]")
     plt.ylabel("$y$ [m]")
     plt.grid(True)
     plt.box(True)
+    plt.tight_layout()
     plt.show()
     plt.figure(num="Desired end-effector orientation")
     plt.plot(jnp.arange(num_setpoints), pee_des_sps[:, 0], "--", label="theta")
