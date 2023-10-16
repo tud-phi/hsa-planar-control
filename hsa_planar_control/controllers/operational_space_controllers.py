@@ -270,11 +270,13 @@ def operational_space_pd_plus_linearized_actuation(
     # desired force in operational space with respect to x, y and theta
     f_des = (
         Lambda[:, :2] @ (Kp @ e_pee - Kd @ pee_d)
-        + JB_pinv.T @ (G + K)  # compensate for static elastic and gravitational forces
+        # compensate for static elastic and gravitational forces directly in operational space
+        # + JB_pinv.T @ (G + K)
     )
 
     # project end-effector force into configuration space
-    tau_q_des = Jee.T @ f_des
+    # and compensate for static elastic and gravitational forces
+    tau_q_des = Jee.T @ f_des + G + K
 
     phi_des = map_generalized_torques_to_actuation_with_linearized_model(
         dynamical_matrices_fn, q, phi, tau_q_des
@@ -339,11 +341,13 @@ def operational_space_pd_plus_nonlinear_actuation(
     # desired force in operational space with respect to x, y and theta
     f_des = (
         Lambda[:, :2] @ (Kp @ e_pee - Kd @ pee_d)
-        + JB_pinv.T @ (G + K)  # compensate for static elastic and gravitational forces
+        # compensate for static elastic and gravitational forces directly in operational space
+        # + JB_pinv.T @ (G + K)
     )
 
     # project end-effector force into configuration space
-    tau_q_des = Jee.T @ f_des
+    # and compensate for static elastic and gravitational forces
+    tau_q_des = Jee.T @ f_des + G + K
 
     (
         phi_des,
