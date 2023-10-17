@@ -89,7 +89,7 @@ elif controller_type == "operational_space_pd_plus_nonlinear_actuation":
     control_params.update(
         {
             "Kp": 3e3,  # [N/m]
-            "Kd": 0e0,  # [N s/m]
+            "Kd": 1e0,  # [N s/m]
         }
     )
 else:
