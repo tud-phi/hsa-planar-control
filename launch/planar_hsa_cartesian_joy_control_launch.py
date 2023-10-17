@@ -111,7 +111,7 @@ def generate_launch_description():
             parameters=[control_params],
         ),
         TimerAction(
-            period=40.0,  # delay start of control node for simulation to be fully compiled and ready
+            period=105.0,  # delay start of joy control node for computational controller to be fully compiled and ready
             actions=[
                 Node(
                     package="hsa_joy_control",
@@ -123,7 +123,7 @@ def generate_launch_description():
             ],
         ),
         TimerAction(
-            period=10.0,  # delay start of setpoint generation node for simulation to be fully compiled and ready
+            period=40.0,  # delay start of setpoint generation node for simulation to be fully compiled and ready
             actions=[
                 Node(
                     package="hsa_planar_control",
