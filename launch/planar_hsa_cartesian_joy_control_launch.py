@@ -10,12 +10,12 @@ import os
 # datetime object containing current date and time
 now = datetime.now()
 
-RECORD = False  # Record data to rosbag file
+RECORD = True  # Record data to rosbag file
 BAG_PATH = f"/home/mstoelzle/phd/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
 LOG_LEVEL = "warn"
 
-SYSTEM_TYPE = "sim"  # "sim" or "robot"
-JOY_SIGNAL_SOURCE = "keyboard"  # "openvibe" or "keyboard"
+SYSTEM_TYPE = "robot"  # "sim" or "robot"
+JOY_SIGNAL_SOURCE = "openvibe"  # "openvibe" or "keyboard"
 
 hsa_material = "fpu"
 kappa_b_eq = 0.0
