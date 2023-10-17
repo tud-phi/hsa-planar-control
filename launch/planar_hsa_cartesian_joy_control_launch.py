@@ -72,15 +72,15 @@ elif controller_type == "operational_space_pd_plus_linearized_actuation":
     if hsa_material == "fpu":
         control_params.update(
             {
-                "Kp": 5e1,  # [N/m]
-                "Kd": 0e0,  # [N s/m]
+                "Kp": 5e1,  # [1/s^2]
+                "Kd": 0e0,  # [1/s]
             }
         )
     elif hsa_material == "epu":
         control_params.update(
             {
-                "Kp": 2e2,  # [N/m]
-                "Kd": 1e0,  # [N s/m]
+                "Kp": 2e2,  # [1/s^2]
+                "Kd": 1e0,  # [1/s]
             }
         )
     else:
@@ -88,8 +88,8 @@ elif controller_type == "operational_space_pd_plus_linearized_actuation":
 elif controller_type == "operational_space_pd_plus_nonlinear_actuation":
     control_params.update(
         {
-            "Kp": 3e3,  # [N/m]
-            "Kd": 1e0,  # [N s/m]
+            "Kp": 3e3,  # [1/s^2]
+            "Kd": 1e0,  # [1/s]
         }
     )
 else:
