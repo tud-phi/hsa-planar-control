@@ -200,18 +200,21 @@ def operational_space_computed_torque(
     )
 
     # project end-effector force into configuration space
-    tau_q_des = Jee.T @ f_des
+    tau_des = Jee.T @ f_des
 
     if consider_underactuation_model:
-        phi_des = map_generalized_torques_to_actuation_with_linearized_model(
-            dynamical_matrices_fn, q, phi, tau_q_des
+        (
+            phi_des,
+            optimality_error,
+        ) = map_generalized_torques_to_actuation_with_nonlinear_optimization(
+            dynamical_matrices_fn, q, tau_des, phi0=phi
         )
 
         u = phi_des
     else:
-        u = tau_q_des
+        u = tau_des
 
-    controller_info = {"e_pee": pee_des - pee}
+    controller_info = {"e_pee": pee_des - pee, "f": f_des, "tau": tau_des, "actuation_optimality_error": optimality_error}
 
     return u, controller_info
 
@@ -276,13 +279,13 @@ def operational_space_pd_plus_linearized_actuation(
 
     # project end-effector force into configuration space
     # and compensate for static elastic and gravitational forces
-    tau_q_des = Jee.T @ f_des + G + K
+    tau_des = Jee.T @ f_des + G + K
 
     phi_des = map_generalized_torques_to_actuation_with_linearized_model(
-        dynamical_matrices_fn, q, phi, tau_q_des
+        dynamical_matrices_fn, q, phi, tau_des
     )
 
-    controller_info = {"e_pee": e_pee, "f": f_des, "tau_q": tau_q_des}
+    controller_info = {"e_pee": e_pee, "f": f_des, "tau": tau_des}
 
     return phi_des, controller_info
 
@@ -347,19 +350,19 @@ def operational_space_pd_plus_nonlinear_actuation(
 
     # project end-effector force into configuration space
     # and compensate for static elastic and gravitational forces
-    tau_q_des = Jee.T @ f_des + G + K
+    tau_des = Jee.T @ f_des + G + K
 
     (
         phi_des,
         optimality_error,
     ) = map_generalized_torques_to_actuation_with_nonlinear_optimization(
-        dynamical_matrices_fn, q, tau_q_des, phi0=phi
+        dynamical_matrices_fn, q, tau_des, phi0=phi
     )
 
     controller_info = {
         "e_pee": e_pee,
         "f": f_des,
-        "tau_q": tau_q_des,
+        "tau": tau_des,
         "actuation_optimality_error": optimality_error,
     }
 

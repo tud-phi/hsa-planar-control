@@ -453,10 +453,18 @@ class ModelBasedControlNode(Node):
         )
         if "e_int" in controller_info:
             controller_info_msg.e_int = controller_info["e_int"].tolist()
+        if "f" in controller_info:
+            controller_info_msg.f = controller_info["f"].tolist()
+        if "tau" in controller_info:
+            controller_info_msg.tau = controller_info["tau"].tolist()
         if "varphi" in controller_info:
             controller_info_msg.varphi = controller_info["varphi"].tolist()
         if "varphi_des" in controller_info:
             controller_info_msg.varphi_des = controller_info["varphi_des"].tolist()
+        if "actuation_optimality_error" in controller_info:
+            controller_info_msg.actuation_optimality_error = controller_info[
+                "actuation_optimality_error"
+            ].item()
         controller_info_msg.phi_des_unsat = phi_des_unsat.tolist()
         controller_info_msg.phi_des_sat = phi_sat.tolist()
         self.controller_info_pub.publish(controller_info_msg)
