@@ -62,6 +62,7 @@ inverse_kinematics_params = common_params.copy()
 planning_params = common_params | {
     "setpoint_mode": "manual",  # "manual", "image"
     "image_type": "star",
+    "trajectory_size": "None"
 }
 
 control_params = common_params | {

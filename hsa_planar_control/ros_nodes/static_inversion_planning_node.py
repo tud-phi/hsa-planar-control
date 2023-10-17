@@ -177,6 +177,8 @@ class StaticInversionPlanningNode(Node):
 
             self.declare_parameter("image_type", "star")
             image_type = self.get_parameter("image_type").value
+            self.declare_parameter("trajectory_size", "None")
+            trajectory_size = self.get_parameter("trajectory_size").value
 
             if image_type == "star":
                 image_path = os.path.join(
@@ -209,7 +211,14 @@ class StaticInversionPlanningNode(Node):
                     "bat.png",
                 )
                 pee_centroid = jnp.array([0.0, 0.1285])
-                max_radius = jnp.array(0.030)
+                if trajectory_size == "S":
+                    max_radius = jnp.array(0.015)
+                elif trajectory_size == "M" or trajectory_size == "None":
+                    max_radius = jnp.array(0.0225)
+                elif trajectory_size == "L":
+                    max_radius = jnp.array(0.030)
+                else:
+                    raise ValueError(f"Unknown trajectory_size: {trajectory_size}")
             else:
                 raise ValueError(f"Unknown image type: {image_type}")
 
