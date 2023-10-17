@@ -43,7 +43,7 @@ planning_params = common_params | {
 }
 viz_params = common_params | {"rendering_frequency": 20.0, "invert_colors": True}
 joy_control_params = common_params | {
-    "cartesian_delta": 1e-4,  # step for moving the attractor [m]
+    "cartesian_delta": 2e-4,  # step for moving the attractor [m]
     "pee_y0": 0.11,  # initial y coordinate position of the attractor [m]
 }
 control_params = common_params | {
