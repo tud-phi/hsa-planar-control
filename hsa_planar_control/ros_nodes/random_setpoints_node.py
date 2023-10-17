@@ -130,20 +130,14 @@ class RandonSetpointsNode(Node):
         # split PRNG key
         self.rng, rng_setpoint = random.split(self.rng)
 
-        # generate random actuation
-        phi_ss_lb = jnp.clip(
-            (self.params["phi_max"] * self.params["h"]).flatten(),
-            a_min=None,
-            a_max=0.0,
-        )  # lower bound for sampling
-        phi_ss_ub = jnp.clip(
-            (self.params["phi_max"] * self.params["h"]).flatten(),
-            a_min=0.0,
-            a_max=None,
-        )  # upper bound for sampling
-        phi_ss = random.uniform(
-            rng_setpoint, shape=phi_ss_lb.shape, minval=phi_ss_lb, maxval=phi_ss_ub
+        # sample the actuation magnitude
+        phi_ss_mag_lb = 0.2 * jnp.ones_like(self.params["phi_max"].flatten())  # lower bound for sampling [rad]
+        phi_ss_mag_ub = self.params["phi_max"].flatten() - 0.2  # upper bound for sampling [rad]
+        phi_ss_mag = random.uniform(
+            rng_setpoint, shape=phi_ss_mag_lb.shape, minval=phi_ss_mag_lb, maxval=phi_ss_mag_ub
         )
+        # compensate for the handedness of the rods
+        phi_ss = phi_ss_mag * self.params["h"].flatten()
 
         rollout_start_time = self.get_clock().now()
         q_ss, q_d_ss = self.simulate_steady_state_fn(phi_ss)
