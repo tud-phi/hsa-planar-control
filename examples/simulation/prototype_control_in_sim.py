@@ -98,10 +98,11 @@ if __name__ == "__main__":
     )
     planning_fn = partial(
         statically_invert_actuation_to_task_space_scipy_rootfinding,
+        params,
         residual_fn=residual_fn,
         inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
     )
-    chiee_des, q_des, phi_ss = planning_fn(params, pee_des=pee_des)
+    chiee_des, q_des, phi_ss, optimality_error = planning_fn(pee_des=pee_des)
     print("Desired configuration: ", q_des, "steady-state actuation: ", phi_ss)
 
     # control_fn = partial(

@@ -64,6 +64,7 @@ if __name__ == "__main__":
     )
     planning_fn = partial(
         statically_invert_actuation_to_task_space_scipy_rootfinding,
+        params,
         residual_fn=residual_fn,
         inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
     )
@@ -92,7 +93,7 @@ if __name__ == "__main__":
             )
 
             chiee_des, q_des, phi_ss, optimality_error = planning_fn(
-                params, pee_des=pee_des
+                pee_des=pee_des
             )
             print(
                 "chiee_des",
