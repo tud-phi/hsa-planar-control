@@ -77,6 +77,7 @@ if __name__ == "__main__":
             q0=q0,
             phi0=phi0,
             solver_type="scipy_least_squares",
+            verbose=True,
         )
     else:
         raise ValueError(f"Unknown PLANNER_TYPE: {PLANNER_TYPE}")

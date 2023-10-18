@@ -14,8 +14,8 @@ def steady_state_rollout_planning_factory(
     params: Dict[str, Array],
     forward_kinematics_end_effector_fn: Callable,
     dynamical_matrices_fn: Callable,
-    sim_dt: float = 1e-4,
-    duration: float = 2.0,
+    sim_dt: float = 5e-4,
+    duration: float = 5.0,
     ode_solver_class=dfx.Tsit5,
 ) -> Tuple[Callable, Callable, Callable]:
     """
@@ -70,6 +70,7 @@ def plan_with_rollout_to_steady_state(
         q0: Array,
         phi0: Array,
         solver_type="scipy_least_squares",
+        verbose: bool = False
 ) -> Tuple[Array, Array, Array, Array]:
     """
     Plan the steady-state actuation and configuration for a given desired end effector position.
@@ -82,7 +83,7 @@ def plan_with_rollout_to_steady_state(
         q0: the initial configuration used for the rollout
         phi0: the initial guess for the steady-state actuation
         solver_type: the type of solver to use for solving the nonlinear least squares problem
-
+        verbose: whether to print the result of the optimization
     Returns:
         chiee_ss: the steady-state end effector pose
         q_ss: the steady-state configuration
@@ -113,7 +114,13 @@ def plan_with_rollout_to_steady_state(
     # solve the nonlinear least squares problem
     optimality_error = None
     if solver_type == "scipy_least_squares":
-        sol = least_squares(residual_fn, phi0, jac=jac_residual_fn, method="lm", verbose=2)
+        sol = least_squares(
+            residual_fn,
+            phi0,
+            jac=jac_residual_fn,
+            method="lm",
+            verbose=1 if verbose else 0,
+        )
         # optimal steady-state phi
         phi_ss = sol.x
         # compute the L2 optimality
@@ -141,7 +148,7 @@ def plan_with_rollout_to_steady_state(
         lm = optx.LevenbergMarquardt(
             rtol=1e-10,
             atol=1e-10,
-            verbose=frozenset({"step", "accepted", "loss", "step_size"})
+            verbose=frozenset({"step", "accepted", "loss", "step_size"}) if verbose else None,
         )
         sol = optx.least_squares(residual_fn, lm, phi0, max_steps=10)
         phi_ss = sol.value
@@ -154,5 +161,13 @@ def plan_with_rollout_to_steady_state(
 
     # compute the steady-state configuration and end effector pose
     chiee_ss, q_ss, q_d_ss = rollout_fn(phi_ss)
+
+    if verbose:
+        print(
+            "phi_ss", phi_ss,
+            "chiee_ss", chiee_ss, "pee_des", pee_des, "e_pee", chiee_ss[:2] - pee_des,
+            "q_ss", q_ss, "q_d_ss", q_d_ss,
+            "optimality_error", optimality_error
+        )
 
     return chiee_ss, q_ss, phi_ss, optimality_error
