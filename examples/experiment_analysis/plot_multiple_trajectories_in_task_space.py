@@ -68,8 +68,8 @@ if __name__ == "__main__":
             ci_ts["chiee_des"][:, 1] * 1e3,
             color=experiments[experiment_id]["color"],
             linestyle=":",
-            linewidth=2.5,
             dashes=(1.2, 0.8),
+            linewidth=2.5,
         )
 
         # plot end-effector position trajectory

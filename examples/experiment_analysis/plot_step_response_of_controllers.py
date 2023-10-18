@@ -56,7 +56,7 @@ if __name__ == "__main__":
         experiments[experiment_id]["data_ts"] = data_ts
         experiments[experiment_id]["ci_ts"] = ci_ts
 
-    figsize = (5.0, 3)
+    figsize = (5.0, 4)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     lw_ref = 2.5  # linewidth for reference trajectory
     lw = 2.0  # linewidth for the actual trajectory
