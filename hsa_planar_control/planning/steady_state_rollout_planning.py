@@ -14,10 +14,10 @@ def steady_state_rollout_planning_factory(
     params: Dict[str, Array],
     forward_kinematics_end_effector_fn: Callable,
     dynamical_matrices_fn: Callable,
-    sim_dt: float = 2e-4,
-    duration: float = 5.0,
+    sim_dt: float = 1e-4,
+    duration: float = 2.0,
     ode_solver_class=dfx.Tsit5,
-) -> Tuple[Callable, Callable]:
+) -> Tuple[Callable, Callable, Callable]:
     """
     Factory function for planning with steady-state rollout.
     Args:
@@ -29,7 +29,8 @@ def steady_state_rollout_planning_factory(
         ode_solver_class: ODE solver class
     Returns:
         rollout_fn: Callable that returns the steady-state end effector pose, configuration, and configuration velocity
-        residual_fn: Callable that returns the residual vector given the end-effector orientation and the motor positions.
+        residual_fn: Callable that returns the residual vector given the steady-state actuation.
+        jac_residual_fn: Callable that returns the Jacobian of the residual vector with respect to the steady-state actuation.
     """
     @jit
     def rollout_fn(phi_ss: Array, q0: Array):
@@ -55,13 +56,16 @@ def steady_state_rollout_planning_factory(
         residual = chiee_ss[:2] - pee_des
         return residual
 
-    return rollout_fn, residual_fn
+    jac_residual_fn = jit(jacfwd(residual_fn))
+
+    return rollout_fn, residual_fn, jac_residual_fn
 
 
 def plan_with_rollout_to_steady_state(
         params: Dict[str, Array],
         rollout_fn: Callable,
         residual_fn: Callable,
+        jac_residual_fn: Callable,
         pee_des: Array,
         q0: Array,
         phi0: Array,
@@ -73,6 +77,7 @@ def plan_with_rollout_to_steady_state(
         params: a dictionary of robot parameters
         rollout_fn: Callable that returns the steady-state end effector pose, configuration, and configuration velocity
         residual_fn: Callable that returns the residual vector given the end-effector orientation and the motor positions.
+        jac_residual_fn: Callable that returns the Jacobian of the residual vector with respect to the steady-state actuation.
         pee_des: the desired end effector position
         q0: the initial configuration used for the rollout
         phi0: the initial guess for the steady-state actuation
@@ -103,12 +108,12 @@ def plan_with_rollout_to_steady_state(
     # pass the desired end effector position and the initial configuration to the rollout and residual functions
     rollout_fn = partial(rollout_fn, q0=q0)
     residual_fn = partial(residual_fn, pee_des=pee_des, q0=q0)
+    jac_residual_fn = partial(jac_residual_fn, pee_des=pee_des, q0=q0)
 
     # solve the nonlinear least squares problem
     optimality_error = None
     if solver_type == "scipy_least_squares":
-        jac_fn = jit(jacfwd(residual_fn))
-        sol = least_squares(residual_fn, phi0, jac=jac_fn, method="lm", verbose=2)
+        sol = least_squares(residual_fn, phi0, jac=jac_residual_fn, method="lm", verbose=2)
         # optimal steady-state phi
         phi_ss = sol.x
         # compute the L2 optimality
@@ -138,7 +143,7 @@ def plan_with_rollout_to_steady_state(
             atol=1e-10,
             verbose=frozenset({"step", "accepted", "loss", "step_size"})
         )
-        sol = optx.least_squares(residual_fn, lm, phi0)
+        sol = optx.least_squares(residual_fn, lm, phi0, max_steps=10)
         phi_ss = sol.value
     else:
         raise ValueError(f"Unknown solver: {solver_type}")

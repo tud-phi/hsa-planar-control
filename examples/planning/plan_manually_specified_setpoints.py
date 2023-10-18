@@ -63,7 +63,7 @@ if __name__ == "__main__":
             verbose=True,
         )
     elif PLANNER_TYPE == "steady_state_rollout":
-        rollout_fn, residual_fn = steady_state_rollout_planning_factory(
+        rollout_fn, residual_fn, jac_residual_fn = steady_state_rollout_planning_factory(
             params=params,
             forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
             dynamical_matrices_fn=dynamical_matrices_fn,
@@ -73,6 +73,7 @@ if __name__ == "__main__":
             params=params,
             rollout_fn=rollout_fn,
             residual_fn=residual_fn,
+            jac_residual_fn=jac_residual_fn,
             q0=q0,
             phi0=phi0,
             solver_type="scipy_least_squares",
