@@ -1,6 +1,6 @@
 import diffrax as dfx
 from functools import partial
-from jax import Array, jacfwd, jacrev, jit, random, vmap
+from jax import Array, debug, jacfwd, jacrev, jit, random, vmap
 import jax.numpy as jnp
 import jaxopt as jo
 import optimistix as optx
@@ -144,6 +144,8 @@ def plan_with_rollout_to_steady_state(
         )
         phi_ss, info = pg.run(phi0, hyperparams_proj=(lb, ub))
         optimality_error = pg.l2_optimality_error(phi_ss, hyperparams_proj=(lb, ub))
+        if verbose:
+            debug.print("Solver info: {info}", info=info)
     elif solver_type == "optimistix_levenberg_marquardt":
         lm = optx.LevenbergMarquardt(
             rtol=1e-10,
@@ -152,6 +154,8 @@ def plan_with_rollout_to_steady_state(
         )
         sol = optx.least_squares(residual_fn, lm, phi0, max_steps=10)
         phi_ss = sol.value
+        if verbose:
+            debug.print("Solver info: {info}", info=sol.stats)
     else:
         raise ValueError(f"Unknown solver: {solver_type}")
 
@@ -163,11 +167,13 @@ def plan_with_rollout_to_steady_state(
     chiee_ss, q_ss, q_d_ss = rollout_fn(phi_ss)
 
     if verbose:
-        print(
-            "phi_ss", phi_ss,
-            "chiee_ss", chiee_ss, "pee_des", pee_des, "e_pee", chiee_ss[:2] - pee_des,
-            "q_ss", q_ss, "q_d_ss", q_d_ss,
-            "optimality_error", optimality_error
+        debug.print(
+            "phi_ss: {phi_ss}, chiee_ss: {chiee_ss}, q_ss: {q_ss}, q_d_ss: {q_d_ss}, optimality_error: {optimality_error}",
+            phi_ss=phi_ss,
+            chiee_ss=chiee_ss,
+            q_ss=q_ss,
+            q_d_ss=q_d_ss,
+            optimality_error=optimality_error,
         )
 
     return chiee_ss, q_ss, phi_ss, optimality_error
