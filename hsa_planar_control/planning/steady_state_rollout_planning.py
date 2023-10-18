@@ -19,7 +19,7 @@ def plan_with_rollout_to_steady_state(
         phi0: Array,
         sim_dt: float = 1e-4,
         duration: float = 10.0,
-        solver="scipy_least_squares",
+        solver_type="scipy_least_squares",
 ) -> Tuple[Array, Array, Array, Array]:
     """
     Plan the steady-state actuation and configuration for a given desired end effector position.
@@ -52,6 +52,10 @@ def plan_with_rollout_to_steady_state(
         axis=0,
     )
 
+    allow_forward_autodiff = True
+    if solver_type == "jaxopt_projected_gradient":
+        allow_forward_autodiff = False
+
     @jit
     def residual_fn(_phi_ss: Array, *args) -> Array:
         _q_ss, _q_d_ss = simulate_steady_state(
@@ -61,7 +65,7 @@ def plan_with_rollout_to_steady_state(
             phi_ss=_phi_ss,
             sim_dt=sim_dt,
             duration=duration,
-            allow_forward_autodiff=True
+            allow_forward_autodiff=allow_forward_autodiff
         )
 
         _chiee_ss = forward_kinematics_end_effector_fn(params, _q_ss)
@@ -70,14 +74,15 @@ def plan_with_rollout_to_steady_state(
 
     # solve the nonlinear least squares problem
     optimality_error = None
-    if solver == "scipy_least_squares":
+
+    if solver_type == "scipy_least_squares":
         jac_fn = jit(jacfwd(residual_fn))
         sol = least_squares(residual_fn, phi0, jac=jac_fn, method="lm", verbose=2)
         # optimal steady-state phi
         phi_ss = sol.x
         # compute the L2 optimality
         optimality_error = jnp.linalg.norm(sol.fun)
-    elif solver == "jaxopt_levenberg_marquardt":
+    elif solver_type == "jaxopt_levenberg_marquardt":
         # solve the nonlinear least squares problem
         lm = jo.LevenbergMarquardt(residual_fun=residual_fn)
         sol = lm.run(phi0)
@@ -85,7 +90,7 @@ def plan_with_rollout_to_steady_state(
         phi_ss = sol.params
         # compute the L2 optimality
         optimality_error = lm.l2_optimality_error(sol.params)
-    elif solver == "jaxopt_projected_gradient":
+    elif solver_type == "jaxopt_projected_gradient":
         # set the lower and upper bounds for the optimization problem
         pg = jo.ProjectedGradient(
             fun=lambda x: 0.5 * jnp.mean(residual_fn(x) ** 2),
@@ -96,7 +101,7 @@ def plan_with_rollout_to_steady_state(
         )
         phi_ss, info = pg.run(phi0, hyperparams_proj=(lb, ub))
         optimality_error = pg.l2_optimality_error(phi_ss, hyperparams_proj=(lb, ub))
-    elif solver == "optimistix_levenberg_marquardt":
+    elif solver_type == "optimistix_levenberg_marquardt":
         lm = optx.LevenbergMarquardt(
             rtol=1e-10,
             atol=1e-10,
@@ -105,7 +110,7 @@ def plan_with_rollout_to_steady_state(
         sol = optx.least_squares(residual_fn, lm, phi0)
         phi_ss = sol.value
     else:
-        raise ValueError(f"Unknown solver: {solver}")
+        raise ValueError(f"Unknown solver: {solver_type}")
 
     # compute the L2 optimality if it has not been computed yet
     if optimality_error is None:
