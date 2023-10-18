@@ -53,7 +53,7 @@ def simulate_closed_loop_system(
                 )
                 carry["controller_state"] = controller_state
 
-        ode_term = ODETerm(partial(ode_fn, u=u))
+        ode_term = ODETerm(ode_fn)
 
         sol = diffeqsolve(
             ode_term,
@@ -62,6 +62,7 @@ def simulate_closed_loop_system(
             t1=t + control_dt,
             dt0=sim_dt,
             y0=x,
+            args=u,
             max_steps=None,
         )
 
@@ -121,7 +122,7 @@ def simulate_steady_state(
     x0 = jnp.concatenate((q0, q_d0))
 
     ode_fn = planar_hsa.ode_factory(dynamical_matrices_fn, params=params)
-    ode_term = ODETerm(partial(ode_fn, u=phi_ss))
+    ode_term = ODETerm(ode_fn)
     ode_solver = ode_solver_class()
 
     sol = diffeqsolve(
@@ -131,7 +132,8 @@ def simulate_steady_state(
         t1=duration,
         dt0=sim_dt,
         y0=x0,
-        max_steps=int(duration // sim_dt) + 100,
+        args=phi_ss,
+        max_steps=int(duration // sim_dt) + 10,
     )
 
     # last (i.e. steady-state) configuration
