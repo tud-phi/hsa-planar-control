@@ -26,25 +26,25 @@ if TRAJ_TYPE == "star":
     START_TIME = 1.0
     END_TIME = 66.0
     experiments = {
-        "20230925_100308": {"linestyle": "-", "label": "PID"},
+        # "20230925_100308": {"linestyle": "-", "label": "PID"},
         "20230925_095416": {"linestyle": "-", "label": "P-satI-D"},
-        "20230925_095851": {"linestyle": "-", "label": "P-satI-D+GC"},
+        # "20230925_095851": {"linestyle": "-", "label": "P-satI-D+GC"},
     }
 elif TRAJ_TYPE == "tud-flame":
     START_TIME = 1.0
     END_TIME = 60.0
     experiments = {
-        "20230925_101931": {"linestyle": "-", "label": "PID"},
+        # "20230925_101931": {"linestyle": "-", "label": "PID"},
         "20230925_102428": {"linestyle": "-", "label": "P-satI-D"},
-        "20230925_102856": {"linestyle": "-", "label": "P-satI-D+GC"},
+        # "20230925_102856": {"linestyle": "-", "label": "P-satI-D+GC"},
     }
 elif TRAJ_TYPE == "mit-csail":
-    START_TIME = 0.0
+    START_TIME = 1.0
     END_TIME = 49.0
     experiments = {
-        "20230925_113430": {"linestyle": "-", "label": "PID"},
+        # "20230925_113430": {"linestyle": "-", "label": "PID"},
         "20230925_113825": {"linestyle": "-", "label": "P-satI-D"},
-        "20230925_114328": {"linestyle": "-", "label": "P-satI-D+GC"},
+        # "20230925_114328": {"linestyle": "-", "label": "P-satI-D+GC"},
     }
 else:
     raise ValueError(f"Unknown trajectory type: {TRAJ_TYPE}")
@@ -88,9 +88,9 @@ if __name__ == "__main__":
                 ci_ts["chiee_des"][:, 0] * 1e3,
                 ci_ts["chiee_des"][:, 1] * 1e3,
                 color="black",
-                linestyle="--",
-                linewidth=2.25,
-                # dashes=(1.2, 0.8),
+                linestyle=":",
+                dashes=(1.2, 0.8),
+                linewidth=2.5,
                 label=r"Ref",
             )
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
             ci_ts["chiee"][:, 1] * 1e3,
             color="C" + str(experiment_idx),
             linestyle=experiments[experiment_id]["linestyle"],
-            # linewidth=1.5,
+            linewidth=2.0,
             label=experiments[experiment_id]["label"],
         )
 
