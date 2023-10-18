@@ -64,6 +64,7 @@ if __name__ == "__main__":
             params=params,
             forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
             dynamical_matrices_fn=dynamical_matrices_fn,
+            q0=q0,
             phi0=phi0,
             solver="optimistix_levenberg_marquardt",
         )
