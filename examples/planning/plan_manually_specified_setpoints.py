@@ -31,10 +31,52 @@ sym_exp_filepath = (
     / f"planar_hsa_ns-{num_segments}_nrs-{num_rods_per_segment}.dill"
 )
 
+HSA_MATERIAL = "fpu"  # "fpu", "epu"
 PLANNER_TYPE = "steady_state_rollout"  # "static_inversion", "steady_state_rollout"
 
 # set parameters
-params = PARAMS_FPU_CONTROL.copy()
+if HSA_MATERIAL == "fpu":
+    params = PARAMS_FPU_CONTROL.copy()
+elif HSA_MATERIAL == "epu":
+    params = PARAMS_EPU_CONTROL.copy()
+else:
+    raise ValueError(f"Unknown HSA material: {HSA_MATERIAL}")
+
+if HSA_MATERIAL == "fpu":
+    # desired end-effector positions
+    pee_des_sps = jnp.array(
+        [
+            [0.0, 0.120],
+            [+0.00479247, 0.12781018],
+            [-0.035, 0.122],
+            [-0.00782133, 0.13024847],
+            [0.00823294, 0.114643],
+            [-0.01417039, 0.12388105],
+            [0.0, 0.140],
+            [0.02524261, 0.1304036],
+            [-0.0059703, 0.13986947],
+            [0.0073023, 0.11479653],
+            [0.00567301, 0.1271345],
+        ]
+    )
+elif HSA_MATERIAL == "epu":
+    # desired end-effector positions
+    pee_des_sps = jnp.array(
+        [
+            [0.0195418, 0.13252665],
+            [-0.01417897, 0.13263641],
+            [-0.00257305, 0.11425607],
+            [-0.01093052, 0.1380785],
+            [-0.01143066, 0.12289834],
+            [-0.00373357, 0.11868547],
+            [0.00589095, 0.12385702],
+            [-0.03514413, 0.11949499],
+            [0.02809421, 0.12065889],
+            [0.02054074, 0.11930333],
+        ]
+    )
+else:
+    raise ValueError(f"Unknown HSA material: {HSA_MATERIAL}")
 
 # define initial configuration
 q0 = jnp.array([0.0, 0.0, 0.0])
@@ -82,22 +124,6 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"Unknown PLANNER_TYPE: {PLANNER_TYPE}")
 
-    # desired end-effector positions
-    pee_des_sps = jnp.array(
-        [
-            [0.0, 0.120],
-            [+0.00479247, 0.12781018],
-            [-0.035, 0.122],
-            [-0.00782133, 0.13024847],
-            [0.00823294, 0.114643],
-            [-0.01417039, 0.12388105],
-            [0.0, 0.140],
-            [0.02524261, 0.1304036],
-            [-0.0059703, 0.13986947],
-            [0.0073023, 0.11479653],
-            [0.00567301, 0.1271345],
-        ]
-    )
     num_setpoints = pee_des_sps.shape[0]
 
     chiee_des_sps = jnp.zeros((num_setpoints, 3))  # poses
