@@ -2,11 +2,11 @@ from functools import partial
 from jax import Array, debug, jacfwd, jit
 import jax.numpy as jnp
 import jaxopt as jo
-from typing import Callable, Tuple
+from typing import Callable, Dict, Tuple
 
 
 def static_inversion_factory(
-    params: Array,
+    params: Dict[str, Array],
     inverse_kinematics_end_effector_fn: Callable,
     dynamical_matrices_fn: Callable,
 ) -> Callable:
@@ -47,7 +47,7 @@ def static_inversion_factory(
 
 
 def statically_invert_actuation_to_task_space_scipy_rootfinding(
-    params: Array,
+    params: Dict[str, Array],
     pee_des: Array,
     residual_fn: Callable,
     inverse_kinematics_end_effector_fn: Callable,

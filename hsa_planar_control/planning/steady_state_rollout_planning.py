@@ -1,5 +1,5 @@
-from diffrax import Dopri5, Euler
 import diffrax as dfx
+from functools import partial
 from jax import Array, jacfwd, jacrev, jit, random, vmap
 import jax.numpy as jnp
 import jaxopt as jo
@@ -10,31 +10,79 @@ from typing import Callable, Dict, Tuple
 from hsa_planar_control.simulation import simulate_steady_state
 
 
+def steady_state_rollout_planning_factory(
+    params: Dict[str, Array],
+    forward_kinematics_end_effector_fn: Callable,
+    dynamical_matrices_fn: Callable,
+    sim_dt: float = 2e-4,
+    duration: float = 5.0,
+    ode_solver_class=dfx.Tsit5,
+) -> Tuple[Callable, Callable]:
+    """
+    Factory function for planning with steady-state rollout.
+    Args:
+        params: a dictionary of robot parameters
+        forward_kinematics_end_effector_fn: a function that computes the end effector pose from the configuration
+        dynamical_matrices_fn: a function that computes the dynamical matrices
+        sim_dt: the time step for the simulation
+        duration: the duration of the simulation (i.e. the time we expect the system to take to reach steady-state)
+        ode_solver_class: ODE solver class
+    Returns:
+        rollout_fn: Callable that returns the steady-state end effector pose, configuration, and configuration velocity
+        residual_fn: Callable that returns the residual vector given the end-effector orientation and the motor positions.
+    """
+    @jit
+    def rollout_fn(phi_ss: Array, q0: Array):
+        q_ss, q_d_ss = simulate_steady_state(
+            dynamical_matrices_fn=dynamical_matrices_fn,
+            params=params,
+            q0=q0,
+            phi_ss=phi_ss,
+            sim_dt=sim_dt,
+            duration=duration,
+            ode_solver_class=ode_solver_class,
+            allow_forward_autodiff=True
+        )
+
+        chiee_ss = forward_kinematics_end_effector_fn(params, q_ss)
+
+        return chiee_ss, q_ss, q_d_ss
+
+    @jit
+    def residual_fn(phi_ss: Array, *args, pee_des: Array, q0: Array) -> Array:
+        chiee_ss, q_ss, q_d_ss = rollout_fn(phi_ss, q0=q0)
+
+        residual = chiee_ss[:2] - pee_des
+        return residual
+
+    return rollout_fn, residual_fn
+
+
 def plan_with_rollout_to_steady_state(
         params: Dict[str, Array],
-        forward_kinematics_end_effector_fn: Callable,
-        dynamical_matrices_fn: Callable,
+        rollout_fn: Callable,
+        residual_fn: Callable,
         pee_des: Array,
         q0: Array,
         phi0: Array,
-        sim_dt: float = 1e-4,
-        duration: float = 10.0,
         solver_type="scipy_least_squares",
 ) -> Tuple[Array, Array, Array, Array]:
     """
     Plan the steady-state actuation and configuration for a given desired end effector position.
     Args:
         params: a dictionary of robot parameters
-        forward_kinematics_end_effector_fn: a function that computes the end effector pose from the configuration
-        dynamical_matrices_fn: a function that computes the dynamical matrices
+        rollout_fn: Callable that returns the steady-state end effector pose, configuration, and configuration velocity
+        residual_fn: Callable that returns the residual vector given the end-effector orientation and the motor positions.
         pee_des: the desired end effector position
         q0: the initial configuration used for the rollout
         phi0: the initial guess for the steady-state actuation
-        sim_dt: the time step for the simulation
-        duration: the duration of the simulation (i.e. the time we expect the system to take to reach steady-state)
+        solver_type: the type of solver to use for solving the nonlinear least squares problem
 
     Returns:
-
+        chiee_ss: the steady-state end effector pose
+        q_ss: the steady-state configuration
+        phi_ss: the steady-state actuation
+        optimality_error: the optimality error of the steady-state actuation
     """
     num_rods = params["rout"].shape[0] * params["rout"].shape[1]
 
@@ -52,29 +100,12 @@ def plan_with_rollout_to_steady_state(
         axis=0,
     )
 
-    allow_forward_autodiff = True
-    if solver_type == "jaxopt_projected_gradient":
-        allow_forward_autodiff = False
-
-    @jit
-    def residual_fn(_phi_ss: Array, *args) -> Array:
-        _q_ss, _q_d_ss = simulate_steady_state(
-            dynamical_matrices_fn=dynamical_matrices_fn,
-            params=params,
-            q0=q0,
-            phi_ss=_phi_ss,
-            sim_dt=sim_dt,
-            duration=duration,
-            allow_forward_autodiff=allow_forward_autodiff
-        )
-
-        _chiee_ss = forward_kinematics_end_effector_fn(params, _q_ss)
-        _residual = _chiee_ss[:2] - pee_des
-        return _residual
+    # pass the desired end effector position and the initial configuration to the rollout and residual functions
+    rollout_fn = partial(rollout_fn, q0=q0)
+    residual_fn = partial(residual_fn, pee_des=pee_des, q0=q0)
 
     # solve the nonlinear least squares problem
     optimality_error = None
-
     if solver_type == "scipy_least_squares":
         jac_fn = jit(jacfwd(residual_fn))
         sol = least_squares(residual_fn, phi0, jac=jac_fn, method="lm", verbose=2)
@@ -117,14 +148,6 @@ def plan_with_rollout_to_steady_state(
         optimality_error = jnp.linalg.norm(residual_fn(phi_ss))
 
     # compute the steady-state configuration and end effector pose
-    q_ss, q_d_ss = simulate_steady_state(
-        dynamical_matrices_fn=dynamical_matrices_fn,
-        params=params,
-        q0=q0,
-        phi_ss=phi_ss,
-        sim_dt=sim_dt,
-        duration=duration
-    )
-    chiee_ss = forward_kinematics_end_effector_fn(params, q_ss)
+    chiee_ss, q_ss, q_d_ss = rollout_fn(phi_ss)
 
     return chiee_ss, q_ss, phi_ss, optimality_error

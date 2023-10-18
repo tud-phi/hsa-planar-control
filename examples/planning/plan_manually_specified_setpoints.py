@@ -1,6 +1,7 @@
 from jax import config as jax_config
 
 jax_config.update("jax_enable_x64", True)  # double precision
+jax_config.update("jax_platform_name", "cpu")  # use CPU
 from functools import partial
 from jax import Array, jit, random, vmap
 from jax import numpy as jnp
@@ -15,7 +16,10 @@ from hsa_planar_control.planning.static_planning import (
     static_inversion_factory,
     statically_invert_actuation_to_task_space_scipy_rootfinding,
 )
-from hsa_planar_control.planning.steady_state_rollout_planning import plan_with_rollout_to_steady_state
+from hsa_planar_control.planning.steady_state_rollout_planning import (
+    plan_with_rollout_to_steady_state,
+    steady_state_rollout_planning_factory
+)
 
 num_segments = 1
 num_rods_per_segment = 2
@@ -59,14 +63,19 @@ if __name__ == "__main__":
             verbose=True,
         )
     elif PLANNER_TYPE == "steady_state_rollout":
-        planning_fn = partial(
-            plan_with_rollout_to_steady_state,
+        rollout_fn, residual_fn = steady_state_rollout_planning_factory(
             params=params,
             forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
             dynamical_matrices_fn=dynamical_matrices_fn,
+        )
+        planning_fn = partial(
+            plan_with_rollout_to_steady_state,
+            params=params,
+            rollout_fn=rollout_fn,
+            residual_fn=residual_fn,
             q0=q0,
             phi0=phi0,
-            solver="optimistix_levenberg_marquardt",
+            solver_type="scipy_least_squares",
         )
     else:
         raise ValueError(f"Unknown PLANNER_TYPE: {PLANNER_TYPE}")
