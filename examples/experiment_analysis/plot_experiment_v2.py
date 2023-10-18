@@ -151,13 +151,13 @@ def main():
         linestyle=":",
         linewidth=linewidth_dotted,
         dashes=dashes,
-        label=r"$\kappa_\mathrm{b}^\mathrm{d}$",
+        label=r"$\kappa_\mathrm{be}^\mathrm{d}$",
     )
     ax1.plot(
         ts,
         ci_ts["q"][:, 0],
         color=colors[0],
-        label=r"$\kappa_\mathrm{b}$",
+        label=r"$\kappa_\mathrm{be}$",
     )
     ax2.plot(
         ts,
@@ -190,7 +190,7 @@ def main():
         label=r"$\sigma_\mathrm{ax}$",
     )
     ax1.set_xlabel(r"$t$ [s]")
-    ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{b}$ [rad/m]")
+    ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{be}$ [rad/m]")
     ax2.set_ylabel(r"Linear strains $\sigma$ [-]")
     ax1.legend(loc="upper left")
     ax2.legend(loc="upper right")

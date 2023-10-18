@@ -140,7 +140,7 @@ if __name__ == "__main__":
                 linestyle="dotted",
                 linewidth=lw_ref,
                 dashes=dots,
-                label=r"$\kappa_\mathrm{b}^\mathrm{d}$ Ref",
+                label=r"$\kappa_\mathrm{be}^\mathrm{d}$ Ref",
             )
             ax2.plot(
                 ci_ts["ts"],
@@ -170,7 +170,7 @@ if __name__ == "__main__":
             markeredgecolor="black",
             markevery=markevery,
             markersize=ms,
-            label=r"$\kappa_\mathrm{b}$ " + experiments[experiment_id]["label"],
+            label=r"$\kappa_\mathrm{be}$ " + experiments[experiment_id]["label"],
         )
         ax2.plot(
             ci_ts["ts"],
@@ -198,7 +198,7 @@ if __name__ == "__main__":
         )
 
     ax1.set_xlabel(r"Time $t$ [s]")
-    ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{b}$ [rad/m]")
+    ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{be}$ [rad/m]")
     ax2.set_ylabel(r"Linear strains $\sigma$ [-]")
     ax1.set_ylim([-7.0, 4.0])
     ax2.set_ylim([-0.05, 1.1])
