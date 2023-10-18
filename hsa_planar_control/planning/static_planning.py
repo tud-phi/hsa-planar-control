@@ -137,6 +137,7 @@ def statically_invert_actuation_to_task_space_projected_descent(
 
     # initial guess for [theta, phi1, ..., phin]
     x0 = jnp.zeros((1 + num_rods,))
+    # TODO: in-place assignment probably slows us down a lot
     x0 = x0.at[1:].set(jnp.pi / 2)  # initialize phi to 90 deg
 
     # partial off pee_des from residual_fn
@@ -145,6 +146,7 @@ def statically_invert_actuation_to_task_space_projected_descent(
     # set the lower and upper bounds for the optimization problem
     lb = jnp.zeros((1 + num_rods,))
     ub = jnp.zeros((1 + num_rods,))
+    # TODO: in-place assignment probably slows us down a lot
     lb = lb.at[0].set(-jnp.pi)
     ub = ub.at[0].set(jnp.pi)
     lb = lb.at[1:].set(
