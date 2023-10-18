@@ -60,6 +60,7 @@ def plan_with_rollout_to_steady_state(
             q0=q0,
             phi_ss=_phi_ss,
             sim_dt=sim_dt,
+            duration=duration,
             allow_forward_autodiff=True
         )
 
