@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Callable, Dict, Tuple
 
 from hsa_planar_control.controllers.constant_controller import constant_control
-from hsa_planar_control.simulation import simulate_closed_loop_system
+from hsa_planar_control.simulation import simulate_steady_state
 
 
 num_segments = 1
@@ -65,6 +65,13 @@ if __name__ == "__main__":
         sys_helpers,
     ) = planar_hsa.factory(sym_exp_filepath)
 
+    simulate_steady_state_fn = jit(partial(
+        simulate_steady_state,
+        dynamical_matrices_fn=dynamical_matrices_fn,
+        params=params,
+        q0=q0
+    ))
+
     pee_ss_sps = jnp.zeros((num_setpoints, 2))  # desired end-effector positions
     q_ss_sps = jnp.zeros((num_setpoints, q0.shape[0]))  # desired configurations
     phi_ss_sps = jnp.zeros(
@@ -84,20 +91,7 @@ if __name__ == "__main__":
             phi_des=phi_ss,
         )
 
-        sim_ts = simulate_closed_loop_system(
-            dynamical_matrices_fn,
-            params,
-            q0=q0,
-            q_d0=q_d0,
-            phi0=phi0,
-            sim_dt=sim_dt,
-            control_dt=control_dt,
-            duration=duration,
-            control_fn=control_fn,
-            ode_solver_class=Euler,
-        )
-        # extract the last time step
-        q_ss = sim_ts["q_ts"][-1]
+        q_ss, q_d_ss = simulate_steady_state_fn(phi_ss=phi_ss)
 
         # run forward kinematics to get end-effector position
         chiee_ss = forward_kinematics_end_effector_fn(params, q_ss)
@@ -108,6 +102,8 @@ if __name__ == "__main__":
             chiee_ss,
             "q_ss:",
             q_ss,
+            "q_d_ss:",
+            q_d_ss,
             "phi_ss",
             phi_ss / jnp.pi * 180,
             "deg",

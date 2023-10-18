@@ -97,7 +97,7 @@ def simulate_steady_state(
     params: Dict[str, Array],
     q0: Array,
     phi_ss: Array,
-    sim_dt: float = 1e-3,
+    sim_dt: float = 5e-4,
     duration: float = 5.0,
     ode_solver_class=dfx.Tsit5,
     allow_forward_autodiff: bool = False,
