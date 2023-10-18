@@ -34,7 +34,7 @@ setup(
         "jsrm",
         "numpy",
         "opencv-python",
-        "optimistic",
+        "optimistix",
         "pandas",
         "plotly",
         "setuptools",
