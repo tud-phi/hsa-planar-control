@@ -15,6 +15,7 @@ from hsa_planar_control.planning.static_planning import (
     static_inversion_factory,
     statically_invert_actuation_to_task_space_scipy_rootfinding,
 )
+from hsa_planar_control.planning.steady_state_rollout_planning import plan_with_rollout_to_steady_state
 
 num_segments = 1
 num_rods_per_segment = 2
@@ -25,6 +26,8 @@ sym_exp_filepath = (
     / "symbolic_expressions"
     / f"planar_hsa_ns-{num_segments}_nrs-{num_rods_per_segment}.dill"
 )
+
+PLANNER_TYPE = "steady_state_rollout"  # "static_inversion", "steady_state_rollout"
 
 # set parameters
 params = PARAMS_FPU_CONTROL.copy()
@@ -42,17 +45,29 @@ if __name__ == "__main__":
         dynamical_matrices_fn,
         sys_helpers,
     ) = planar_hsa.factory(sym_exp_filepath)
-    residual_fn = jit(
-        static_inversion_factory(
-            params, inverse_kinematics_end_effector_fn, dynamical_matrices_fn
+    if PLANNER_TYPE == "static_inversion":
+        residual_fn = jit(
+            static_inversion_factory(
+                params, inverse_kinematics_end_effector_fn, dynamical_matrices_fn
+            )
         )
-    )
-    planning_fn = partial(
-        statically_invert_actuation_to_task_space_scipy_rootfinding,
-        residual_fn=residual_fn,
-        inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
-        verbose=True,
-    )
+        planning_fn = partial(
+            statically_invert_actuation_to_task_space_scipy_rootfinding,
+            params=params,
+            residual_fn=residual_fn,
+            inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
+            verbose=True,
+        )
+    elif PLANNER_TYPE == "steady_state_rollout":
+        planning_fn = partial(
+            plan_with_rollout_to_steady_state,
+            params=params,
+            forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
+            dynamical_matrices_fn=dynamical_matrices_fn,
+            phi0=phi0,
+        )
+    else:
+        raise ValueError(f"Unknown PLANNER_TYPE: {PLANNER_TYPE}")
 
     # desired end-effector positions
     pee_des_sps = jnp.array(
@@ -78,7 +93,7 @@ if __name__ == "__main__":
     for setpoint_idx in range(num_setpoints):
         pee_des = pee_des_sps[setpoint_idx]
         chiee_des, q_des, phi_ss, optimality_error = planning_fn(
-            params, pee_des=pee_des
+            pee_des=pee_des
         )
 
         chiee_des_sps = chiee_des_sps.at[setpoint_idx].set(chiee_des)
