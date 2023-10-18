@@ -34,9 +34,11 @@ elif HSA_MATERIAL == "epu":
     params = PARAMS_EPU_CONTROL.copy()
 else:
     raise ValueError(f"Unknown hsa_material: {HSA_MATERIAL}")
+num_segments = params["l"].shape[0]
 
 sim_dt = 1e-3  # time step for simulation [s]
 duration = 5.0  # duration of simulation [s]
+q0 = jnp.zeros((3 * num_segments, ))
 
 if __name__ == "__main__":
     (
@@ -51,6 +53,7 @@ if __name__ == "__main__":
         simulate_steady_state,
         dynamical_matrices_fn,
         params,
+        q0,
         sim_dt=sim_dt,
         duration=duration,
     )

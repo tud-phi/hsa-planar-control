@@ -22,7 +22,7 @@ from hsa_planar_control.simulation import simulate_steady_state
 from mocap_optitrack_interfaces.msg import PlanarCsConfiguration
 
 
-class RandonSetpointsNode(Node):
+class RandomSetpointsNode(Node):
     def __init__(self):
         super().__init__("random_setpoints_node")
 
@@ -74,6 +74,8 @@ class RandonSetpointsNode(Node):
             self.params["sigma_sh_eq"]
         )
         self.params["sigma_a_eq"] = jnp.array([[sigma_a_eq1, sigma_a_eq2]])
+        # actual rest strain
+        self.xi_eq = sys_helpers["rest_strains_fn"](self.params)  # rest strains
         # external payload mass (assumed to be at end effector)
         self.declare_parameter("payload_mass", 0.0)
         self.params["mpl"] = self.get_parameter("payload_mass").value
@@ -96,11 +98,13 @@ class RandonSetpointsNode(Node):
         # define residual function for static inversion optimization
         sim_dt = 1e-4  # time step for simulation [s]
         duration = 30.0  # duration of simulation [s]
+        q0 = jnp.zeros_like(self.xi_eq.flatten())
         self.simulate_steady_state_fn = jit(
             partial(
                 simulate_steady_state,
                 dynamical_matrices_fn,
                 self.params,
+                q0,
                 sim_dt=sim_dt,
                 duration=duration,
             )
@@ -169,7 +173,7 @@ def main(args=None):
     rclpy.init(args=args)
     print("Hi from the random setpoints node.")
 
-    node = RandonSetpointsNode()
+    node = RandomSetpointsNode()
 
     rclpy.spin(node)
 

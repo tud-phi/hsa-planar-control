@@ -1,4 +1,4 @@
-from diffrax import diffeqsolve, Dopri5, Euler, ODETerm, SaveAt
+import diffrax as dfx
 from jax import Array, debug, jit, lax, vmap
 from jax import numpy as jnp
 from functools import partial
@@ -17,7 +17,7 @@ def simulate_closed_loop_system(
     duration: float,
     control_fn: Callable = None,
     controller_state_init: Optional[Dict[str, Array]] = None,
-    ode_solver_class=Euler,
+    ode_solver_class=dfx.Tsit5,
     consider_underactuation_model: bool = True,
 ) -> Dict[str, Array]:
     num_segments = params["l"].shape[0]
@@ -53,9 +53,9 @@ def simulate_closed_loop_system(
                 )
                 carry["controller_state"] = controller_state
 
-        ode_term = ODETerm(ode_fn)
+        ode_term = dfx.ODETerm(ode_fn)
 
-        sol = diffeqsolve(
+        sol = dfx.diffeqsolve(
             ode_term,
             solver=ode_solver,
             t0=t,
@@ -95,37 +95,40 @@ def simulate_closed_loop_system(
 def simulate_steady_state(
     dynamical_matrices_fn: Callable,
     params: Dict[str, Array],
+    q0: Array,
     phi_ss: Array,
     sim_dt: float = 1e-3,
     duration: float = 5.0,
-    ode_solver_class=Dopri5,
+    ode_solver_class=dfx.Tsit5,
+    allow_forward_autodiff: bool = False,
 ) -> Tuple[Array, Array]:
     """
     Simulate the steady-state response of the system.
     Args:
         dynamical_matrices_fn: function that returns the dynamical matrices
         params: dictionary of system parameters
+        q0: initial configuration
         phi_ss: steady-state control inputs
         sim_dt: time step for simulation
         duration: duration of simulation. This is the time we expect the system to take to reach steady-state.
         ode_solver_class: ODE solver class
-
+        allow_forward_autodiff: if we need to use forward-mode autodiff, we need to use the dfx.DirectAdjoint().
+            Otherwise, we use dfx.RecursiveCheckpointAdjoint() which is more time and memory efficient at reverse
+            autodiff.
     Returns:
         q_ss: steady-state configuration
         q_d_ss: steady-state configuration velocity. Should be almost zero, otherwise duration is too short.
     """
-    num_segments = params["l"].shape[0]
-    n_q = 3 * num_segments  # number of generalized coordinates
+    n_q = q0.shape[0]  # number of generalized coordinates
     # initial condition
-    q0 = jnp.zeros((n_q,))  # initial configuration
-    q_d0 = jnp.zeros((n_q,))  # initial velocity
+    q_d0 = jnp.zeros_like(q0)  # initial velocity
     x0 = jnp.concatenate((q0, q_d0))
 
     ode_fn = planar_hsa.ode_factory(dynamical_matrices_fn, params=params)
-    ode_term = ODETerm(ode_fn)
+    ode_term = dfx.ODETerm(ode_fn)
     ode_solver = ode_solver_class()
 
-    sol = diffeqsolve(
+    sol = dfx.diffeqsolve(
         ode_term,
         solver=ode_solver,
         t0=0.0,
@@ -133,6 +136,7 @@ def simulate_steady_state(
         dt0=sim_dt,
         y0=x0,
         args=phi_ss,
+        adjoint=dfx.DirectAdjoint() if allow_forward_autodiff else dfx.RecursiveCheckpointAdjoint(),
         max_steps=int(duration // sim_dt) + 10,
     )
 
