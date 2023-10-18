@@ -65,6 +65,7 @@ if __name__ == "__main__":
             forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
             dynamical_matrices_fn=dynamical_matrices_fn,
             phi0=phi0,
+            solver="optimistix_levenberg_marquardt",
         )
     else:
         raise ValueError(f"Unknown PLANNER_TYPE: {PLANNER_TYPE}")
