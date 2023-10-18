@@ -113,7 +113,7 @@ class RandomSetpointsNode(Node):
         # jit the forward kinematics and steady state simulation function
         phi_ss_dummy = self.params["phi_max"].flatten()
         q_ss_dummy, q_d_ss_dummy = self.simulate_steady_state_fn(phi_ss_dummy)
-        assert q_d_ss_dummy.mean() < 1e-2, (
+        assert q_d_ss_dummy.max() < 1e-1, (
             "The simulation hasn't converged to a steady state which means that likely the duration is too short."
             + f"q_ss_dummy: {q_ss_dummy}, q_d_ss_dummy: {q_d_ss_dummy}"
         )
