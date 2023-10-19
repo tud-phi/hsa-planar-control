@@ -161,8 +161,8 @@ def generate_launch_description():
             actions=[
                 Node(
                     package="hsa_planar_control",
-                    executable="static_inversion_planning_node",
-                    name="static_inversion_planning",
+                    executable="static_planning_node",
+                    name="static_planning",
                     parameters=[planning_params],
                 ),
             ],
