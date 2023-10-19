@@ -266,7 +266,7 @@ class StaticPlanningNode(Node):
             phi_ss_dummy,
             optimality_error_dummy,
         ) = self.planning_fn(pee_des=jnp.array([0.0, 0.110]), **dummy_planning_kwargs)
-        self.get_logger().info("Done compiling static inversion planning function!")
+        self.get_logger().info("Done compiling planning function!")
 
         # initial setpoint index
         self.setpoint_idx = 0
@@ -324,7 +324,7 @@ class StaticPlanningNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    print("Hi from the static inversion planning node.")
+    print("Hi from the static planning node.")
 
     node = StaticPlanningNode()
 
