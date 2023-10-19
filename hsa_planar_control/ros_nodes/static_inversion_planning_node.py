@@ -194,7 +194,7 @@ class StaticInversionPlanningNode(Node):
                     "assets",
                     "tud_flame.jpeg",
                 )
-                pee_centroid = jnp.array([0.0, 0.130])
+                pee_centroid = jnp.array([0.0, 0.1285])
                 max_radius = jnp.array(0.013)
             elif image_type == "mit-csail":
                 image_path = os.path.join(
