@@ -192,20 +192,20 @@ def generate_task_space_trajectory_from_image_contour(
         #     [0.225, -0.310],
         #     [0.0, -1.0],
         # ])
-        sample_step = 5  # only take every 5th point
+        sample_step = 3  # only take every 3rd point
         pee_sps_norm = pee_sps_norm[::sample_step, :]
     elif image_type == "tud-flame":
-        sample_step = 5  # only take every 5th point
+        sample_step = 3  # only take every 3rd point
         pee_sps_norm = pee_sps_norm[::sample_step, :]
         # as the robot is facing upside-down, we need to flip the x-axis and y-axis
         pee_sps_norm = -pee_sps_norm
     elif image_type == "mit-csail":
-        sample_step = 8  # only take every 8th point
+        sample_step = 3  # only take every 3d point
         pee_sps_norm = pee_sps_norm[::sample_step, :]
         # as the robot is facing upside-down, we need to flip the x-axis and y-axis
         pee_sps_norm = -pee_sps_norm
     elif image_type == "bat":
-        sample_step = 2  # only take every 2nd point
+        sample_step = 1  # take every sample
         pee_sps_norm = pee_sps_norm[::sample_step, :]
         # as the robot is facing upside-down, we need to flip the x-axis and y-axis
         pee_sps_norm = -pee_sps_norm
