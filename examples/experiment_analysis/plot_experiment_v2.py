@@ -23,6 +23,11 @@ EXPERIMENT_NAME = "20230925_113825"  # experiment name
 TRAJECTORY_TYPE = "tud-star"  # trajectory type
 PLOT_STEADY_STATE_ACTUATION = True
 
+if PLOT_STEADY_STATE_ACTUATION:
+    three_panel_layout = False
+else:
+    three_panel_layout = True
+
 DURATION = None
 if TRAJECTORY_TYPE == "manual":
     DURATION = 110.0  # duration of the experiment [s]
@@ -51,7 +56,10 @@ def main():
         for key in ci_ts.keys():
             ci_ts[key] = ci_ts[key][:end_time_idx]
 
-    figsize = (4.5, 3)
+    if three_panel_layout:
+        figsize = (3.5, 4.0)
+    else:
+        figsize = (4.5, 3.0)
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
     linewidth_dotted = 2.25
     dashes = (1.2, 0.8)
