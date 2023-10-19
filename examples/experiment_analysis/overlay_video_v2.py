@@ -22,16 +22,17 @@ from pathlib import Path
 EXPERIMENT_NAME = "20230925_093236"  # experiment name
 
 # SHOW additional plots for calibration purposes
-CALIBRATE = True
+CALIBRATE = False
 
+# Attention: in this script we are expecting 4K footage
 if EXPERIMENT_NAME == "20230925_093236":
     # manual setpoints trajectory
     VIDEO_REL_START_TIME = 0.0
     DURATION = None
-    SPEEDUP = 2.5
-    ORIGIN_UV = jnp.array([336, 189], dtype=jnp.uint32)  # uv coordinates of the origin
+    SPEEDUP = 4.0
+    ORIGIN_UV = jnp.array([580, 355], dtype=jnp.uint32)  # uv coordinates of the origin
     EE_UV = jnp.array(
-        [336, 635], dtype=jnp.uint32
+        [553, 1062], dtype=jnp.uint32
     )  # uv coordinates of the end-effector
     OVERLAY_CURRENT_SETPOINT = True
     OVERLAY_END_EFFECTOR_POSITION = True
@@ -111,8 +112,8 @@ def main():
 
     if CALIBRATE:
         plt.plot(
-            data_ts["ts_chiee"] - data_ts["ts_chiee"][0],
-            data_ts["chiee_ts"][:, 1],
+            ci_ts["ts"] - ci_ts["ts"][0],
+            ci_ts["chiee"][:, 1],
             label="y",
         )
         plt.xlabel("t [s]")
@@ -123,13 +124,12 @@ def main():
 
     # absolute start time
     start_time = ci_ts["ts"][0]
-    ts = ci_ts["ts"] - start_time
-    print("Experiment full duration:", ts[-1])
+    ci_ts["ts"] = ci_ts["ts"] - start_time
+    print("Experiment full duration:", ci_ts["ts"][-1])
 
     # trim the time series data
     if DURATION is not None:
-        end_time_idx = jnp.argmax(ts > DURATION)
-        ts = ts[:end_time_idx]
+        end_time_idx = jnp.argmax(ci_ts["ts"] > DURATION)
         for key in ci_ts.keys():
             ci_ts[key] = ci_ts[key][:end_time_idx]
 
@@ -191,22 +191,22 @@ def main():
             frame = cv2.putText(
                 frame,
                 f"t = {time:.2f} s",
-                org=(10, 30),
+                org=(20, 60),
                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=0.5,
+                fontScale=1.0,
                 color=(255, 255, 255),
-                thickness=2,
+                thickness=4,
             )
             if SPEEDUP != 1.0:
                 # write speedup to frame
                 frame = cv2.putText(
                     frame,
                     f"{SPEEDUP:.1f} x",
-                    org=(frame_width - 50, 30),
+                    org=(frame_width - 100, 60),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=0.5,
+                    fontScale=1.0,
                     color=(255, 255, 255),
-                    thickness=2,
+                    thickness=4,
                 )
 
             # find the closest data points to the current time
@@ -225,7 +225,7 @@ def main():
                 frame = cv2.circle(
                     frame,
                     center=(pee_des_uv[0], pee_des_uv[1]),
-                    radius=11,
+                    radius=22,
                     color=colors_bgr["red"],
                     thickness=-1,
                 )
@@ -240,14 +240,14 @@ def main():
                     pts=[pee_des_uv_hs.astype(onp.int32)],
                     isClosed=False,
                     color=colors_bgr["red"],
-                    thickness=3,
+                    thickness=6,
                 )
             if OVERLAY_END_EFFECTOR_POSITION:
                 pee_uv = onp.array(position_to_uv(ORIGIN_UV, res, ci_ts["chiee"][ci_time_idx, :2]))
                 frame = cv2.circle(
                     frame,
                     center=(pee_uv[0], pee_uv[1]),
-                    radius=10,
+                    radius=20,
                     color=(0, 0, 0),
                     thickness=-1,
                 )
@@ -261,7 +261,7 @@ def main():
                     pts=[pee_uv_hs.astype(onp.int32)],
                     isClosed=False,
                     color=(0, 0, 0),
-                    thickness=2,
+                    thickness=4,
                 )
             if OVERLAY_VIRTUAL_BACKBONE:
                 # poses along the robot of shape (3, N)
@@ -301,7 +301,7 @@ def main():
                     pts=[chiv_uv_ps.astype(onp.int32)],
                     isClosed=False,
                     color=colors_bgr["blue"],
-                    thickness=4,
+                    thickness=8,
                 )
 
             # Display the resulting frame
