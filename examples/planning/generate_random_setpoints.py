@@ -28,7 +28,7 @@ sym_exp_filepath = (
 )
 
 hsa_material = "epu"
-num_setpoints = 10
+num_setpoints = 11
 
 if hsa_material == "fpu":
     params = PARAMS_FPU_CONTROL.copy()
@@ -38,8 +38,8 @@ else:
     raise ValueError(f"Unknown hsa_material: {hsa_material}")
 
 # set sampling range
-phi_min = 0.2 * jnp.ones_like(params["phi_max"].flatten())
-phi_max = params["phi_max"].flatten() - 0.2
+phi_min = 0.3 * jnp.ones_like(params["phi_max"].flatten())
+phi_max = params["phi_max"].flatten() - 0.3
 
 # set seed
 seed = 0
