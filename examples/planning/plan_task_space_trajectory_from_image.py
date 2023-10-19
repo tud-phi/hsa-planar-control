@@ -43,14 +43,14 @@ sym_exp_filepath = (
 # set parameters
 params = PARAMS_FPU_CONTROL.copy()
 
-IMAGE_TYPE = "bat"
+IMAGE_TYPE = "star"
 
 if IMAGE_TYPE == "star":
     pee_centroid = jnp.array([0.0, 0.127])
     max_radius = jnp.array(0.013)
 elif IMAGE_TYPE == "tud-flame":
-    pee_centroid = jnp.array([0.0, 0.128])
-    max_radius = jnp.array(0.015)
+    pee_centroid = jnp.array([0.0, 0.1285])
+    max_radius = jnp.array(0.013)
 elif IMAGE_TYPE == "mit-csail":
     pee_centroid = jnp.array([0.0, 0.127])
     max_radius = jnp.array(0.015)
