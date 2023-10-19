@@ -124,7 +124,10 @@ class CalibrationNode(Node):
         param_to_est_mapping = {}
         for param_est_idx, param_sym in enumerate(self.Pi_syms):
             param_to_est_mapping[param_sym.name] = Pi_est[param_est_idx].item()
-        self.get_logger().info(f"Identified parameters:\n{param_to_est_mapping}")
+        self.get_logger().info(
+            f"Identified parameters:\n{param_to_est_mapping}, "
+            f"sigma_a_eq_mean: {(param_to_est_mapping['sigma_a_eq1'] + param_to_est_mapping['sigma_a_eq2']) / 2}"
+        )
 
 
 def main(args=None):
