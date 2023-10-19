@@ -209,11 +209,11 @@ if __name__ == "__main__":
     ax1.set_xlabel(r"Time $t$ [s]")
     ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{be}$ [rad/m]")
     ax2.set_ylabel(r"Linear strains $\sigma$ [-]")
-    ax1.set_ylim([-7.0, 4.0])
-    ax2.set_ylim([-0.05, 1.1])
-    ax1.legend(loc=(0.4, 0.7), fontsize="small", labelspacing=0.3)
+    ax1.set_ylim([-2.5, 10.5])
+    ax2.set_ylim([-0.05, 0.52])
+    ax1.legend(loc=(0.4, 0.6), fontsize="small", labelspacing=0.3)
     ax2.legend(
-        loc=(0.4, 0.1), ncols=2, fontsize="small", columnspacing=0.5, labelspacing=0.3
+        loc=(0.4, 0.3), ncols=2, fontsize="small", columnspacing=0.5, labelspacing=0.3
     )
     plt.grid(True)
     plt.box(True)
