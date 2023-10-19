@@ -101,8 +101,10 @@ class StaticPlanningNode(Node):
         setpoint_mode = self.get_parameter("setpoint_mode").value
         if setpoint_mode == "image":
             self.is_continuous_trajectory = True
+            default_planning_frequency = 8
         else:
             self.is_continuous_trajectory = False
+            default_planning_frequency = 0.1
 
         if hsa_material == "fpu":
             # define residual function for static inversion optimization
@@ -125,7 +127,6 @@ class StaticPlanningNode(Node):
                     verbose=False,
                 )
 
-                default_planning_frequency = 0.1
                 # desired end-effector positions
                 self.pee_des_sps = jnp.array(
                     [
@@ -154,8 +155,6 @@ class StaticPlanningNode(Node):
                         verbose=False,
                     )
                 )
-
-                default_planning_frequency = 8
 
                 self.declare_parameter("image_type", "star")
                 image_type = self.get_parameter("image_type").value
