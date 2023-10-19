@@ -18,34 +18,53 @@ plt.rcParams.update(
     }
 )
 
-TRAJ_TYPE = "star"  # "star", "tud-flame", "mit-csail
+TRAJ_TYPE = "star"  # "star", "tud-flame", "mit-csail"
+SHOW_ALL_CONTROLLERS = False
 
 START_TIME = 0.0
 END_TIME = None
 if TRAJ_TYPE == "star":
     START_TIME = 1.0
-    END_TIME = 66.0
-    experiments = {
-        # "20230925_100308": {"linestyle": "-", "label": "PID"},
-        "20230925_095416": {"linestyle": "-", "label": "P-satI-D"},
-        # "20230925_095851": {"linestyle": "-", "label": "P-satI-D+GC"},
-    }
+    if SHOW_ALL_CONTROLLERS:
+        experiments = {
+            "20230925_100308": {"linestyle": "-", "label": "PID"},
+            "20230925_095416": {"linestyle": "-", "label": "P-satI-D"},
+            "20230925_095851": {"linestyle": "-", "label": "P-satI-D+GC"},
+        }
+        END_TIME = 66.0
+    else:
+        experiments = {
+            "20231019_072747": {"linestyle": "-", "label": "P-satI-D"},
+        }
+        END_TIME = 109.0
 elif TRAJ_TYPE == "tud-flame":
     START_TIME = 1.0
-    END_TIME = 60.0
-    experiments = {
-        # "20230925_101931": {"linestyle": "-", "label": "PID"},
-        "20230925_102428": {"linestyle": "-", "label": "P-satI-D"},
-        # "20230925_102856": {"linestyle": "-", "label": "P-satI-D+GC"},
-    }
+    if SHOW_ALL_CONTROLLERS:
+        experiments = {
+            "20230925_101931": {"linestyle": "-", "label": "PID"},
+            "20230925_102428": {"linestyle": "-", "label": "P-satI-D"},
+            "20230925_102856": {"linestyle": "-", "label": "P-satI-D+GC"},
+        }
+        END_TIME = 60.0
+    else:
+        experiments = {
+            "20231019_081703": {"linestyle": "-", "label": "P-satI-D"},
+        }
+        END_TIME = 85.0
 elif TRAJ_TYPE == "mit-csail":
     START_TIME = 1.0
-    END_TIME = 49.0
-    experiments = {
-        # "20230925_113430": {"linestyle": "-", "label": "PID"},
-        "20230925_113825": {"linestyle": "-", "label": "P-satI-D"},
-        # "20230925_114328": {"linestyle": "-", "label": "P-satI-D+GC"},
-    }
+    if SHOW_ALL_CONTROLLERS:
+        experiments = {
+            "20230925_113430": {"linestyle": "-", "label": "PID"},
+            "20230925_113825": {"linestyle": "-", "label": "P-satI-D"},
+            "20230925_114328": {"linestyle": "-", "label": "P-satI-D+GC"},
+        }
+        END_TIME = 49.0
+    else:
+        experiments = {
+            "20231019_082343": {"linestyle": "-", "label": "P-satI-D"},
+        }
+        END_TIME = 131.0
 else:
     raise ValueError(f"Unknown trajectory type: {TRAJ_TYPE}")
 
@@ -113,4 +132,15 @@ if __name__ == "__main__":
     plt.box(True)
     plt.legend(loc="upper center", ncols=2, labelspacing=0.4, columnspacing=0.8)
     plt.tight_layout()
+
+    # save figure if we plot only one experiment
+    if len(experiments.keys()) == 1:
+        experiment_id = list(experiments.keys())[0]
+        fig.savefig(
+            str(experiment_folder / experiment_id / f"{experiment_id}_cartesian_evolution.pdf")
+        )
+        fig.savefig(
+            str(experiment_folder / experiment_id / f"{experiment_id}_cartesian_evolution.eps"),
+        )
+
     plt.show()
