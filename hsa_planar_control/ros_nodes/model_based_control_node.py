@@ -247,10 +247,7 @@ class ModelBasedControlNode(Node):
             "operational_space_pd_plus_linearized_actuation",
             "operational_space_pd_plus_nonlinear_actuation",
         ]:
-            if (
-                self.controller_type
-                == "operational_space_pd_plus_linearized_actuation"
-            ):
+            if self.controller_type == "operational_space_pd_plus_linearized_actuation":
                 control_fn = operational_space_pd_plus_linearized_actuation
             else:
                 control_fn = operational_space_pd_plus_nonlinear_actuation

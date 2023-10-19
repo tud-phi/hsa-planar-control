@@ -38,7 +38,7 @@ num_segments = params["l"].shape[0]
 
 sim_dt = 1e-3  # time step for simulation [s]
 duration = 5.0  # duration of simulation [s]
-q0 = jnp.zeros((3 * num_segments, ))
+q0 = jnp.zeros((3 * num_segments,))
 
 if __name__ == "__main__":
     (

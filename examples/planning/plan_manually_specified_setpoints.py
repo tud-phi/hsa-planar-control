@@ -14,7 +14,7 @@ from typing import Callable, Dict, Tuple
 
 from hsa_planar_control.planning.steady_state_rollout_planning import (
     plan_with_rollout_to_steady_state,
-    steady_state_rollout_planning_factory
+    steady_state_rollout_planning_factory,
 )
 from hsa_planar_control.planning.static_planning import (
     static_inversion_factory,
@@ -107,7 +107,11 @@ if __name__ == "__main__":
             verbose=True,
         )
     elif PLANNER_TYPE == "steady_state_rollout":
-        rollout_fn, residual_fn, jac_residual_fn = steady_state_rollout_planning_factory(
+        (
+            rollout_fn,
+            residual_fn,
+            jac_residual_fn,
+        ) = steady_state_rollout_planning_factory(
             params=params,
             forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
             dynamical_matrices_fn=dynamical_matrices_fn,
@@ -133,9 +137,7 @@ if __name__ == "__main__":
     phi_ss_sps = jnp.zeros((num_setpoints, 2))  # steady-state control inputs
     for setpoint_idx in range(num_setpoints):
         pee_des = pee_des_sps[setpoint_idx]
-        chiee_des, q_des, phi_ss, optimality_error = planning_fn(
-            pee_des=pee_des
-        )
+        chiee_des, q_des, phi_ss, optimality_error = planning_fn(pee_des=pee_des)
 
         chiee_des_sps = chiee_des_sps.at[setpoint_idx].set(chiee_des)
         q_des_sps = q_des_sps.at[setpoint_idx].set(q_des)

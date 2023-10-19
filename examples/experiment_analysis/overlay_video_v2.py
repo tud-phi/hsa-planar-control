@@ -97,7 +97,7 @@ def main():
     # load processed ROS bag data
     experiment_folder = Path("data") / "experiments" / EXPERIMENT_NAME
     with open(
-            str(experiment_folder / ("rosbag2_" + EXPERIMENT_NAME + "_0.dill")), "rb"
+        str(experiment_folder / ("rosbag2_" + EXPERIMENT_NAME + "_0.dill")), "rb"
     ) as f:
         data_ts = dill.load(f)
     ci_ts = data_ts["controller_info_ts"]
@@ -178,7 +178,11 @@ def main():
         if ret is True:
             video_time = cap.get(cv2.CAP_PROP_POS_MSEC) / 1e3
             time = video_time - VIDEO_REL_START_TIME
-            if time < 0.0 or (DURATION is not None and time > DURATION) or time > ci_ts["ts"][-1]:
+            if (
+                time < 0.0
+                or (DURATION is not None and time > DURATION)
+                or time > ci_ts["ts"][-1]
+            ):
                 continue
 
             if CALIBRATE and frame_idx == 0:
@@ -214,7 +218,9 @@ def main():
 
             if res is None:
                 # compute resolution of the video
-                res = (EE_UV[1] - ORIGIN_UV[1]).astype(jnp.float64) / ci_ts["chiee"][ci_time_idx, 1]
+                res = (EE_UV[1] - ORIGIN_UV[1]).astype(jnp.float64) / ci_ts["chiee"][
+                    ci_time_idx, 1
+                ]
                 print("Identified resolution = ", res, "pixel/m")
 
             if OVERLAY_CURRENT_SETPOINT:
@@ -243,7 +249,9 @@ def main():
                     thickness=6,
                 )
             if OVERLAY_END_EFFECTOR_POSITION:
-                pee_uv = onp.array(position_to_uv(ORIGIN_UV, res, ci_ts["chiee"][ci_time_idx, :2]))
+                pee_uv = onp.array(
+                    position_to_uv(ORIGIN_UV, res, ci_ts["chiee"][ci_time_idx, :2])
+                )
                 frame = cv2.circle(
                     frame,
                     center=(pee_uv[0], pee_uv[1]),
@@ -254,7 +262,9 @@ def main():
             if OVERLAY_EE_HISTORY and ci_time_idx > 0:
                 # only plot every 16th data point to reduce the number of points
                 pee_uv_hs = onp.array(
-                    batched_position_to_uv(ORIGIN_UV, res, ci_ts["chiee_hs"][:ci_time_idx:16, :2])
+                    batched_position_to_uv(
+                        ORIGIN_UV, res, ci_ts["chiee_hs"][:ci_time_idx:16, :2]
+                    )
                 )
                 frame = cv2.polylines(
                     frame,

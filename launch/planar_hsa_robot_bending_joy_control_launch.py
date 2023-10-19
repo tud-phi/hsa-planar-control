@@ -120,9 +120,7 @@ def generate_launch_description():
                 package="joylike_operation",
                 executable="openvibe_stimulation_to_joy_node",
                 name="openvibe_teleop",
-                parameters=[
-                    {"joy_control_mode": "bending", "host": "145.94.234.212"}
-                ],
+                parameters=[{"joy_control_mode": "bending", "host": "145.94.234.212"}],
                 arguments=["--ros-args", "--log-level", LOG_LEVEL],
             ),
         )

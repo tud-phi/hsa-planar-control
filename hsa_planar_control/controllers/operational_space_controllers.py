@@ -214,7 +214,12 @@ def operational_space_computed_torque(
     else:
         u = tau_des
 
-    controller_info = {"e_pee": pee_des - pee, "f": f_des, "tau": tau_des, "actuation_optimality_error": optimality_error}
+    controller_info = {
+        "e_pee": pee_des - pee,
+        "f": f_des,
+        "tau": tau_des,
+        "actuation_optimality_error": optimality_error,
+    }
 
     return u, controller_info
 
@@ -272,7 +277,8 @@ def operational_space_pd_plus_linearized_actuation(
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
-        Kp @ e_pee - Kd @ pee_d
+        Kp @ e_pee
+        - Kd @ pee_d
         # compensate for static elastic and gravitational forces directly in operational space
         # + JB_pinv.T @ (G + K)
     )
@@ -343,7 +349,8 @@ def operational_space_pd_plus_nonlinear_actuation(
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
-        Kp @ e_pee - Kd @ pee_d
+        Kp @ e_pee
+        - Kd @ pee_d
         # compensate for static elastic and gravitational forces directly in operational space
         # + JB_pinv.T @ (G + K)
     )

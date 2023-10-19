@@ -136,7 +136,9 @@ def simulate_steady_state(
         dt0=sim_dt,
         y0=x0,
         args=phi_ss,
-        adjoint=dfx.DirectAdjoint() if allow_forward_autodiff else dfx.RecursiveCheckpointAdjoint(),
+        adjoint=dfx.DirectAdjoint()
+        if allow_forward_autodiff
+        else dfx.RecursiveCheckpointAdjoint(),
         max_steps=int(duration // sim_dt) + 10,
     )
 
