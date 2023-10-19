@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Callable, Dict, Tuple
 
-from hsa_planar_control.planning.static_planning import (
-    static_inversion_factory,
-    statically_invert_actuation_to_task_space_scipy_rootfinding,
-)
 from hsa_planar_control.planning.steady_state_rollout_planning import (
     plan_with_rollout_to_steady_state,
     steady_state_rollout_planning_factory
+)
+from hsa_planar_control.planning.static_planning import (
+    static_inversion_factory,
+    statically_invert_actuation_to_task_space_scipy_rootfinding,
 )
 
 num_segments = 1
@@ -32,7 +32,7 @@ sym_exp_filepath = (
 )
 
 HSA_MATERIAL = "fpu"  # "fpu", "epu"
-PLANNER_TYPE = "steady_state_rollout"  # "static_inversion", "steady_state_rollout"
+PLANNER_TYPE = "static_inversion"  # "static_inversion", "steady_state_rollout"
 
 # set parameters
 if HSA_MATERIAL == "fpu":
@@ -102,6 +102,8 @@ if __name__ == "__main__":
             params=params,
             residual_fn=residual_fn,
             inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
+            q0=q0,
+            phi0=phi0,
             verbose=True,
         )
     elif PLANNER_TYPE == "steady_state_rollout":

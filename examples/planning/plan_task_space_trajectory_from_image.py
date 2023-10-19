@@ -16,7 +16,6 @@ from hsa_planar_control.planning.static_planning import (
     static_inversion_factory,
     statically_invert_actuation_to_task_space_scipy_rootfinding,
     statically_invert_actuation_to_task_space_projected_descent,
-    statically_invert_actuation_to_task_space_projected_descent_straight_config,
 )
 from hsa_planar_control.planning.task_space_trajectory_generation import (
     generate_task_space_trajectory_from_image_contour,
@@ -98,15 +97,19 @@ def main():
         )
     )
 
-    q_des_sps = jnp.zeros((num_setpoints, 3))  # desired configurations
-    phi_ss_sps = jnp.zeros((num_setpoints, 2))  # steady-state control inputs
+    # set the first initial conditions
+    q0 = jnp.zeros((3, ))
+    phi0 = jnp.zeros((2, ))
+
+    q_des_sps = jnp.zeros((num_setpoints, q0.shape[0]))  # desired configurations
+    phi_ss_sps = jnp.zeros((num_setpoints, phi0.shape[0]))  # steady-state control inputs
     optimality_error_sps = jnp.zeros(num_setpoints)  # optimality errors
     for setpoint_idx in range(num_setpoints):
         # Start timer
         start_time = time.time()
 
         pee_des = pee_des_sps[setpoint_idx]
-        chiee_des, q_des, phi_ss, optimality_error = planning_fn(pee_des=pee_des)
+        chiee_des, q_des, phi_ss, optimality_error = planning_fn(pee_des=pee_des, q0=q0, phi0=phi0)
 
         # End timer
         end_time = time.time()
@@ -118,6 +121,10 @@ def main():
         optimality_error_sps = optimality_error_sps.at[setpoint_idx].set(
             optimality_error
         )
+
+        # update initial conditions
+        q0 = q_des
+        phi0 = phi_ss
 
     print("pee_des_sps:\n", pee_des_sps)
     print("q_des_sps:\n", q_des_sps)

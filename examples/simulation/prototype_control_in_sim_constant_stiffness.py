@@ -111,6 +111,8 @@ if __name__ == "__main__":
         params,
         residual_fn=residual_fn,
         inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
+        q0=q0,
+        phi0=phi0,
     )
     chiee_des, q_des, phi_ss, optimality_error = planning_fn(pee_des=pee_des)
     print("Desired configuration: ", q_des, "steady-state actuation: ", phi_ss)

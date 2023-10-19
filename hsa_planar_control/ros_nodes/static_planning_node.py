@@ -20,6 +20,10 @@ import os
 from hsa_control_interfaces.msg import PlanarSetpoint
 from mocap_optitrack_interfaces.msg import PlanarCsConfiguration
 
+from hsa_planar_control.planning.steady_state_rollout_planning import (
+    plan_with_rollout_to_steady_state,
+    steady_state_rollout_planning_factory
+)
 from hsa_planar_control.planning.static_planning import (
     static_inversion_factory,
     statically_invert_actuation_to_task_space_scipy_rootfinding,
@@ -30,9 +34,9 @@ from hsa_planar_control.planning.task_space_trajectory_generation import (
 )
 
 
-class StaticInversionPlanningNode(Node):
+class StaticPlanningNode(Node):
     def __init__(self):
-        super().__init__("static_inversion_planning_node")
+        super().__init__("static_planning_node")
 
         self.declare_parameter("setpoint_topic", "setpoint")
         self.pub = self.create_publisher(
@@ -46,9 +50,9 @@ class StaticInversionPlanningNode(Node):
             / f"planar_hsa_ns-1_nrs-2.dill"
         )
         (
-            _,
-            _,
-            _,
+            forward_kinematics_virtual_backbone_fn,
+            forward_kinematics_end_effector_fn,
+            jacobian_end_effector_fn,
             inverse_kinematics_end_effector_fn,
             dynamical_matrices_fn,
             sys_helpers,
@@ -79,6 +83,7 @@ class StaticInversionPlanningNode(Node):
             self.params["sigma_sh_eq"]
         )
         self.params["sigma_a_eq"] = jnp.array([[sigma_a_eq1, sigma_a_eq2]])
+        self.xi_eq = sys_helpers["rest_strains_fn"](self.params)
         # external payload mass (assumed to be at end effector)
         self.declare_parameter("payload_mass", 0.0)
         self.params["mpl"] = self.get_parameter("payload_mass").value
@@ -88,46 +93,40 @@ class StaticInversionPlanningNode(Node):
             self.params["phi_max"]
         )
 
-        # define residual function for static inversion optimization
-        self.residual_fn = jit(
-            static_inversion_factory(
-                self.params, inverse_kinematics_end_effector_fn, dynamical_matrices_fn
-            )
-        )
+        # set first values for the inital configuration and the initial guess of the steady state actuation
+        self.q0 = jnp.zeros_like(self.xi_eq)
+        self.phi0 = jnp.zeros_like(self.params["phi_max"].flatten())
 
         self.declare_parameter("setpoint_mode", "manual")
         setpoint_mode = self.get_parameter("setpoint_mode").value
+        if setpoint_mode == "image":
+            self.is_continuous_trajectory = True
+        else:
+            self.is_continuous_trajectory = False
 
-        if setpoint_mode == "manual":
-            if hsa_material == "fpu":
-                # use accurate but slow scipy rootfinding for FPU material
+        if hsa_material == "fpu":
+            # define residual function for static inversion optimization
+            self.residual_fn = jit(
+                static_inversion_factory(
+                    self.params, inverse_kinematics_end_effector_fn, dynamical_matrices_fn
+                )
+            )
+
+            if setpoint_mode == "manual":
+                # use accurate but slow scipy root finding for identifying the roots of the static EoM
                 self.planning_fn = partial(
                     statically_invert_actuation_to_task_space_scipy_rootfinding,
                     params=self.params,
                     residual_fn=self.residual_fn,
                     inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
+                    q0=self.q0,
+                    phi0=self.phi0,
                     maxiter=10000,
                     verbose=False,
                 )
-            elif hsa_material == "epu":
-                # for EPU system params, the scipy rootfinding finds solutions outside the allowed actuation range
-                # therefore, we use projected descent instead
-                self.planning_fn = jit(
-                    partial(
-                        statically_invert_actuation_to_task_space_projected_descent,
-                        params=self.params,
-                        residual_fn=self.residual_fn,
-                        inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
-                        maxiter=10000,
-                        verbose=False,
-                    )
-                )
-            else:
-                raise ValueError(f"Unknown HSA material: {hsa_material}")
 
-            default_planning_frequency = 0.1
-            # desired end-effector positions
-            if hsa_material == "fpu":
+                default_planning_frequency = 0.1
+                # desired end-effector positions
                 self.pee_des_sps = jnp.array(
                     [
                         [0.0, 0.120],
@@ -143,7 +142,100 @@ class StaticInversionPlanningNode(Node):
                         [0.00567301, 0.1271345],
                     ]
                 )
-            elif hsa_material == "epu":
+            elif setpoint_mode == "image":
+                # use fast but slightly inaccurate projected descent for image setpoints
+                self.planning_fn = jit(
+                    partial(
+                        statically_invert_actuation_to_task_space_projected_descent,
+                        params=self.params,
+                        residual_fn=self.residual_fn,
+                        inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
+                        maxiter=250,
+                        verbose=False,
+                    )
+                )
+
+                default_planning_frequency = 8
+
+                self.declare_parameter("image_type", "star")
+                image_type = self.get_parameter("image_type").value
+                self.declare_parameter("trajectory_size", "None")
+                trajectory_size = self.get_parameter("trajectory_size").value
+
+                if image_type == "star":
+                    image_path = os.path.join(
+                        get_package_share_directory("hsa_planar_control"),
+                        "assets",
+                        "star.png",
+                    )
+                    pee_centroid = jnp.array([0.0, 0.127])
+                    max_radius = jnp.array(0.013)
+                elif image_type == "tud-flame":
+                    image_path = os.path.join(
+                        get_package_share_directory("hsa_planar_control"),
+                        "assets",
+                        "tud_flame.jpeg",
+                    )
+                    pee_centroid = jnp.array([0.0, 0.1285])
+                    max_radius = jnp.array(0.013)
+                elif image_type == "mit-csail":
+                    image_path = os.path.join(
+                        get_package_share_directory("hsa_planar_control"),
+                        "assets",
+                        "mit_csail.png",
+                    )
+                    pee_centroid = jnp.array([0.0, 0.127])
+                    max_radius = jnp.array(0.017)
+                elif image_type == "bat":
+                    image_path = os.path.join(
+                        get_package_share_directory("hsa_planar_control"),
+                        "assets",
+                        "bat.png",
+                    )
+                    pee_centroid = jnp.array([0.0, 0.1285])
+                    if trajectory_size == "S":
+                        max_radius = jnp.array(0.015)
+                    elif trajectory_size == "M" or trajectory_size == "None":
+                        max_radius = jnp.array(0.0225)
+                    elif trajectory_size == "L":
+                        max_radius = jnp.array(0.030)
+                    else:
+                        raise ValueError(f"Unknown trajectory_size: {trajectory_size}")
+                else:
+                    raise ValueError(f"Unknown image type: {image_type}")
+
+                self.pee_des_sps = generate_task_space_trajectory_from_image_contour(
+                    image_type=image_type,
+                    image_path=image_path,
+                    pee_centroid=pee_centroid,
+                    max_radius=max_radius,
+                    verbose=False,
+                    show_images=False,
+                )
+            else:
+                raise ValueError(f"Unknown setpoint mode: {setpoint_mode}")
+
+        elif hsa_material == "epu":
+            # define residual function for steady state rollout optimization
+            self.rollout_fn, self.residual_fn, self.jac_residual_fn = steady_state_rollout_planning_factory(
+                params=self.params,
+                forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
+                dynamical_matrices_fn=dynamical_matrices_fn,
+            )
+
+            if setpoint_mode == "manual":
+                self.planning_fn = partial(
+                    plan_with_rollout_to_steady_state,
+                    params=self.params,
+                    rollout_fn=self.rollout_fn,
+                    residual_fn=self.residual_fn,
+                    jac_residual_fn=self.jac_residual_fn,
+                    q0=self.q0,
+                    phi0=self.phi0,
+                    solver_type="scipy_least_squares",
+                    verbose=True,
+                )
+
                 self.pee_des_sps = jnp.array(
                     [
                         [0.0195418, 0.13252665],
@@ -159,87 +251,21 @@ class StaticInversionPlanningNode(Node):
                     ]
                 )
             else:
-                raise ValueError(f"Unknown HSA material: {hsa_material}")
-        elif setpoint_mode == "image":
-            # use fast but slightly inaccurate projected descent for image setpoints
-            self.planning_fn = jit(
-                partial(
-                    statically_invert_actuation_to_task_space_projected_descent,
-                    params=self.params,
-                    residual_fn=self.residual_fn,
-                    inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
-                    maxiter=250,
-                    verbose=False,
-                )
-            )
-
-            default_planning_frequency = 8
-
-            self.declare_parameter("image_type", "star")
-            image_type = self.get_parameter("image_type").value
-            self.declare_parameter("trajectory_size", "None")
-            trajectory_size = self.get_parameter("trajectory_size").value
-
-            if image_type == "star":
-                image_path = os.path.join(
-                    get_package_share_directory("hsa_planar_control"),
-                    "assets",
-                    "star.png",
-                )
-                pee_centroid = jnp.array([0.0, 0.127])
-                max_radius = jnp.array(0.013)
-            elif image_type == "tud-flame":
-                image_path = os.path.join(
-                    get_package_share_directory("hsa_planar_control"),
-                    "assets",
-                    "tud_flame.jpeg",
-                )
-                pee_centroid = jnp.array([0.0, 0.1285])
-                max_radius = jnp.array(0.013)
-            elif image_type == "mit-csail":
-                image_path = os.path.join(
-                    get_package_share_directory("hsa_planar_control"),
-                    "assets",
-                    "mit_csail.png",
-                )
-                pee_centroid = jnp.array([0.0, 0.127])
-                max_radius = jnp.array(0.017)
-            elif image_type == "bat":
-                image_path = os.path.join(
-                    get_package_share_directory("hsa_planar_control"),
-                    "assets",
-                    "bat.png",
-                )
-                pee_centroid = jnp.array([0.0, 0.1285])
-                if trajectory_size == "S":
-                    max_radius = jnp.array(0.015)
-                elif trajectory_size == "M" or trajectory_size == "None":
-                    max_radius = jnp.array(0.0225)
-                elif trajectory_size == "L":
-                    max_radius = jnp.array(0.030)
-                else:
-                    raise ValueError(f"Unknown trajectory_size: {trajectory_size}")
-            else:
-                raise ValueError(f"Unknown image type: {image_type}")
-
-            self.pee_des_sps = generate_task_space_trajectory_from_image_contour(
-                image_type=image_type,
-                image_path=image_path,
-                pee_centroid=pee_centroid,
-                max_radius=max_radius,
-                verbose=False,
-                show_images=False,
-            )
+                raise NotImplementedError("We have not yet implemented continuous trajectories for the EPU material.")
         else:
-            raise ValueError(f"Unknown setpoint mode: {setpoint_mode}")
+            raise ValueError(f"Unknown HSA material: {hsa_material}")
 
         # run the planning function once to compile it
+        dummy_planning_kwargs = {}
+        if self.is_continuous_trajectory:
+            dummy_planning_kwargs["q0"] = self.q0
+            dummy_planning_kwargs["phi0"] = self.phi0
         (
             chiee_des_dummy,
             q_des_dummy,
             phi_ss_dummy,
             optimality_error_dummy,
-        ) = self.planning_fn(pee_des=jnp.array([0.0, 0.110]))
+        ) = self.planning_fn(pee_des=jnp.array([0.0, 0.110]), **dummy_planning_kwargs)
         self.get_logger().info("Done compiling static inversion planning function!")
 
         # initial setpoint index
@@ -253,8 +279,11 @@ class StaticInversionPlanningNode(Node):
     def timer_callback(self):
         planning_start_time = self.get_clock().now()
 
+        planning_kwargs = {}
+        if self.is_continuous_trajectory:
+            planning_kwargs.update({"q0": self.q0, "phi0": self.phi0})
         chiee_des, q_des, phi_ss, optimality_error = self.planning_fn(
-            pee_des=self.pee_des_sps[self.setpoint_idx]
+            pee_des=self.pee_des_sps[self.setpoint_idx], **planning_kwargs
         )
 
         # Log how long the planning took
@@ -285,6 +314,11 @@ class StaticInversionPlanningNode(Node):
         msg.optimality_error = optimality_error.item()
         self.pub.publish(msg)
 
+        # if it is a continuous trajectory, update the initial conditions
+        if self.is_continuous_trajectory:
+            self.q0 = q_des
+            self.phi0 = phi_ss
+
         self.setpoint_idx += 1
 
 
@@ -292,7 +326,7 @@ def main(args=None):
     rclpy.init(args=args)
     print("Hi from the static inversion planning node.")
 
-    node = StaticInversionPlanningNode()
+    node = StaticPlanningNode()
 
     rclpy.spin(node)
 

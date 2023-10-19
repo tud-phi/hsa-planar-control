@@ -67,6 +67,8 @@ if __name__ == "__main__":
         params,
         residual_fn=residual_fn,
         inverse_kinematics_end_effector_fn=inverse_kinematics_end_effector_fn,
+        q0=q0,
+        phi0=phi0,
     )
 
     pee_des_sps = jnp.zeros((num_setpoints, 2))  # desired end-effector positions
