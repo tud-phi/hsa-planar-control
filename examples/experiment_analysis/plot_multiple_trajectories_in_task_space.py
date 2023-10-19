@@ -22,13 +22,13 @@ colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 TRAJ_TYPE = "bat"  # "star", "tud-flame", "mit-csail", "bat"
 
 experiments = {
-    "20231017_112545": {"color": colors[0], "label": "Small"},
-    "20231017_113913": {"color": colors[1], "label": "Medium"},
-    "20231017_115721": {"color": colors[2], "label": "Large"},
+    "20231019_084914": {"color": colors[0], "label": "Small"},
+    "20231019_084052": {"color": colors[1], "label": "Medium"},
+    "20231019_083240": {"color": colors[2], "label": "Large"},
 }
 
 START_TIME = 1.0
-END_TIME = None
+END_TIME = 190.0
 
 experiment_folder = Path("data") / "experiments"
 
