@@ -121,10 +121,10 @@ if __name__ == "__main__":
     plt.box(True)
     plt.tight_layout()
     plt.savefig(
-        str(experiment_data_path / f"{experiment_id}_model_verification_pee.pdf")
+        str(experiment_data_path / f"{experiment_id}_model_verification_chiee.pdf")
     )
     plt.savefig(
-        str(experiment_data_path / f"{experiment_id}_model_verification_pee.eps")
+        str(experiment_data_path / f"{experiment_id}_model_verification_chiee.eps")
     )
     plt.show()
 
