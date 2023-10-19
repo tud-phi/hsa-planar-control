@@ -38,7 +38,7 @@ else:
     raise ValueError(f"Unknown hsa_material: {hsa_material}")
 
 # set sampling range
-phi_min = 0.3 * jnp.ones_like(params["phi_max"].flatten())
+phi_min = 1.0 * jnp.ones_like(params["phi_max"].flatten())
 phi_max = params["phi_max"].flatten() - 0.3
 
 # set seed
