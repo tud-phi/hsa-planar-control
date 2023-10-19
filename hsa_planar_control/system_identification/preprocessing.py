@@ -554,7 +554,7 @@ def preprocess_data(
             data_filt_ts["t_ts"],
             data_filt_ts["xi_ts"][:, 0],
             color=colors[0],
-            label=r"$\hat{\kappa}_\mathrm{b}$",
+            label=r"$\hat{\kappa}_\mathrm{be}$",
         )
         ax1b.plot(
             data_filt_ts["t_ts"],
@@ -576,7 +576,7 @@ def preprocess_data(
                 linestyle="None",
                 marker=".",
                 color=colors[0],
-                label=r"$\kappa_\mathrm{b}$",
+                label=r"$\kappa_\mathrm{be}$",
             )
             ax1b.plot(
                 data_res_ts["t_ts"],
@@ -607,7 +607,7 @@ def preprocess_data(
             data_filt_ts["t_ts"],
             data_filt_ts["xi_d_ts"][:, 0],
             color=colors[0],
-            label=r"$\dot{\kappa}_\mathrm{b}$",
+            label=r"$\dot{\kappa}_\mathrm{be}$",
         )
         ax2b.plot(
             data_filt_ts["t_ts"],
@@ -634,7 +634,7 @@ def preprocess_data(
             data_filt_ts["t_ts"],
             data_filt_ts["xi_dd_ts"][:, 0],
             color=colors[0],
-            label=r"$\ddot{\kappa}_\mathrm{b}$",
+            label=r"$\ddot{\kappa}_\mathrm{be}$",
         )
         ax3b.plot(
             data_filt_ts["t_ts"],

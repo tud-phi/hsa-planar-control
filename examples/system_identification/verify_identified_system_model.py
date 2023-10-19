@@ -146,7 +146,7 @@ if __name__ == "__main__":
         data_ts["t_ts"],
         data_ts["xi_ts"][:, 0],
         color=colors[0],
-        label=r"$\kappa_\mathrm{b}$ [rad / m]",
+        label=r"$\kappa_\mathrm{be}$ [rad / m]",
     )
     plt.plot(
         data_ts["t_ts"],
@@ -165,7 +165,7 @@ if __name__ == "__main__":
         xi_eq[0] + sim_ts["q_ts"][:, 0],
         color=colors[0],
         linestyle="--",
-        label=r"$\hat{\kappa}_\mathrm{b}$ [rad / m]",
+        label=r"$\hat{\kappa}_\mathrm{be}$ [rad / m]",
     )
     plt.plot(
         sim_ts["t_ts"],

@@ -190,7 +190,7 @@ if __name__ == "__main__":
         sim_ts["t_ts"],
         xi_eq[0] + sim_ts["q_ts"][:, 0],
         color=colors[0],
-        label=r"$\kappa_\mathrm{b}$ [rad / m]",
+        label=r"$\kappa_\mathrm{be}$ [rad / m]",
     )
     plt.plot(
         sim_ts["t_ts"],
@@ -210,7 +210,7 @@ if __name__ == "__main__":
             xi_eq[0] + jnp.repeat(q_des[0], repeats=len(sim_ts["t_ts"]), axis=0),
             linestyle="--",
             color=colors[0],
-            label=r"$\kappa_\mathrm{b}^\mathrm{d}$ [rad / m]",
+            label=r"$\kappa_\mathrm{be}^\mathrm{d}$ [rad / m]",
         )
         plt.plot(
             sim_ts["t_ts"],

@@ -79,7 +79,7 @@ def main():
         linestyle=":",
         linewidth=linewidth,
         dashes=dashes,
-        label=r"$\kappa_\mathrm{b}^\mathrm{d}$",
+        label=r"$\kappa_\mathrm{be}^\mathrm{d}$",
     )
     (sigma_sh_des_line,) = ax2.plot(
         [],
@@ -105,7 +105,7 @@ def main():
         [],
         color=colors[0],
         linewidth=linewidth,
-        label=r"$\kappa_\mathrm{b}$",
+        label=r"$\kappa_\mathrm{be}$",
     )
     (sigma_sh_line,) = ax2.plot(
         [],
@@ -123,7 +123,7 @@ def main():
     )
     q_lines = [kappa_b_line, sigma_sh_line, sigma_a_line]
     ax1.set_xlabel(r"$t$ [s]")
-    ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{b}$ [rad/m]")
+    ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{be}$ [rad/m]")
     ax2.set_ylabel(r"Linear strains $\sigma$ [-]")
     ax1.set_xlim(t_ts[0], t_ts[-1])
     ax1.set_ylim(

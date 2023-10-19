@@ -137,7 +137,7 @@ if __name__ == "__main__":
         color=colors[0],
         linestyle="-",
         linewidth=lw_gt,
-        label=r"$\kappa_\mathrm{b}$",
+        label=r"$\kappa_\mathrm{be}$",
     )
     ax2.plot(
         data_ts["t_ts"],
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         color=colors[0],
         linestyle="--",
         linewidth=lw_hat,
-        label=r"$\hat{\kappa}_\mathrm{b}$",
+        label=r"$\hat{\kappa}_\mathrm{be}$",
     )
     ax2.plot(
         sim_ts["t_ts"],
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         label=r"$\hat{\sigma}_\mathrm{ax}$",
     )
     ax1.set_xlabel(r"Time $t$ [s]")
-    ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{b}$ [rad/m]")
+    ax1.set_ylabel(r"Bending strain $\kappa_\mathrm{be}$ [rad/m]")
     ax2.set_ylabel(r"Linear strains $\sigma$ [-]")
     ax1.legend(loc="upper left", columnspacing=0.5, labelspacing=0.3)
     ax2.legend(loc="upper right", ncols=2, columnspacing=0.5, labelspacing=0.3)
