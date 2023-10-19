@@ -61,8 +61,8 @@ common_params = {
 inverse_kinematics_params = common_params.copy()
 planning_params = common_params | {
     "setpoint_mode": "manual",  # "manual", "image"
-    "image_type": "star",
-    "trajectory_size": "None"
+    "image_type": "star",  # "star", "tud-flame", "mit-csail", "bat"
+    "trajectory_size": "None"  # "None", "S", "M", "L
 }
 
 control_params = common_params | {
@@ -79,14 +79,14 @@ if controller_type == "basic_operational_space_pid":
     )
 elif controller_type == "P_satI_D_collocated_form_plus_steady_state_actuation":
     control_params.update(
-        {"Kp": 3.0e-1, "Ki": 5.0e-2, "Kd": 2.0e-2, "gamma": 1e2}  # [-]  # [1/s]  # [s]
+        {"Kp": 3.0e-1, "Ki": 5.0e-2, "Kd": 1.0e-2, "gamma": 1e2}  # [-]  # [1/s]  # [s]
     )
 elif (
     controller_type
     == "P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation"
 ):
     control_params.update(
-        {"Kp": 3.0e-1, "Ki": 5.0e-2, "Kd": 2.0e-2, "gamma": 1e2}  # [-]  # [1/s]  # [s]
+        {"Kp": 3.0e-1, "Ki": 5.0e-2, "Kd": 1.0e-2, "gamma": 1e2}  # [-]  # [1/s]  # [s]
     )
 else:
     raise ValueError(f"Unknown controller type: {controller_type}")
