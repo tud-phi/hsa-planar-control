@@ -110,7 +110,7 @@ if __name__ == "__main__":
             forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
             dynamical_matrices_fn=dynamical_matrices_fn,
         )
-        planning_fn = jit(partial(
+        planning_fn = partial(
             plan_with_rollout_to_steady_state,
             params=params,
             rollout_fn=rollout_fn,
@@ -118,9 +118,9 @@ if __name__ == "__main__":
             jac_residual_fn=jac_residual_fn,
             q0=q0,
             phi0=phi0,
-            solver_type="jaxopt_levenberg_marquardt",
+            solver_type="scipy_least_squares",
             verbose=True,
-        ))
+        )
     else:
         raise ValueError(f"Unknown PLANNER_TYPE: {PLANNER_TYPE}")
 
