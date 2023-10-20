@@ -190,6 +190,12 @@ def main():
     )
     print("Frame size = ", frame_width, "x", frame_height, "pixels")
 
+    # compute the resolution of the video
+    res = (EE_UV[1] - ORIGIN_UV[1]).astype(jnp.float64) / ci_ts["chiee"][
+        0, 1
+    ]
+    print("Identified resolution = ", res, "pixel/m")
+
     fps_in = cap.get(cv2.CAP_PROP_FPS)
     # compute the output fps
     out_fps = fps_in * SPEEDUP / COMMIT_EVERY_N_FRAMES
@@ -219,7 +225,6 @@ def main():
     # initialize some variables
     frame_idx_in = -1
     frame_idx_out = 0
-    res = None
 
     # Read until video is completed
     while cap.isOpened():
@@ -271,13 +276,6 @@ def main():
 
             # find the closest data points to the current time
             ci_time_idx = jnp.argmin(jnp.abs(ci_ts["ts"] - time))
-
-            if res is None:
-                # compute resolution of the video
-                res = (EE_UV[1] - ORIGIN_UV[1]).astype(jnp.float64) / ci_ts["chiee"][
-                    ci_time_idx, 1
-                ]
-                print("Identified resolution = ", res, "pixel/m")
 
             if OVERLAY_CURRENT_SETPOINT:
                 # plot current setpoint
