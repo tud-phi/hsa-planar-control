@@ -22,7 +22,7 @@ from mocap_optitrack_interfaces.msg import PlanarCsConfiguration
 
 from hsa_planar_control.planning.steady_state_rollout_planning import (
     plan_with_rollout_to_steady_state,
-    steady_state_rollout_planning_factory
+    steady_state_rollout_planning_factory,
 )
 from hsa_planar_control.planning.static_planning import (
     static_inversion_factory,
@@ -110,7 +110,9 @@ class StaticPlanningNode(Node):
             # define residual function for static inversion optimization
             self.residual_fn = jit(
                 static_inversion_factory(
-                    self.params, inverse_kinematics_end_effector_fn, dynamical_matrices_fn
+                    self.params,
+                    inverse_kinematics_end_effector_fn,
+                    dynamical_matrices_fn,
                 )
             )
 
@@ -216,7 +218,11 @@ class StaticPlanningNode(Node):
 
         elif hsa_material == "epu":
             # define residual function for steady state rollout optimization
-            self.rollout_fn, self.residual_fn, self.jac_residual_fn = steady_state_rollout_planning_factory(
+            (
+                self.rollout_fn,
+                self.residual_fn,
+                self.jac_residual_fn,
+            ) = steady_state_rollout_planning_factory(
                 params=self.params,
                 forward_kinematics_end_effector_fn=forward_kinematics_end_effector_fn,
                 dynamical_matrices_fn=dynamical_matrices_fn,
@@ -237,21 +243,23 @@ class StaticPlanningNode(Node):
 
                 self.pee_des_sps = jnp.array(
                     [
-                        [ 0.01567931,  0.13496604],
-                        [-0.01137064,  0.13488599],
-                        [-0.00210567,  0.12011204],
-                        [-0.00869464,  0.13911694],
-                        [-0.00929787,  0.12710664],
-                        [-0.00304799,  0.12364617],
-                        [ 0.00478033,  0.12777372],
-                        [-0.02880408,  0.12547507],
-                        [ 0.02296768,  0.12596894],
-                        [ 0.01681273,  0.1245412 ],
-                        [-0.00122529,  0.14039634]
+                        [0.01567931, 0.13496604],
+                        [-0.01137064, 0.13488599],
+                        [-0.00210567, 0.12011204],
+                        [-0.00869464, 0.13911694],
+                        [-0.00929787, 0.12710664],
+                        [-0.00304799, 0.12364617],
+                        [0.00478033, 0.12777372],
+                        [-0.02880408, 0.12547507],
+                        [0.02296768, 0.12596894],
+                        [0.01681273, 0.1245412],
+                        [-0.00122529, 0.14039634],
                     ]
                 )
             else:
-                raise NotImplementedError("We have not yet implemented continuous trajectories for the EPU material.")
+                raise NotImplementedError(
+                    "We have not yet implemented continuous trajectories for the EPU material."
+                )
         else:
             raise ValueError(f"Unknown HSA material: {hsa_material}")
 

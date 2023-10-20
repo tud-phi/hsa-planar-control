@@ -137,10 +137,18 @@ if __name__ == "__main__":
     if len(experiments.keys()) == 1:
         experiment_id = list(experiments.keys())[0]
         fig.savefig(
-            str(experiment_folder / experiment_id / f"{experiment_id}_cartesian_evolution.pdf")
+            str(
+                experiment_folder
+                / experiment_id
+                / f"{experiment_id}_cartesian_evolution.pdf"
+            )
         )
         fig.savefig(
-            str(experiment_folder / experiment_id / f"{experiment_id}_cartesian_evolution.eps"),
+            str(
+                experiment_folder
+                / experiment_id
+                / f"{experiment_id}_cartesian_evolution.eps"
+            ),
         )
 
     plt.show()

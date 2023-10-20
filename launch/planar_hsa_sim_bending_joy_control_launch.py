@@ -98,20 +98,22 @@ def generate_launch_description():
             "config",
             "keystroke2joy_bending.yaml",
         )
-        launch_actions.extend([
-            Node(
-                package="keyboard",
-                executable="keyboard",
-                name="keyboard",
-            ),
-            Node(
-                package="joylike_operation",
-                executable="keyboard_to_joy_node",
-                name="keyboard_teleop",
-                parameters=[{"config_filepath": str(keyboard2joy_filepath)}],
-                arguments=["--ros-args", "--log-level", LOG_LEVEL],
-            ),
-        ])
+        launch_actions.extend(
+            [
+                Node(
+                    package="keyboard",
+                    executable="keyboard",
+                    name="keyboard",
+                ),
+                Node(
+                    package="joylike_operation",
+                    executable="keyboard_to_joy_node",
+                    name="keyboard_teleop",
+                    parameters=[{"config_filepath": str(keyboard2joy_filepath)}],
+                    arguments=["--ros-args", "--log-level", LOG_LEVEL],
+                ),
+            ]
+        )
     else:
         raise ValueError(f"Unknown joy signal source: {JOY_SIGNAL_SOURCE}")
 

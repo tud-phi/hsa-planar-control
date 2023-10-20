@@ -32,6 +32,7 @@ def steady_state_rollout_planning_factory(
         residual_fn: Callable that returns the residual vector given the steady-state actuation.
         jac_residual_fn: Callable that returns the Jacobian of the residual vector with respect to the steady-state actuation.
     """
+
     @jit
     def rollout_fn(phi_ss: Array, q0: Array):
         q_ss, q_d_ss = simulate_steady_state(
@@ -42,7 +43,7 @@ def steady_state_rollout_planning_factory(
             sim_dt=sim_dt,
             duration=duration,
             ode_solver_class=ode_solver_class,
-            allow_forward_autodiff=True
+            allow_forward_autodiff=True,
         )
 
         chiee_ss = forward_kinematics_end_effector_fn(params, q_ss)
@@ -62,15 +63,15 @@ def steady_state_rollout_planning_factory(
 
 
 def plan_with_rollout_to_steady_state(
-        params: Dict[str, Array],
-        rollout_fn: Callable,
-        residual_fn: Callable,
-        jac_residual_fn: Callable,
-        pee_des: Array,
-        q0: Array,
-        phi0: Array,
-        solver_type="scipy_least_squares",
-        verbose: bool = False
+    params: Dict[str, Array],
+    rollout_fn: Callable,
+    residual_fn: Callable,
+    jac_residual_fn: Callable,
+    pee_des: Array,
+    q0: Array,
+    phi0: Array,
+    solver_type="scipy_least_squares",
+    verbose: bool = False,
 ) -> Tuple[Array, Array, Array, Array]:
     """
     Plan the steady-state actuation and configuration for a given desired end effector position.
@@ -150,7 +151,9 @@ def plan_with_rollout_to_steady_state(
         lm = optx.LevenbergMarquardt(
             rtol=1e-10,
             atol=1e-10,
-            verbose=frozenset({"step", "accepted", "loss", "step_size"}) if verbose else None,
+            verbose=frozenset({"step", "accepted", "loss", "step_size"})
+            if verbose
+            else None,
         )
         sol = optx.least_squares(residual_fn, lm, phi0, max_steps=10)
         phi_ss = sol.value

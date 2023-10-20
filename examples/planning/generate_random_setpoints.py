@@ -65,12 +65,14 @@ if __name__ == "__main__":
         sys_helpers,
     ) = planar_hsa.factory(sym_exp_filepath)
 
-    simulate_steady_state_fn = jit(partial(
-        simulate_steady_state,
-        dynamical_matrices_fn=dynamical_matrices_fn,
-        params=params,
-        q0=q0
-    ))
+    simulate_steady_state_fn = jit(
+        partial(
+            simulate_steady_state,
+            dynamical_matrices_fn=dynamical_matrices_fn,
+            params=params,
+            q0=q0,
+        )
+    )
 
     pee_ss_sps = jnp.zeros((num_setpoints, 2))  # desired end-effector positions
     q_ss_sps = jnp.zeros((num_setpoints, q0.shape[0]))  # desired configurations

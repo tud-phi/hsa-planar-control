@@ -22,9 +22,24 @@ plt.rcParams.update(
 START_TIME = 98.8
 END_TIME = 103.5
 experiments = {
-    "20231019_132825": {"linestyle": "solid", "marker": "o", "label": "PID", "time_lag": 0.263},
-    "20231019_143126": {"linestyle": "dashed", "marker": "^", "label": "P-satI-D", "time_lag": 0.565},
-    "20231019_135129": {"linestyle": "dashdot", "marker": "s", "label": "P-satI-D+GC", "time_lag": 0.0},
+    "20231019_132825": {
+        "linestyle": "solid",
+        "marker": "o",
+        "label": "PID",
+        "time_lag": 0.263,
+    },
+    "20231019_143126": {
+        "linestyle": "dashed",
+        "marker": "^",
+        "label": "P-satI-D",
+        "time_lag": 0.565,
+    },
+    "20231019_135129": {
+        "linestyle": "dashdot",
+        "marker": "s",
+        "label": "P-satI-D+GC",
+        "time_lag": 0.0,
+    },
 }
 
 
@@ -45,7 +60,11 @@ if __name__ == "__main__":
         ci_ts = data_ts["controller_info_ts"]
 
         # trim the time series data
-        ts = ci_ts["ts"] - ci_ts["ts"][0] - experiments[experiment_id].get("time_lag", 0.0)
+        ts = (
+            ci_ts["ts"]
+            - ci_ts["ts"][0]
+            - experiments[experiment_id].get("time_lag", 0.0)
+        )
         time_selector = ts >= START_TIME
         if END_TIME is not None:
             time_selector = time_selector & (ts <= END_TIME)
@@ -58,7 +77,9 @@ if __name__ == "__main__":
         experiments[experiment_id]["ci_ts"] = ci_ts
 
     # plot reference so that we can identify time lag between experiments
-    fig = plt.figure(figsize=(5.0, 4.0), num="Step response: References for identifying time lag")
+    fig = plt.figure(
+        figsize=(5.0, 4.0), num="Step response: References for identifying time lag"
+    )
     ax = plt.gca()
     for experiment_idx, experiment_id in enumerate(experiments.keys()):
         ci_ts = experiments[experiment_id]["ci_ts"]

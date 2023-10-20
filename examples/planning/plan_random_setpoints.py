@@ -94,9 +94,7 @@ if __name__ == "__main__":
                 ]
             )
 
-            chiee_des, q_des, phi_ss, optimality_error = planning_fn(
-                pee_des=pee_des
-            )
+            chiee_des, q_des, phi_ss, optimality_error = planning_fn(pee_des=pee_des)
             print(
                 "chiee_des",
                 chiee_des,

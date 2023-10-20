@@ -6,7 +6,7 @@ from pathlib import Path
 from os import PathLike
 
 from hsa_planar_control.operational_workspace import (
-    get_operational_workspace_boundaries
+    get_operational_workspace_boundaries,
 )
 
 
@@ -219,8 +219,17 @@ def generate_task_space_trajectory_from_image_contour(
 
         plt.figure(num="Final trajectory")
         ax = plt.gca()
-        plt.plot(pee_des_sps[:, 0], pee_des_sps[:, 1], label="planned end-effector trajectory")
-        plt.plot(pee_min_ps[:, 0], pee_min_ps[:, 1], "k--", label="operational workspace boundary")
+        plt.plot(
+            pee_des_sps[:, 0],
+            pee_des_sps[:, 1],
+            label="planned end-effector trajectory",
+        )
+        plt.plot(
+            pee_min_ps[:, 0],
+            pee_min_ps[:, 1],
+            "k--",
+            label="operational workspace boundary",
+        )
         plt.plot(pee_max_ps[:, 0], pee_max_ps[:, 1], "k--")
         plt.axis("equal")
         ax.invert_xaxis()

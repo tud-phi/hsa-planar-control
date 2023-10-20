@@ -77,21 +77,27 @@ def main():
     residualv = batched_residual_fn(xv)
     residual_normv = jnp.linalg.norm(residualv, axis=-1)
 
-    fig = go.Figure(data=go.Volume(
-        x=phi1v,
-        y=phi2v,
-        z=thv,
-        value=residual_normv,
-        isomax=1.0,
-        opacity=0.5,  # needs to be small to see through all surfaces
-        surface_count=21,  # needs to be a large number for good volume rendering
-        surface=dict(fill=0.7, pattern='odd'),
-        caps=dict(x_show=False, y_show=False, z_show=False),  # no caps
-        slices_z=dict(show=True, locations=[thee_sol]),
-    ))
-    fig.update_layout(scene=dict(
-        xaxis_title="phi1 [rad]", yaxis_title="phi2 [rad]", zaxis_title="theta [rad]"
-    ))
+    fig = go.Figure(
+        data=go.Volume(
+            x=phi1v,
+            y=phi2v,
+            z=thv,
+            value=residual_normv,
+            isomax=1.0,
+            opacity=0.5,  # needs to be small to see through all surfaces
+            surface_count=21,  # needs to be a large number for good volume rendering
+            surface=dict(fill=0.7, pattern="odd"),
+            caps=dict(x_show=False, y_show=False, z_show=False),  # no caps
+            slices_z=dict(show=True, locations=[thee_sol]),
+        )
+    )
+    fig.update_layout(
+        scene=dict(
+            xaxis_title="phi1 [rad]",
+            yaxis_title="phi2 [rad]",
+            zaxis_title="theta [rad]",
+        )
+    )
     fig.show()
 
 

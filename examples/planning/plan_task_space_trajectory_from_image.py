@@ -99,18 +99,22 @@ def main():
     )
 
     # set the first initial conditions
-    q0 = jnp.zeros((3, ))
-    phi0 = jnp.zeros((2, ))
+    q0 = jnp.zeros((3,))
+    phi0 = jnp.zeros((2,))
 
     q_des_sps = jnp.zeros((num_setpoints, q0.shape[0]))  # desired configurations
-    phi_ss_sps = jnp.zeros((num_setpoints, phi0.shape[0]))  # steady-state control inputs
+    phi_ss_sps = jnp.zeros(
+        (num_setpoints, phi0.shape[0])
+    )  # steady-state control inputs
     optimality_error_sps = jnp.zeros(num_setpoints)  # optimality errors
     for setpoint_idx in range(num_setpoints):
         # Start timer
         start_time = time.time()
 
         pee_des = pee_des_sps[setpoint_idx]
-        chiee_des, q_des, phi_ss, optimality_error = planning_fn(pee_des=pee_des, q0=q0, phi0=phi0)
+        chiee_des, q_des, phi_ss, optimality_error = planning_fn(
+            pee_des=pee_des, q0=q0, phi0=phi0
+        )
 
         # End timer
         end_time = time.time()

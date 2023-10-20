@@ -79,9 +79,7 @@ def statically_invert_actuation_to_task_space_scipy_rootfinding(
     num_rods = params["rout"].shape[0] * params["rout"].shape[1]
 
     # initial guess for [theta, phi1, ..., phin]
-    x0 = jnp.concatenate(
-        [q0[2:3], phi0], axis=0
-    )
+    x0 = jnp.concatenate([q0[2:3], phi0], axis=0)
 
     # partial off pee_des from residual_fn
     residual_fn = partial(residual_fn, pee_des=pee_des)
@@ -145,32 +143,42 @@ def statically_invert_actuation_to_task_space_projected_descent(
     num_rods = params["rout"].shape[0] * params["rout"].shape[1]
 
     # initial guess for [theta, phi1, ..., phin]
-    x0 = jnp.concatenate(
-        [q0[2:3], phi0], axis=0
-    )
+    x0 = jnp.concatenate([q0[2:3], phi0], axis=0)
 
     # partial off pee_des from residual_fn
     residual_fn = partial(residual_fn, pee_des=pee_des)
 
     # set the lower and upper bounds for the optimization problem
-    lb = jnp.concatenate([
-        jnp.array([-jnp.pi]),
-        jnp.min(
-            jnp.stack(
-                [(params["h"] * params["phi_max"]).flatten(), jnp.zeros((num_rods,))]
+    lb = jnp.concatenate(
+        [
+            jnp.array([-jnp.pi]),
+            jnp.min(
+                jnp.stack(
+                    [
+                        (params["h"] * params["phi_max"]).flatten(),
+                        jnp.zeros((num_rods,)),
+                    ]
+                ),
+                axis=0,
             ),
-            axis=0,
-        )
-    ], axis=0)
-    ub = jnp.concatenate([
-        jnp.array([jnp.pi]),
-        jnp.max(
-            jnp.stack(
-                [(params["h"] * params["phi_max"]).flatten(), jnp.zeros((num_rods,))]
+        ],
+        axis=0,
+    )
+    ub = jnp.concatenate(
+        [
+            jnp.array([jnp.pi]),
+            jnp.max(
+                jnp.stack(
+                    [
+                        (params["h"] * params["phi_max"]).flatten(),
+                        jnp.zeros((num_rods,)),
+                    ]
+                ),
+                axis=0,
             ),
-            axis=0,
-        )
-    ], axis=0)
+        ],
+        axis=0,
+    )
 
     solver = jo.ProjectedGradient(
         fun=lambda x: 0.5 * jnp.mean(residual_fn(x) ** 2),
