@@ -72,6 +72,7 @@ def main():
         show_images=True,
     )
     num_setpoints = pee_des_sps.shape[0]
+    print("The trajectory has", num_setpoints, "setpoints.")
 
     (
         forward_kinematics_virtual_backbone_fn,
