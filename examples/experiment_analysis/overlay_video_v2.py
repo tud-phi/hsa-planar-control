@@ -5,7 +5,7 @@ from jax import config as jax_config
 jax_config.update("jax_enable_x64", True)  # double precision
 jax_config.update("jax_platform_name", "cpu")  # use CPU
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
+from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL, PARAMS_EPU_CONTROL
 from jsrm.systems import planar_hsa
 import matplotlib
 
@@ -24,9 +24,26 @@ EXPERIMENT_NAME = "20231019_083240"  # experiment name
 # SHOW additional plots for calibration purposes
 CALIBRATE = False
 
+HSA_MATERIAL = "fpu"  # "fpu" or "epu"
 SOURCE_RES = 2160  # 2160 (for 4k) or 1080 (for 180p), the default is 2160p
-if EXPERIMENT_NAME == "20230925_093236":
-    # manual setpoints trajectory with P-satI-D controller
+if EXPERIMENT_NAME == "20230925_094023":
+    # FPU manual setpoints trajectory with baseline PID controller
+    DATA_REL_START_TIME = 0.0
+    VIDEO_REL_START_TIME = 1.75 + DATA_REL_START_TIME
+    DURATION = 110.0
+    SPEEDUP = 4.0
+    COMMIT_EVERY_N_FRAMES = 4
+    ORIGIN_UV = jnp.array([556, 305], dtype=jnp.uint32)  # uv coordinates of the origin
+    EE_UV = jnp.array(
+        [556, 1041], dtype=jnp.uint32
+    )  # uv coordinates of the end-effector
+    OVERLAY_CURRENT_SETPOINT = True
+    OVERLAY_END_EFFECTOR_POSITION = True
+    OVERLAY_EE_HISTORY = False
+    OVERLAY_EE_DES_HISTORY = False
+    OVERLAY_VIRTUAL_BACKBONE = True
+elif EXPERIMENT_NAME == "20230925_093236":
+    # FPU manual setpoints trajectory with P-satI-D controller
     DATA_REL_START_TIME = 0.0
     VIDEO_REL_START_TIME = 2.0 + DATA_REL_START_TIME
     DURATION = 110.0
@@ -42,7 +59,7 @@ if EXPERIMENT_NAME == "20230925_093236":
     OVERLAY_EE_DES_HISTORY = False
     OVERLAY_VIRTUAL_BACKBONE = True
 elif EXPERIMENT_NAME == "20231019_083240":
-    # large bat trajectory with P-satI-D controller
+    # FPU large bat trajectory with P-satI-D controller
     # 1080p at 30 fps
     SOURCE_RES = 1080
     DATA_REL_START_TIME = 1.0
@@ -96,7 +113,12 @@ def main():
     )
 
     # load robot parameters
-    params = PARAMS_FPU_CONTROL.copy()
+    if HSA_MATERIAL == "fpu":
+        params = PARAMS_FPU_CONTROL.copy()
+    elif HSA_MATERIAL == "epu":
+        params = PARAMS_EPU_CONTROL.copy()
+    else:
+        raise ValueError(f"Unknown HSA material: {HSA_MATERIAL}")
     (
         forward_kinematics_virtual_backbone_fn,
         forward_kinematics_end_effector_fn,
