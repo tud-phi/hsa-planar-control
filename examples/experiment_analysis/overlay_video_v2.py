@@ -19,15 +19,16 @@ import numpy as onp
 from pathlib import Path
 
 
-EXPERIMENT_NAME = "20230925_093236"  # experiment name
+EXPERIMENT_NAME = "20231019_083240"  # experiment name
 
 # SHOW additional plots for calibration purposes
 CALIBRATE = False
 
-# Attention: in this script we are expecting 4K footage
+SOURCE_RES = 2160  # 2160 (for 4k) or 1080 (for 180p), the default is 2160p
 if EXPERIMENT_NAME == "20230925_093236":
-    # manual setpoints trajectory
-    VIDEO_REL_START_TIME = 2.0
+    # manual setpoints trajectory with P-satI-D controller
+    DATA_REL_START_TIME = 0.0
+    VIDEO_REL_START_TIME = 2.0 + DATA_REL_START_TIME
     DURATION = 110.0
     SPEEDUP = 4.0
     COMMIT_EVERY_N_FRAMES = 4
@@ -40,8 +41,29 @@ if EXPERIMENT_NAME == "20230925_093236":
     OVERLAY_EE_HISTORY = False
     OVERLAY_EE_DES_HISTORY = False
     OVERLAY_VIRTUAL_BACKBONE = True
+elif EXPERIMENT_NAME == "20231019_083240":
+    # large bat trajectory with P-satI-D controller
+    # 1080p at 30 fps
+    SOURCE_RES = 1080
+    DATA_REL_START_TIME = 1.0
+    VIDEO_REL_START_TIME = 4.80 + DATA_REL_START_TIME
+    DURATION = 189.0 - DATA_REL_START_TIME
+    SPEEDUP = 6.0
+    COMMIT_EVERY_N_FRAMES = 3
+    ORIGIN_UV = jnp.array([310, 178], dtype=jnp.uint32)  # uv coordinates of the origin
+    EE_UV = jnp.array(
+        [310, 589], dtype=jnp.uint32
+    )  # uv coordinates of the end-effector
+    OVERLAY_CURRENT_SETPOINT = True
+    OVERLAY_END_EFFECTOR_POSITION = True
+    OVERLAY_EE_HISTORY = True
+    OVERLAY_EE_DES_HISTORY = True
+    OVERLAY_VIRTUAL_BACKBONE = True
 else:
     raise NotImplementedError("Please add the settings for the new experiment.")
+
+# all sizes are defined for 4k resolution
+res_mult = SOURCE_RES / 2160
 
 
 @jit
@@ -124,8 +146,9 @@ def main():
         plt.show()
 
     # absolute start time
-    start_time = ci_ts["ts"][0]
-    ci_ts["ts"] = ci_ts["ts"] - start_time
+    data_start_time = ci_ts["ts"][0] + DATA_REL_START_TIME
+    ci_ts["ts"] = ci_ts["ts"] - data_start_time
+    ci_start_time_idx = jnp.argmin(jnp.abs(ci_ts["ts"]))  # find the data point closest to zero
     print("Experiment full duration:", ci_ts["ts"][-1])
 
     # trim the time series data
@@ -148,7 +171,7 @@ def main():
     fps_in = cap.get(cv2.CAP_PROP_FPS)
     # compute the output fps
     out_fps = fps_in * SPEEDUP / COMMIT_EVERY_N_FRAMES
-    print("Incoming fps = ", fps_in, "fps", "outgoing fps = ", out_fps, "fps")
+    print("Incoming fps = ", fps_in, "Hz,", "outgoing fps = ", out_fps, "Hz")
 
     # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
     # Define the fps to be equal. Also frame size is passed.
@@ -210,7 +233,7 @@ def main():
                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=1.0,
                 color=(255, 255, 255),
-                thickness=4,
+                thickness=int(4 * res_mult),
             )
             if SPEEDUP != 1.0:
                 # write speedup to frame
@@ -221,7 +244,7 @@ def main():
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                     fontScale=1.0,
                     color=(255, 255, 255),
-                    thickness=4,
+                    thickness=int(4 * res_mult),
                 )
 
             # find the closest data points to the current time
@@ -242,14 +265,14 @@ def main():
                 frame = cv2.circle(
                     frame,
                     center=(pee_des_uv[0], pee_des_uv[1]),
-                    radius=34,
+                    radius=int(34 * res_mult),
                     color=colors_bgr["red"],
                     thickness=-1,
                 )
             if OVERLAY_EE_DES_HISTORY and ci_time_idx > 0:
                 pee_des_uv_hs = onp.array(
                     batched_position_to_uv(
-                        ORIGIN_UV, res, ci_ts["chiee_des_hs"][:ci_time_idx:1, :2]
+                        ORIGIN_UV, res, ci_ts["chiee_des"][ci_start_time_idx:ci_time_idx:1, :2]
                     )
                 )
                 frame = cv2.polylines(
@@ -257,7 +280,7 @@ def main():
                     pts=[pee_des_uv_hs.astype(onp.int32)],
                     isClosed=False,
                     color=colors_bgr["red"],
-                    thickness=6,
+                    thickness=int(14 * res_mult),
                 )
             if OVERLAY_END_EFFECTOR_POSITION:
                 pee_uv = onp.array(
@@ -266,7 +289,7 @@ def main():
                 frame = cv2.circle(
                     frame,
                     center=(pee_uv[0], pee_uv[1]),
-                    radius=28,
+                    radius=int(28 * res_mult),
                     color=(0, 0, 0),
                     thickness=-1,
                 )
@@ -274,7 +297,7 @@ def main():
                 # only plot every 16th data point to reduce the number of points
                 pee_uv_hs = onp.array(
                     batched_position_to_uv(
-                        ORIGIN_UV, res, ci_ts["chiee_hs"][:ci_time_idx:16, :2]
+                        ORIGIN_UV, res, ci_ts["chiee"][ci_start_time_idx:ci_time_idx:16, :2]
                     )
                 )
                 frame = cv2.polylines(
@@ -282,7 +305,7 @@ def main():
                     pts=[pee_uv_hs.astype(onp.int32)],
                     isClosed=False,
                     color=(0, 0, 0),
-                    thickness=4,
+                    thickness=int(10 * res_mult),
                 )
             if OVERLAY_VIRTUAL_BACKBONE:
                 # poses along the robot of shape (3, N)
@@ -322,7 +345,7 @@ def main():
                     pts=[chiv_uv_ps.astype(onp.int32)],
                     isClosed=False,
                     color=colors_bgr["blue"],
-                    thickness=10,
+                    thickness=int(10 * res_mult),
                 )
 
             # Display the resulting frame
