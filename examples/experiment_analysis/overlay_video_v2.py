@@ -22,17 +22,18 @@ from pathlib import Path
 EXPERIMENT_NAME = "20230925_093236"  # experiment name
 
 # SHOW additional plots for calibration purposes
-CALIBRATE = False
+CALIBRATE = True
 
 # Attention: in this script we are expecting 4K footage
 if EXPERIMENT_NAME == "20230925_093236":
     # manual setpoints trajectory
     VIDEO_REL_START_TIME = 0.0
-    DURATION = None
+    DURATION = 10.0
     SPEEDUP = 4.0
+    COMMIT_EVERY_N_FRAMES = 4
     ORIGIN_UV = jnp.array([580, 355], dtype=jnp.uint32)  # uv coordinates of the origin
     EE_UV = jnp.array(
-        [553, 1062], dtype=jnp.uint32
+        [565, 1096], dtype=jnp.uint32
     )  # uv coordinates of the end-effector
     OVERLAY_CURRENT_SETPOINT = True
     OVERLAY_END_EFFECTOR_POSITION = True
@@ -143,14 +144,18 @@ def main():
         cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     )
     print("Frame size = ", frame_width, "x", frame_height, "pixels")
-    fps = cap.get(cv2.CAP_PROP_FPS)
+
+    fps_in = cap.get(cv2.CAP_PROP_FPS)
+    # compute the output fps
+    out_fps = fps_in * SPEEDUP / COMMIT_EVERY_N_FRAMES
+    print("Incoming fps = ", fps_in, "fps", "outgoing fps = ", out_fps, "fps")
 
     # Define the codec and create VideoWriter object.The output is stored in 'outpy.avi' file.
-    # Define the fps to be equal to 10. Also frame size is passed.
+    # Define the fps to be equal. Also frame size is passed.
     out_writer = cv2.VideoWriter(
         str(overlayed_video_path),
         fourcc=cv2.VideoWriter_fourcc(*"mp4v"),
-        fps=fps * SPEEDUP,
+        fps=out_fps,
         frameSize=(frame_width, frame_height),
     )
 
@@ -167,7 +172,8 @@ def main():
         colors_bgr[key] = color_rgb[::-1].tolist()
 
     # initialize some variables
-    frame_idx = 0
+    frame_idx_in = -1
+    frame_idx_out = 0
     res = None
 
     # Read until video is completed
@@ -176,6 +182,7 @@ def main():
         ret, frame = cap.read()
 
         if ret is True:
+            frame_idx_in += 1
             video_time = cap.get(cv2.CAP_PROP_POS_MSEC) / 1e3
             time = video_time - VIDEO_REL_START_TIME
             if (
@@ -185,7 +192,11 @@ def main():
             ):
                 continue
 
-            if CALIBRATE and frame_idx == 0:
+            # skip frames
+            if frame_idx_in % COMMIT_EVERY_N_FRAMES != 0:
+                continue
+
+            if CALIBRATE and frame_idx_out == 0:
                 plt.figure(num="First frame")
                 plt.imshow(frame)
                 plt.show()
@@ -322,7 +333,7 @@ def main():
             # Press Q on keyboard to  exit
             if cv2.waitKey(25) & 0xFF == ord("q"):
                 break
-            frame_idx += 1
+            frame_idx_out += 1
 
         # Break the loop
         else:
