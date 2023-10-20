@@ -22,18 +22,18 @@ from pathlib import Path
 EXPERIMENT_NAME = "20230925_093236"  # experiment name
 
 # SHOW additional plots for calibration purposes
-CALIBRATE = True
+CALIBRATE = False
 
 # Attention: in this script we are expecting 4K footage
 if EXPERIMENT_NAME == "20230925_093236":
     # manual setpoints trajectory
-    VIDEO_REL_START_TIME = 0.0
-    DURATION = 10.0
+    VIDEO_REL_START_TIME = 2.0
+    DURATION = 110.0
     SPEEDUP = 4.0
     COMMIT_EVERY_N_FRAMES = 4
-    ORIGIN_UV = jnp.array([580, 355], dtype=jnp.uint32)  # uv coordinates of the origin
+    ORIGIN_UV = jnp.array([550, 300], dtype=jnp.uint32)  # uv coordinates of the origin
     EE_UV = jnp.array(
-        [565, 1096], dtype=jnp.uint32
+        [550, 1045], dtype=jnp.uint32
     )  # uv coordinates of the end-effector
     OVERLAY_CURRENT_SETPOINT = True
     OVERLAY_END_EFFECTOR_POSITION = True
@@ -192,15 +192,15 @@ def main():
             ):
                 continue
 
-            # skip frames
-            if frame_idx_in % COMMIT_EVERY_N_FRAMES != 0:
-                continue
-
             if CALIBRATE and frame_idx_out == 0:
                 plt.figure(num="First frame")
                 plt.imshow(frame)
                 plt.show()
                 break
+
+            # skip frames
+            if frame_idx_in % COMMIT_EVERY_N_FRAMES != 0:
+                continue
 
             # write current time to frame
             frame = cv2.putText(
@@ -242,7 +242,7 @@ def main():
                 frame = cv2.circle(
                     frame,
                     center=(pee_des_uv[0], pee_des_uv[1]),
-                    radius=22,
+                    radius=34,
                     color=colors_bgr["red"],
                     thickness=-1,
                 )
@@ -266,7 +266,7 @@ def main():
                 frame = cv2.circle(
                     frame,
                     center=(pee_uv[0], pee_uv[1]),
-                    radius=20,
+                    radius=28,
                     color=(0, 0, 0),
                     thickness=-1,
                 )
@@ -322,7 +322,7 @@ def main():
                     pts=[chiv_uv_ps.astype(onp.int32)],
                     isClosed=False,
                     color=colors_bgr["blue"],
-                    thickness=8,
+                    thickness=10,
                 )
 
             # Display the resulting frame
