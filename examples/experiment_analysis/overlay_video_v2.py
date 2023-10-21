@@ -275,7 +275,7 @@ def main():
                 f"t = {time:.2f} s",
                 org=(20, 60),
                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=1.0,
+                fontScale=1.5 * res_mult,
                 color=(255, 255, 255),
                 thickness=int(4 * res_mult),
             )
@@ -286,7 +286,7 @@ def main():
                     f"{SPEEDUP:.1f} x",
                     org=(frame_width - 100, 60),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=1.0,
+                    fontScale=1.5 * res_mult,
                     color=(255, 255, 255),
                     thickness=int(4 * res_mult),
                 )
