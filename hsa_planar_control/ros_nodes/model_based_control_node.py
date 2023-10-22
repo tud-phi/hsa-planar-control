@@ -168,12 +168,12 @@ class ModelBasedControlNode(Node):
         self.declare_parameter("control_frequency", 100.0)
         self.control_frequency = self.get_parameter("control_frequency").value
         control_dt = 1 / self.control_frequency
-        self.declare_parameter("Kp", 0.0)
-        Kp = self.get_parameter("Kp").value * jnp.eye(self.phi.shape[0])
-        self.declare_parameter("Ki", 0.0)
-        Ki = self.get_parameter("Ki").value * jnp.eye(self.phi.shape[0])
-        self.declare_parameter("Kd", 0.0)
-        Kd = self.get_parameter("Kd").value * jnp.eye(self.phi.shape[0])
+        self.declare_parameter("Kp", [0.0, 0.0, 0.0, 0.0])
+        Kp = jnp.array(self.get_parameter("Kp").value).reshape(self.phi.shape[0], -1)
+        self.declare_parameter("Ki", [0.0, 0.0, 0.0, 0.0])
+        Ki = jnp.array(self.get_parameter("Ki").value).reshape(self.phi.shape[0], -1)
+        self.declare_parameter("Kd", [0.0, 0.0, 0.0, 0.0])
+        Kd = jnp.array(self.get_parameter("Kd").value).reshape(self.phi.shape[0], -1)
         self.declare_parameter("gamma", 1.0)
         gamma = self.get_parameter("gamma").value * jnp.ones_like(self.phi)
         self.controller_state = {

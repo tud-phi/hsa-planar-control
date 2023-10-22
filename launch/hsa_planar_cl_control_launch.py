@@ -69,26 +69,31 @@ control_params = common_params | {
     "control_frequency": 40.0,
 }
 if controller_type == "basic_operational_space_pid":
-    control_params.update(
-        {
-            "Kp": 1.0e1,  # [rad/m]
-            "Ki": 1.1e2,  # [rad/(ms)]
-            "Kd": 2.5e-1,  # [rad s/m]
-        }
-    )
+    Kp = 1.0e1 * np.eye(2)  # [rad/m]
+    Ki = 1.1e2 * np.eye(2)  # [rad/(ms)]
+    Kd = 2.5e-1 * np.eye(2)  # [rad s/m]
 elif controller_type == "P_satI_D_collocated_form_plus_steady_state_actuation":
-    control_params.update(
-        {"Kp": 3.0e-1, "Ki": 5.0e-2, "Kd": 1.0e-2, "gamma": 1e2}  # [-]  # [1/s]  # [s]
-    )
+    Kp = 3.0e-1 * np.eye(2)  # [-]
+    Ki = 5.0e-2 * np.eye(2)  # [1/s]
+    Kd = 1.0e-2 * np.eye(2)  # [s]
+    control_params.update({"gamma": 1e2})
 elif (
     controller_type
     == "P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation"
 ):
-    control_params.update(
-        {"Kp": 3.0e-1, "Ki": 5.0e-2, "Kd": 1.0e-2, "gamma": 1e2}  # [-]  # [1/s]  # [s]
-    )
+    Kp = 3.0e-1 * np.eye(2)  # [-]
+    Ki = 5.0e-2 * np.eye(2)  # [1/s]
+    Kd = 1.0e-2 * np.eye(2)  # [s]
+    control_params.update({"gamma": 1e2})
 else:
     raise ValueError(f"Unknown controller type: {controller_type}")
+control_params.update(
+    {
+        "Kp": Kp.flatten().tolist(),
+        "Ki": Ki.flatten().tolist(),
+        "Kd": Kd.flatten().tolist(),
+    }
+)
 
 print("Control parameters:\n", control_params, "\n")
 

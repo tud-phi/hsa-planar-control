@@ -30,7 +30,7 @@ class CalibrationNode(Node):
     """
 
     def __init__(self):
-        super().__init__("model_based_control_node")
+        super().__init__("calibration_node")
         self.declare_parameter("configuration_topic", "configuration")
         self.configuration_sub = self.create_subscription(
             PlanarCsConfiguration,

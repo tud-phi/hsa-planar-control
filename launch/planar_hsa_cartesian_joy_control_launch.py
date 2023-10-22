@@ -14,8 +14,7 @@ RECORD = True  # Record data to rosbag file
 BAG_PATH = f"/home/mstoelzle/phd/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
 LOG_LEVEL = "warn"
 
-SYSTEM_TYPE = "robot"  # "sim" or "robot"
-JOY_SIGNAL_SOURCE = "openvibe"  # "openvibe" or "keyboard"
+PUSH_BUTTON_MODE = False  # True or False
 
 hsa_material = "fpu"
 kappa_b_eq = 0.0
@@ -59,40 +58,45 @@ if SYSTEM_TYPE == "sim":
     control_params[
         "present_planar_actuation_topic"
     ] = "/control_input"  # we neglect the actuation dynamics
+Ki = np.zeros((2, 2))
 if controller_type == "basic_operational_space_pid":
-    control_params.update(
-        {
-            "Kp": 1.0e1,  # [rad/m]
-            "Ki": 1.1e2,  # [rad/(ms)]
-            "Kd": 2.5e-1,  # [rad s/m]
-        }
-    )
+    Kp = 1.0e1 * np.eye(2)  # [rad/m]
+    Ki = 1.1e2 * np.eye(2)  # [rad/(ms)]
+    Kd = 2.5e-1 * np.eye(2)  # [Ns/m]
 elif controller_type == "operational_space_pd_plus_linearized_actuation":
     if hsa_material == "fpu":
-        control_params.update(
-            {
-                "Kp": 5e0,  # [N/m]
-                "Kd": 0e0,  # [Ns/m]
-            }
-        )
+        Kp = 5e0 * np.eye(2)  # [N/m]
+        Kd = 0e0 * np.eye(2)  # [Ns/m]
     elif hsa_material == "epu":
-        control_params.update(
-            {
-                "Kp": 2e1,  # [N/m]
-                "Kd": 1e-1,  # [Ns/m]
-            }
-        )
+        Kp = 2e1 * np.eye(2)  # [N/m]
+        Kd = 1e-1 * np.eye(2)  # [Ns/m]
     else:
         raise ValueError(f"Unknown HSA material: {hsa_material}")
 elif controller_type == "operational_space_pd_plus_nonlinear_actuation":
-    control_params.update(
-        {
-            "Kp": 1e2,  # [N/m]
-            "Kd": 1e0,  # [Ns/m]
-        }
-    )
+    if PUSH_BUTTON_MODE:
+        push_direction = 70 / 180 * np.pi  # rotation of impedance with respect to the x-axis [rad]
+        # local impedance matrix
+        Kp_local = np.diag(np.array([1e2, 1e1]))
+        Kd_local = np.diag(np.array([1e0, 1e0]))
+        # rotation matrix
+        rot = np.array([[np.cos(push_direction), -np.sin(push_direction)], [np.sin(push_direction), np.cos(push_direction)]])
+        # global impedance matrix
+        Kp = rot.T @ Kp_local @ rot
+        Kd = rot.T @ Kd_local @ rot
+        print("Kp:\n", Kp)
+        print("Kd:\n", Kd)
+    else:
+        Kp = 1e2 * np.eye(2)  # [N/m]
+        Kd = 1e0 * np.eye(2)  # [Ns/m]
 else:
     raise ValueError(f"Unknown controller type: {controller_type}")
+control_params.update(
+    {
+        "Kp": Kp.flatten().tolist(),
+        "Ki": Ki.flatten().tolist(),
+        "Kd": Kd.flatten().tolist(),
+    }
+)
 
 
 def generate_launch_description():
