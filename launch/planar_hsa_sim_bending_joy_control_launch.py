@@ -19,7 +19,7 @@ JOY_SIGNAL_SOURCE = "openvibe"  # "openvibe" or "keyboard"
 hsa_material = "fpu"
 kappa_b_eq = 0.0
 sigma_sh_eq = 0.0
-sigma_a_eq = 1.0
+sigma_a_eq = [1.0, 1.0]
 
 if hsa_material == "fpu":
     phi_max = 200 / 180 * np.pi

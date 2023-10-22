@@ -19,7 +19,7 @@ JOY_SIGNAL_SOURCE = "openvibe"  # "openvibe" or "keyboard"
 hsa_material = "fpu"
 kappa_b_eq = 0.0
 sigma_sh_eq = 0.0
-sigma_a_eq1, sigma_a_eq2 = 1.0, 1.0
+sigma_a_eq = [1.0, 1.0]
 
 if hsa_material == "fpu":
     phi_max = 200 / 180 * np.pi
@@ -32,8 +32,7 @@ common_params = {
     "hsa_material": hsa_material,
     "kappa_b_eq": kappa_b_eq,
     "sigma_sh_eq": sigma_sh_eq,
-    "sigma_a_eq1": sigma_a_eq1,
-    "sigma_a_eq2": sigma_a_eq2,
+    "sigma_a_eq1": sigma_a_eq,
     "phi_delta": np.pi / 250,  # step for each stimulation [rad]
     "phi_max": phi_max,
 }
