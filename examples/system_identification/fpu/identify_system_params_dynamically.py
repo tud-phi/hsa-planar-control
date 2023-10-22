@@ -82,6 +82,8 @@ known_params = {
     "C_S_sh": -4.75687961e-04 * ones_rod,
     # Scaling of axial stiffness with twist strain [Nm/rad]
     "C_S_a": 0.01508165 * ones_rod,
+    # rigid offset SE(2) transformation from the distal end of the platform to the end-effector
+    "chiee_off": jnp.array([0.0, 0.0, 0.0]),
 }
 
 experiment_ids = [

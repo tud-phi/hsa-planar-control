@@ -87,6 +87,8 @@ known_params = {
     "CoGpl": jnp.array(
         [0.0, -12e-3 - 5e-3]
     ),  # subtract 12 mm for the thickness of the platform
+    # rigid offset SE(2) transformation from the distal end of the platform to the end-effector
+    "chiee_off": jnp.array([0.0, 0.0, 0.0]),
 }
 
 if SYSTEM_ID_STEP == 0:

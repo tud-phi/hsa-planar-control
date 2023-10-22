@@ -95,6 +95,8 @@ known_params = {
     # subtract 12 mm for the thickness of the platform
     # the 100g weights have a length of 27mm
     "CoGpl": jnp.array([0.0, -12e-3 - 13.5e-3]),
+    # rigid offset SE(2) transformation from the distal end of the platform to the end-effector
+    "chiee_off": jnp.array([0.0, 0.0, 0.0]),
 }
 
 main_deformation_mode = None
