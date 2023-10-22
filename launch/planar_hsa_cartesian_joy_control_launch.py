@@ -10,14 +10,14 @@ import os
 # datetime object containing current date and time
 now = datetime.now()
 
-RECORD = True  # Record data to rosbag file
+RECORD = False  # Record data to rosbag file
 BAG_PATH = f"/home/mstoelzle/phd/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
 LOG_LEVEL = "warn"
 
-SYSTEM_TYPE = "robot"  # "sim" or "robot"
-JOY_SIGNAL_SOURCE = "openvibe"  # "openvibe" or "keyboard"
+SYSTEM_TYPE = "sim"  # "sim" or "robot"
+JOY_SIGNAL_SOURCE = "keyboard"  # "openvibe" or "keyboard"
 
-hsa_material = "fpu"
+hsa_material = "fpu"openvibe
 kappa_b_eq = 0.0
 sigma_sh_eq = 0.0
 sigma_a_eq = [1.0, 1.0]
@@ -87,7 +87,7 @@ elif controller_type == "operational_space_pd_plus_linearized_actuation":
 elif controller_type == "operational_space_pd_plus_nonlinear_actuation":
     control_params.update(
         {
-            "Kp": 2e2,  # [N/m]
+            "Kp": 1e2,  # [N/m]
             "Kd": 1e0,  # [Ns/m]
         }
     )

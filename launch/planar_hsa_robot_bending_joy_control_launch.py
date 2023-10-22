@@ -32,7 +32,7 @@ common_params = {
     "hsa_material": hsa_material,
     "kappa_b_eq": kappa_b_eq,
     "sigma_sh_eq": sigma_sh_eq,
-    "sigma_a_eq1": sigma_a_eq,
+    "sigma_a_eq": sigma_a_eq,
     "phi_delta": np.pi / 250,  # step for each stimulation [rad]
     "phi_max": phi_max,
 }
