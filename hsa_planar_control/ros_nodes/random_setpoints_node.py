@@ -74,19 +74,26 @@ class RandomSetpointsNode(Node):
         self.params["sigma_a_eq"] = jnp.array(sigma_a_eq).reshape(self.params["sigma_a_eq"].shape)
         # actual rest strain
         self.xi_eq = sys_helpers["rest_strains_fn"](self.params)  # rest strains
-        # external payload mass (assumed to be at end effector)
-        self.declare_parameter("payload_mass", 0.0)
-        self.params["mpl"] = self.get_parameter("payload_mass").value
+        
+        # pose offset of end-effector relative to top surface of the platform
+        self.declare_parameter("chiee_off", [0.0, 0.0, 0.0])
+        self.params["chiee_off"] = jnp.array(self.get_parameter("chiee_off").value)
+        # external payload mass
+        self.declare_parameter("mpl", 0.0)
+        self.params["mpl"] = self.get_parameter("mpl").value
+        # CoG of the payload relative to end-effector
+        self.declare_parameter("CoGpl", [0.0, 0.0])
+        self.params["CoGpl"] = jnp.array(self.get_parameter("CoGpl").value)
 
         self.declare_parameter("phi_max", self.params["phi_max"].mean().item())
         self.params["phi_max"] = self.get_parameter("phi_max").value * jnp.ones_like(
             self.params["phi_max"]
         )
 
-        # increase damping on the bending strain
-        self.params["zetab"] = 4 * self.params["zetab"]
-        self.params["zetash"] = 4 * self.params["zetash"]
-        self.params["zetaa"] = 4 * self.params["zetaa"]
+        # increase damping
+        self.params["zetab"] = 10 * self.params["zetab"]
+        self.params["zetash"] = 10 * self.params["zetash"]
+        self.params["zetaa"] = 10 * self.params["zetaa"]
 
         # specify a jitted version of the forward kinematics function
         self.forward_kinematics_end_effector_fn = jit(
@@ -94,7 +101,7 @@ class RandomSetpointsNode(Node):
         )
 
         # define residual function for static inversion optimization
-        sim_dt = 1e-4  # time step for simulation [s]
+        sim_dt = 8e-5  # time step for simulation [s]
         duration = 30.0  # duration of simulation [s]
         q0 = jnp.zeros_like(self.xi_eq.flatten())
         self.simulate_steady_state_fn = jit(

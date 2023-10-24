@@ -84,9 +84,11 @@ known_params = {
     # Scaling of shear stiffness with twist strain [Nm/rad]
     "C_S_sh": -3.85580745914e-3 * ones_rod,
     # center of origin of the payload relative to end-effector [m]
+    # subtract 12 mm for the thickness of the platform
+    # the 100g weights have a length of 27mm
     "CoGpl": jnp.array(
         [0.0, -12e-3 - 5e-3]
-    ),  # subtract 12 mm for the thickness of the platform
+    ),
     # rigid offset SE(2) transformation from the distal end of the platform to the end-effector
     "chiee_off": jnp.array([0.0, 0.0, 0.0]),
 }

@@ -40,7 +40,6 @@ hsa_material = "fpu"
 kappa_b_eq = 0.0
 sigma_sh_eq = 0.0
 sigma_a_eq = [1.0, 1.0]
-payload_mass = 0.0  # kg
 
 if hsa_material == "fpu":
     phi_max = 200 / 180 * np.pi
@@ -55,7 +54,7 @@ common_params = {
     "sigma_sh_eq": sigma_sh_eq,
     "sigma_a_eq": sigma_a_eq,
     "phi_max": phi_max,
-    "payload_mass": payload_mass,
+    "mpl": 0.0,  # payload mass [kg]
 }
 inverse_kinematics_params = common_params.copy()
 planning_params = common_params | {

@@ -14,35 +14,53 @@ RECORD = True  # Record data to rosbag file
 BAG_PATH = f"/home/mstoelzle/phd/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
 LOG_LEVEL = "warn"
 
+SYSTEM_TYPE = "robot"  # "sim" or "robot"
+HSA_MATERIAL = "fpu"
+END_EFFECTOR_ATTACHED = True  # whether our 3D printed end effector is attached to the HSA platform
+JOY_SIGNAL_SOURCE = "keyboard"  # "openvibe" or "keyboard"
 PUSH_BUTTON_MODE = False  # True or False
 
-hsa_material = "fpu"
 kappa_b_eq = 0.0
 sigma_sh_eq = 0.0
 sigma_a_eq = [1.0, 1.0]
 controller_type = "operational_space_pd_plus_nonlinear_actuation"
 
-if hsa_material == "fpu":
+if HSA_MATERIAL == "fpu":
     phi_max = 200 / 180 * np.pi
-elif hsa_material == "epu":
+elif HSA_MATERIAL == "epu":
     phi_max = 270 / 180 * np.pi
 else:
-    raise ValueError(f"Unknown HSA material: {hsa_material}")
+    raise ValueError(f"Unknown HSA material: {HSA_MATERIAL}")
+
+# if PUSH_BUTTON_MODE is active, we need to have an end-effector attached
+if PUSH_BUTTON_MODE:
+    assert END_EFFECTOR_ATTACHED, "PUSH_BUTTON_MODE requires END_EFFECTOR_ATTACHED"
 
 common_params = {
-    "hsa_material": hsa_material,
+    "hsa_material": HSA_MATERIAL,
     "kappa_b_eq": kappa_b_eq,
     "sigma_sh_eq": sigma_sh_eq,
     "sigma_a_eq": sigma_a_eq,
     "phi_max": phi_max,
+    "chiee_off": [0.0, 0.0, 0.0],  # end-effector offset [m]
+    "mpl": 0.0,  # payload mass [kg]
+    "CoGpl": [0.0, 0.0],  # payload center of gravity [m]
 }
+if END_EFFECTOR_ATTACHED:
+    # the end-effector is moved by 25mm in the y-dir relative to the top surface of the HSA platform
+    common_params["chiee_off"] = [0.0, 0.025, 0.0]
+    common_params["mpl"] = 0.018  # the end-effector attachment has a mass of 18g
+    # the end-effector attachment has a center of gravity of 3.63mm in y-dir from its base.
+    # as it has a thickness of 25mm, this is -21.37mm from the top surface (i.e., end-effector position)
+    common_params["CoGpl"] = [0.0, -0.02137]
+
 planning_params = common_params | {
     "planning_frequency": 0.025  # period of 40s between setpoints
 }
 viz_params = common_params | {"rendering_frequency": 20.0, "invert_colors": True}
 joy_control_params = common_params | {
     "cartesian_delta": 2e-4,  # step for moving the attractor [m]
-    "pee_y0": 0.11,  # initial y coordinate position of the attractor [m]
+    "pee_y0": 0.11 + common_params["chiee_off"][1],  # initial y coordinate position of the attractor [m]
 }
 control_params = common_params | {
     "controller_type": controller_type,
@@ -64,14 +82,14 @@ if controller_type == "basic_operational_space_pid":
     Ki = 1.1e2 * np.eye(2)  # [rad/(ms)]
     Kd = 2.5e-1 * np.eye(2)  # [Ns/m]
 elif controller_type == "operational_space_pd_plus_linearized_actuation":
-    if hsa_material == "fpu":
+    if HSA_MATERIAL == "fpu":
         Kp = 5e0 * np.eye(2)  # [N/m]
         Kd = 0e0 * np.eye(2)  # [Ns/m]
-    elif hsa_material == "epu":
+    elif HSA_MATERIAL == "epu":
         Kp = 2e1 * np.eye(2)  # [N/m]
         Kd = 1e-1 * np.eye(2)  # [Ns/m]
     else:
-        raise ValueError(f"Unknown HSA material: {hsa_material}")
+        raise ValueError(f"Unknown HSA material: {HSA_MATERIAL}")
 elif controller_type == "operational_space_pd_plus_nonlinear_actuation":
     if PUSH_BUTTON_MODE:
         push_direction = 70 / 180 * np.pi  # rotation of impedance with respect to the x-axis [rad]
