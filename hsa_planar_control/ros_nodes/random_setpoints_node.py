@@ -140,11 +140,11 @@ class RandomSetpointsNode(Node):
         self.rng, rng_setpoint = random.split(self.rng)
 
         # sample the actuation magnitude
-        phi_ss_mag_lb = 0.2 * jnp.ones_like(
+        phi_ss_mag_lb = 0.6 * jnp.ones_like(
             self.params["phi_max"].flatten()
         )  # lower bound for sampling [rad]
         phi_ss_mag_ub = (
-            self.params["phi_max"].flatten() - 0.2
+            self.params["phi_max"].flatten() - 0.6
         )  # upper bound for sampling [rad]
         phi_ss_mag = random.uniform(
             rng_setpoint,
