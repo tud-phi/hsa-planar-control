@@ -68,13 +68,13 @@ class CalibrationNode(Node):
 
         # pose offset of end-effector relative to top surface of the platform
         self.declare_parameter("chiee_off", [0.0, 0.0, 0.0])
-        self.params["chiee_off"] = jnp.array(self.get_parameter("chiee_off").value)
+        self.known_params["chiee_off"] = jnp.array(self.get_parameter("chiee_off").value)
         # external payload mass
         self.declare_parameter("mpl", 0.0)
-        self.params["mpl"] = self.get_parameter("mpl").value
+        self.known_params["mpl"] = self.get_parameter("mpl").value
         # CoG of the payload relative to end-effector
         self.declare_parameter("CoGpl", [0.0, 0.0])
-        self.params["CoGpl"] = jnp.array(self.get_parameter("CoGpl").value)
+        self.known_params["CoGpl"] = jnp.array(self.get_parameter("CoGpl").value)
 
         params_to_be_idd_names = ["sigma_a_eq1", "sigma_a_eq2"]
         self.Pi_syms, self.cal_a_fn, self.cal_b_fn = linear_lq_optim_problem_factory(

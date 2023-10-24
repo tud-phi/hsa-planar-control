@@ -14,10 +14,21 @@ now = datetime.now()
 
 LOG_LEVEL = "warn"
 
+HSA_MATERIAL = "fpu"
+END_EFFECTOR_ATTACHED = True  # whether our 3D printed end effector is attached to the HSA platform
+
+
 ros_params = {
-    "hsa_material": "fpu",
+    "hsa_material": HSA_MATERIAL,
     "mpl": 0.0,  # payload mass [kg]
 }
+if END_EFFECTOR_ATTACHED:
+    # the end-effector is moved by 25mm in the y-dir relative to the top surface of the HSA platform
+    ros_params["chiee_off"] = [0.0, 0.025, 0.0]
+    ros_params["mpl"] = 0.018  # the end-effector attachment has a mass of 18g
+    # the end-effector attachment has a center of gravity of 3.63mm in y-dir from its base.
+    # as it has a thickness of 25mm, this is -21.37mm from the top surface (i.e., end-effector position)
+    ros_params["CoGpl"] = [0.0, -0.02137]
 
 
 def generate_launch_description():
