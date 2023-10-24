@@ -64,13 +64,13 @@ joy_control_params = common_params | {
 }
 control_params = common_params | {
     "controller_type": controller_type,
-    "control_frequency": 50.0,
+    "control_frequency": 40.0,
     "setpoint_topic": "/attractor",
 }
 sim_params = None
 if SYSTEM_TYPE == "sim":
     sim_params = common_params | {
-        "sim_dt": 4e-5,
+        "sim_dt": 1e-4,
         "control_frequency": control_params["control_frequency"],
     }
     control_params[
