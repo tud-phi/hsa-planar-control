@@ -17,11 +17,12 @@ def get_operational_workspace_boundaries(
         pee_ps_min: points of the lower boundary of the operational workspace as shape (N, 2)
         pee_ps_max: points of the upper boundary of the operational workspace as shape (N, 2)
     """
+    default_num_samples = 100
     if hsa_material == "fpu":
-        if x_ps is None:
-            x_ps = jnp.linspace(-0.04471130921323639, 0.04471130921323639, num=50)
-
         if end_effector_attached:
+            if x_ps is None:
+                x_ps = jnp.linspace(-0.05967431849785901, 0.05967434018023446, num=default_num_samples)
+
             # coefficients of polynomial fit of lower (i.e., min) boundary of operational workspace
             pmin = jnp.array(
                 [
@@ -32,7 +33,8 @@ def get_operational_workspace_boundaries(
                     -2.00943780e22,
                     -7.22174256e15,
                     8.95179001e19,
-                    3.09495559e13 - 2.45411442e17,
+                    3.09495559e13,
+                    - 2.45411442e17,
                     -7.88955771e10,
                     4.27766480e14,
                     1.22750784e08,
@@ -74,6 +76,9 @@ def get_operational_workspace_boundaries(
                 ]
             )
         else:
+            if x_ps is None:
+                x_ps = jnp.linspace(-0.04471130921323639, 0.04471130921323639, num=default_num_samples)
+
             # coefficients of polynomial fit of lower (i.e., min) boundary of operational workspace
             pmin = jnp.array(
                 [
