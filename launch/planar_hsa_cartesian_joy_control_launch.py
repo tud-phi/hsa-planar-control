@@ -58,7 +58,7 @@ if END_EFFECTOR_ATTACHED:
 planning_params = common_params | {
     "planning_frequency": 0.025  # period of 40s between setpoints
 }
-viz_params = common_params | {"rendering_frequency": 20.0, "invert_colors": True}
+viz_params = common_params | {"rendering_frequency": 20.0, "invert_colors": True, "draw_operational_workspace": True}
 joy_control_params = common_params | {
     "cartesian_delta": 2e-4,  # step for moving the attractor [m]
     "pee_y0": 0.11 + common_params["chiee_off"][1],  # initial y coordinate position of the attractor [m]
