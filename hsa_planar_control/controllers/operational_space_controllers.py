@@ -365,7 +365,6 @@ def operational_space_pd_plus_nonlinear_actuation(
         "f": f_des,
         "tau": tau_des,
         "actuation_optimality_error": optimality_error,
-        "Lambda": Lambda[:, :2],
     }
 
     return phi_des, controller_info
@@ -449,7 +448,6 @@ def operational_space_impedance_control_nonlinear_actuation(
         "f": f_des,
         "tau": tau_des,
         "actuation_optimality_error": optimality_error,
-        "Lambda": Lambda[:, :2],
     }
 
     return phi_des, controller_info
