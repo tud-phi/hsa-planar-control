@@ -18,6 +18,7 @@ SYSTEM_TYPE = "robot"  # "sim" or "robot"
 HSA_MATERIAL = "fpu"
 END_EFFECTOR_ATTACHED = True  # whether our 3D printed end effector is attached to the HSA platform
 JOY_SIGNAL_SOURCE = "keyboard"  # "openvibe" or "keyboard"
+JOY_CONTROL_MODE = "cartesian"  # "bending", "cartesian" or "cartesian_switch"
 PUSH_BUTTON_MODE = False  # True or False
 
 kappa_b_eq = 0.0
@@ -234,24 +235,26 @@ def generate_launch_description():
     else:
         raise ValueError(f"Unknown system type {SYSTEM_TYPE}.")
 
+    joylike_operation_params = {
+        "joy_control_mode": JOY_CONTROL_MODE,
+        "host": "145.94.210.26"
+    }
     if JOY_SIGNAL_SOURCE == "openvibe":
         launch_actions.append(
             Node(
                 package="joylike_operation",
                 executable="openvibe_stimulation_to_joy_node",
                 name="openvibe_teleop",
-                parameters=[
-                    {"joy_control_mode": "cartesian", "host": "145.94.234.212"}
-                ],
+                parameters=[joylike_operation_params],
                 arguments=["--ros-args", "--log-level", LOG_LEVEL],
             ),
         )
     elif JOY_SIGNAL_SOURCE == "keyboard":
-        keyboard2joy_filepath = os.path.join(
+        joylike_operation_params['config_filepath'] = str(os.path.join(
             get_package_share_directory("joylike_operation"),
             "config",
-            "keystroke2joy_cartesian.yaml",
-        )
+            f"keystroke2joy_{joylike_operation_params['joy_control_mode']}.yaml",
+        ))
         launch_actions.extend(
             [
                 Node(
@@ -263,7 +266,7 @@ def generate_launch_description():
                     package="joylike_operation",
                     executable="keyboard_to_joy_node",
                     name="keyboard_teleop",
-                    parameters=[{"config_filepath": str(keyboard2joy_filepath)}],
+                    parameters=[joylike_operation_params],
                     arguments=["--ros-args", "--log-level", LOG_LEVEL],
                 ),
             ]
