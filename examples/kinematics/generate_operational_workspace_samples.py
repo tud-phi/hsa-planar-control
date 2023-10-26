@@ -6,7 +6,10 @@ jax_config.update("jax_enable_x64", True)  # double precision
 from jax import Array, jit, random, vmap
 import jax.numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import generate_base_params_for_fpu, generate_base_params_for_epu
+from jsrm.parameters.hsa_params import (
+    generate_base_params_for_fpu,
+    generate_base_params_for_epu,
+)
 from jsrm.systems import planar_hsa
 from pathlib import Path
 
@@ -34,21 +37,26 @@ if HSA_MATERIAL == "fpu":
         num_segments=num_segments,
         num_rods_per_segment=num_rods_per_segment,
         rod_multiplier=2,
-        end_effector_attached=END_EFFECTOR_ATTACHED
+        end_effector_attached=END_EFFECTOR_ATTACHED,
     )
 elif HSA_MATERIAL == "epu":
     params = generate_base_params_for_epu(
         num_segments=num_segments,
         num_rods_per_segment=num_rods_per_segment,
         rod_multiplier=2,
-        end_effector_attached=END_EFFECTOR_ATTACHED
+        end_effector_attached=END_EFFECTOR_ATTACHED,
     )
 else:
     raise ValueError(f"Unknown hsa_material: {HSA_MATERIAL}")
 num_segments = params["l"].shape[0]
 
-sim_dt = 1e-3  # time step for simulation [s]
-duration = 5.0  # duration of simulation [s]
+# slightly increase damping
+params["zetab"] = 5 * params["zetab"]
+params["zetash"] = 5 * params["zetash"]
+params["zetaa"] = 5 * params["zetaa"]
+
+sim_dt = 7e-5  # time step for simulation [s]
+duration = 2.0  # duration of simulation [s]
 q0 = jnp.zeros((3 * num_segments,))
 
 if __name__ == "__main__":
@@ -88,6 +96,12 @@ if __name__ == "__main__":
     max_actuation_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(
         max_actuation_samples["q_ss"]
     )
+    if jnp.isnan(max_actuation_samples["q_ss"]).sum() > 0:
+        raise ValueError("max actuation samples contain nans")
+    print(
+        "max actuation samples: q_d at steady state averaged over samples",
+        max_actuation_samples["q_d_ss"].mean(axis=0),
+    )
 
     # generate min actuation samples
     u = jnp.linspace(-phi_max.mean(), phi_max.mean(), 101)
@@ -100,12 +114,18 @@ if __name__ == "__main__":
     min_actuation_samples["chiee_ss"] = batched_forward_kinematics_end_effector_fn(
         min_actuation_samples["q_ss"]
     )
+    if jnp.isnan(min_actuation_samples["q_ss"]).sum() > 0:
+        raise ValueError("min actuation samples contain nans")
+    print(
+        "min actuation samples: q_d at steady state averaged over samples",
+        max_actuation_samples["q_d_ss"].mean(axis=0),
+    )
 
     # generate random samples for plotting colors of axial strain
     rng, sample_key = random.split(rng)
     phi_ss = random.uniform(
         sample_key,
-        (10000, phi_max.shape[0]),
+        (5000, phi_max.shape[0]),
         minval=0.0,
         maxval=phi_max,
     )
