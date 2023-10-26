@@ -420,10 +420,16 @@ def operational_space_impedance_control_nonlinear_actuation(
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
     Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
+    # compute the coriolis matrix in operational space
+    eta = Lambda @ (Jee @ jnp.linalg.inv(B) @ C - Jee_d) @ JeeB_pinv
+
     # desired force in operational space with respect to x, y and theta
     f_des = (
         Kp @ e_pee
         - Kd @ pee_d
+        # cancel the corioli coupling between the operational space and the null-space
+        # decouples the Cartesian dynamics from the residual null-space dynamics
+        + eta[:2, 2:3] @ chiee_d[2:3]
         # cancel for static elastic and gravitational forces directly in operational space
         # + JB_pinv.T[:2, :] @ (G + K)
         # cancel damping in operational space so that we can shape it ourselves
