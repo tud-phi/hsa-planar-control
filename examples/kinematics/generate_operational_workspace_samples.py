@@ -6,7 +6,7 @@ jax_config.update("jax_enable_x64", True)  # double precision
 from jax import Array, jit, random, vmap
 import jax.numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL, PARAMS_EPU_CONTROL
+from jsrm.parameters.hsa_params import generate_base_params_for_fpu, generate_base_params_for_epu
 from jsrm.systems import planar_hsa
 from pathlib import Path
 
@@ -28,10 +28,21 @@ rng = random.PRNGKey(seed)
 
 # set parameters
 HSA_MATERIAL = "fpu"
+END_EFFECTOR_ATTACHED = True
 if HSA_MATERIAL == "fpu":
-    params = PARAMS_FPU_CONTROL.copy()
+    params = generate_base_params_for_fpu(
+        num_segments=num_segments,
+        num_rods_per_segment=num_rods_per_segment,
+        rod_multiplier=2,
+        end_effector_attached=END_EFFECTOR_ATTACHED
+    )
 elif HSA_MATERIAL == "epu":
-    params = PARAMS_EPU_CONTROL.copy()
+    params = generate_base_params_for_epu(
+        num_segments=num_segments,
+        num_rods_per_segment=num_rods_per_segment,
+        rod_multiplier=2,
+        end_effector_attached=END_EFFECTOR_ATTACHED
+    )
 else:
     raise ValueError(f"Unknown hsa_material: {HSA_MATERIAL}")
 num_segments = params["l"].shape[0]
@@ -114,7 +125,9 @@ if __name__ == "__main__":
 
     data_folder = Path(__file__).parent.parent.parent / "data" / "kinematics"
     data_folder.mkdir(parents=True, exist_ok=True)
-    with open(
-        str(data_folder / f"operational_workspace_{HSA_MATERIAL}.dill"), "wb"
-    ) as f:
+    if END_EFFECTOR_ATTACHED:
+        sample_filepath = data_folder / f"operational_workspace_{HSA_MATERIAL}_ee.dill"
+    else:
+        sample_filepath = data_folder / f"operational_workspace_{HSA_MATERIAL}.dill"
+    with open(str(sample_filepath), "wb") as f:
         dill.dump(operational_workspace_samples, f)

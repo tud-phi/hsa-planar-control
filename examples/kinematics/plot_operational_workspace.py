@@ -6,7 +6,7 @@ jax_config.update("jax_platform_name", "cpu")  # use CPU
 from jax import Array, jit, vmap
 import jax.numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL, PARAMS_EPU_CONTROL
+from jsrm.parameters.hsa_params import generate_base_params_for_fpu, generate_base_params_for_epu
 from jsrm.systems import planar_hsa
 import matplotlib
 
@@ -36,13 +36,24 @@ sym_exp_filepath = (
 )
 
 HSA_MATERIAL = "fpu"
+END_EFFECTOR_ATTACHED = True
 SHOW_ROBOT_CONFIGS = True
 
 # set parameters
 if HSA_MATERIAL == "fpu":
-    params = PARAMS_FPU_CONTROL.copy()
+    params = generate_base_params_for_fpu(
+        num_segments=num_segments,
+        num_rods_per_segment=num_rods_per_segment,
+        rod_multiplier=2,
+        end_effector_attached=END_EFFECTOR_ATTACHED
+    )
 elif HSA_MATERIAL == "epu":
-    params = PARAMS_EPU_CONTROL.copy()
+    params = generate_base_params_for_epu(
+        num_segments=num_segments,
+        num_rods_per_segment=num_rods_per_segment,
+        rod_multiplier=2,
+        end_effector_attached=END_EFFECTOR_ATTACHED
+    )
 else:
     raise ValueError(f"Unknown hsa_material: {HSA_MATERIAL}")
 
@@ -70,13 +81,13 @@ if __name__ == "__main__":
         out_axes=0,
     )
 
+    data_folder = Path(__file__).parent.parent.parent / "data" / "kinematics"
+    if END_EFFECTOR_ATTACHED:
+        sample_filepath = data_folder / f"operational_workspace_{HSA_MATERIAL}_ee.dill"
+    else:
+        sample_filepath = data_folder / f"operational_workspace_{HSA_MATERIAL}.dill"
     with open(
-        str(
-            Path(__file__).parent.parent.parent
-            / "data"
-            / "kinematics"
-            / f"operational_workspace_{HSA_MATERIAL}.dill"
-        ),
+        str(sample_filepath),
         "rb",
     ) as f:
         data = dill.load(f)
