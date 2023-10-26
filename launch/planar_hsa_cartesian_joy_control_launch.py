@@ -24,7 +24,7 @@ PUSH_BUTTON_MODE = False  # True or False
 kappa_b_eq = 0.0
 sigma_sh_eq = 0.0
 sigma_a_eq = [1.0, 1.0]
-controller_type = "operational_space_pd_plus_nonlinear_actuation"
+controller_type = "operational_space_impedance_control_nonlinear_actuation"
 
 if HSA_MATERIAL == "fpu":
     phi_max = 200 / 180 * np.pi
@@ -91,7 +91,7 @@ elif controller_type == "operational_space_pd_plus_linearized_actuation":
         Kd = 1e-1 * np.eye(2)  # [Ns/m]
     else:
         raise ValueError(f"Unknown HSA material: {HSA_MATERIAL}")
-elif controller_type == "operational_space_pd_plus_nonlinear_actuation":
+elif controller_type in ["operational_space_pd_plus_nonlinear_actuation", "operational_space_impedance_control_nonlinear_actuation"]:
     if PUSH_BUTTON_MODE:
         push_direction = 90 / 180 * np.pi  # rotation of impedance with respect to the x-axis [rad]
         # local impedance matrix
@@ -105,8 +105,12 @@ elif controller_type == "operational_space_pd_plus_nonlinear_actuation":
         print("Kp:\n", Kp)
         print("Kd:\n", Kd)
     else:
-        Kp = 1e2 * np.eye(2)  # [N/m]
+        Kp = 2e2 * np.eye(2)  # [N/m]
         Kd = 1e0 * np.eye(2)  # [Ns/m]
+
+    if controller_type == "operational_space_impedance_control_nonlinear_actuation":
+        # here, we cancel the natural damping. Therefore, we need to increase the Cartesian damping to make things stable
+        Kd = 2.0 * Kd
 else:
     raise ValueError(f"Unknown controller type: {controller_type}")
 control_params.update(

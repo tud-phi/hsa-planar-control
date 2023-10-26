@@ -241,11 +241,15 @@ def operational_space_pd_plus_linearized_actuation(
     **kwargs,
 ) -> Tuple[Array, Dict[str, Array]]:
     """
-    Implement an impedance controller in operational space with linearized actuation.
+    Implement a PD+ in operational space with linearized actuation.
     References:
         - "A unified approach for motion and force control of robot manipulators: The operational space formulation"
             by Oussama Khatib
-        - "Exact task execution in highly under-actuated soft limbs" by Della Santina et al.
+        - Paden, B., & Panja, R. (1988). Globally asymptotically stable ‘PD+’controller for robot manipulators. 
+            International Journal of Control, 47(6), 1697-1712.
+        - Ott, Christian. Cartesian impedance control of redundant and flexible-joint robots. Springer, 2008.
+        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment." 
+            The International Journal of Robotics Research 39.4 (2020): 490-513.
     Args:
         t: time [s]
         chiee: current end effector pose of shape (3, )
@@ -313,11 +317,15 @@ def operational_space_pd_plus_nonlinear_actuation(
     **kwargs,
 ) -> Tuple[Array, Dict[str, Array]]:
     """
-    Implement an impedance controller in operational space with the nonlinear actuation solved via optimization.
+    Implement a PD+ in operational space with the nonlinear actuation solved via optimization.
     References:
         - "A unified approach for motion and force control of robot manipulators: The operational space formulation"
             by Oussama Khatib
-        - "Exact task execution in highly under-actuated soft limbs" by Della Santina et al.
+        - Paden, B., & Panja, R. (1988). Globally asymptotically stable ‘PD+’controller for robot manipulators. 
+            International Journal of Control, 47(6), 1697-1712.
+        - Ott, Christian. Cartesian impedance control of redundant and flexible-joint robots. Springer, 2008.
+        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment." 
+            The International Journal of Robotics Research 39.4 (2020): 490-513.
     Args:
         t: time [s]
         chiee: current end effector pose of shape (3, )
@@ -351,13 +359,102 @@ def operational_space_pd_plus_nonlinear_actuation(
     f_des = (
         Kp @ e_pee
         - Kd @ pee_d
-        # compensate for static elastic and gravitational forces directly in operational space
-        # + JB_pinv.T @ (G + K)
+        # cancel for static elastic and gravitational forces directly in operational space
+        # + JB_pinv.T[:2, :] @ (G + K)
     )
 
     # project end-effector force into configuration space
-    # and compensate for static elastic and gravitational forces
+    # and cancel static elastic and gravitational forces
     tau_des = Jee.T[:, :2] @ f_des + G + K
+
+    (
+        phi_des,
+        optimality_error,
+    ) = map_generalized_torques_to_actuation_with_nonlinear_optimization(
+        dynamical_matrices_fn, q, tau_des, phi0=phi
+    )
+
+    controller_info = {
+        "e_pee": e_pee,
+        "f": f_des,
+        "tau": tau_des,
+        "actuation_optimality_error": optimality_error,
+        "Lambda": Lambda[:, :2],
+    }
+
+    return phi_des, controller_info
+
+
+def operational_space_impedance_control_nonlinear_actuation(
+    t: Array,
+    chiee: Array,
+    chiee_d: Array,
+    q: Array,
+    q_d: Array,
+    phi: Array,
+    *args,
+    jacobian_end_effector_fn,
+    dynamical_matrices_fn: Callable,
+    operational_space_dynamical_matrices_fn: Callable,
+    pee_des: Array,
+    Kp: Array,
+    Kd: Array,
+    **kwargs,
+) -> Tuple[Array, Dict[str, Array]]:
+    """
+    Implement an impedance controller in operational space with the nonlinear actuation solved via optimization.
+    References:
+        - Hogan, N.: Impedance control: An approach to manipulation, part I - theory. ASME Journal of Dynamic Systems, Measurement, and Control 107,
+            1–7 (1985)
+        - "A unified approach for motion and force control of robot manipulators: The operational space formulation"
+            by Oussama Khatib
+        - Ott, Christian. Cartesian impedance control of redundant and flexible-joint robots. Springer, 2008.
+        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment." 
+            The International Journal of Robotics Research 39.4 (2020): 490-513.
+    Args:
+        t: time [s]
+        chiee: current end effector pose of shape (3, )
+        chiee_d: current end effector velocity of shape (3, )
+        q: configuration vector of shape (n_q, )
+        q_d: configuration velocity vector of shape (n_q, )
+        phi: current motor positions vector of shape (n_phi, )
+        jacobian_end_effector_fn: function that returns the Jacobian of the end effector of shape (3, n_q)
+        dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
+            Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, JB_pinv
+        pee_des: desired Cartesian-space position for end-effector of shape (2, )
+        Kp: proportional gain matrix of shape (2, 2)
+        Kd: derivative gain matrix of shape (2, 2)
+    Returns:
+        u: input to the system. this is an array of shape (n_phi) with motor positions / twist angles of the proximal end of the rods
+        controller_info: dictionary with information about intermediate computations
+    """
+    # jacobian of the end-effector mapping velocities from configuration space to operational space
+    Jee = jacobian_end_effector_fn(q)
+
+    # current position and velocity of end-effector
+    pee, pee_d = chiee[:2], chiee_d[:2]
+    # error in operational space
+    e_pee = pee_des - pee
+
+    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
+    Lambda, nu, JB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+
+    # desired force in operational space with respect to x, y and theta
+    f_des = (
+        Kp @ e_pee
+        - Kd @ pee_d
+        # cancel for static elastic and gravitational forces directly in operational space
+        # + JB_pinv.T[:2, :] @ (G + K)
+        # cancel damping in operational space so that we can shape it ourselves
+        + JB_pinv.T[:2, :] @ (D @ q_d)
+    )
+
+    # project end-effector force into configuration space
+    # and cancel static elastic and gravitational forces
+    tau_des = Jee.T[:, :2] @ f_des + G + K
+    # instead, we could also directly cancel the damping in the configuration space
+    # tau_des = Jee.T[:, :2] @ f_des + G + K + D @ q_d
 
     (
         phi_des,
