@@ -269,9 +269,6 @@ class ModelBasedControlNode(Node):
             self.control_fn = jit(
                 partial(
                     control_fn,
-                    jacobian_end_effector_fn=partial(
-                        jacobian_end_effector_fn, self.params
-                    ),
                     dynamical_matrices_fn=partial(dynamical_matrices_fn, self.params),
                     operational_space_dynamical_matrices_fn=partial(
                         sys_helpers["operational_space_dynamical_matrices_fn"],

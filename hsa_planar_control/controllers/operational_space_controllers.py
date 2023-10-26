@@ -139,7 +139,6 @@ def operational_space_computed_torque(
     phi: Array,
     *args,
     forward_kinematics_end_effector_fn: Callable,
-    jacobian_end_effector_fn,
     dynamical_matrices_fn: Callable,
     operational_space_dynamical_matrices_fn: Callable,
     pee_des: Array,
@@ -163,7 +162,7 @@ def operational_space_computed_torque(
         jacobian_end_effector_fn: function that returns the Jacobian of the end effector of shape (3, n_q)
         dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
             Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
-        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, JB_pinv
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, Jee, Jee_d, JeeB_pinv
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
@@ -178,25 +177,22 @@ def operational_space_computed_torque(
                 the generalized torques
         controller_info: dictionary with information about intermediate computations
     """
-    # jacobian of the end-effector mapping velocities from configuration space to operational space
+    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
+    Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+
+    # current end-effector pose
     chiee = forward_kinematics_end_effector_fn(q)
-    Jee = jacobian_end_effector_fn(q)
 
     # current position of end-effector
     pee = chiee[:2]
     # current velocity of end-effector
     p_d_ee = Jee[:2, :] @ q_d
 
-    # debug.print("pee = {pee}, p_d_ee={p_d_ee}", pee=pee, p_d_ee=p_d_ee)
-
-    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
-    Lambda, nu, JB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
-
     # desired force in operational space of shape (3, )
     f_des = (
         Lambda[:, :2] @ (Kp @ (pee_des - pee) - Kd @ p_d_ee)
         + nu
-        + JB_pinv.T @ (G + K + D @ q_d)
+        + JeeB_pinv.T @ (G + K + D @ q_d)
     )
 
     # project end-effector force into configuration space
@@ -232,7 +228,6 @@ def operational_space_pd_plus_linearized_actuation(
     q_d: Array,
     phi: Array,
     *args,
-    jacobian_end_effector_fn,
     dynamical_matrices_fn: Callable,
     operational_space_dynamical_matrices_fn: Callable,
     pee_des: Array,
@@ -257,10 +252,9 @@ def operational_space_pd_plus_linearized_actuation(
         q: configuration vector of shape (n_q, )
         q_d: configuration velocity vector of shape (n_q, )
         phi: current motor positions vector of shape (n_phi, )
-        jacobian_end_effector_fn: function that returns the Jacobian of the end effector of shape (3, n_q)
         dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
             Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
-        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, JB_pinv
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, Jee, Jee_d, JeeB_pinv
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
@@ -268,16 +262,13 @@ def operational_space_pd_plus_linearized_actuation(
         u: input to the system. this is an array of shape (n_phi) with motor positions / twist angles of the proximal end of the rods
         controller_info: dictionary with information about intermediate computations
     """
-    # jacobian of the end-effector mapping velocities from configuration space to operational space
-    Jee = jacobian_end_effector_fn(q)
-
     # current position and velocity of end-effector
     pee, pee_d = chiee[:2], chiee_d[:2]
     # error in operational space
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
-    Lambda, nu, JB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
@@ -308,7 +299,6 @@ def operational_space_pd_plus_nonlinear_actuation(
     q_d: Array,
     phi: Array,
     *args,
-    jacobian_end_effector_fn,
     dynamical_matrices_fn: Callable,
     operational_space_dynamical_matrices_fn: Callable,
     pee_des: Array,
@@ -333,10 +323,9 @@ def operational_space_pd_plus_nonlinear_actuation(
         q: configuration vector of shape (n_q, )
         q_d: configuration velocity vector of shape (n_q, )
         phi: current motor positions vector of shape (n_phi, )
-        jacobian_end_effector_fn: function that returns the Jacobian of the end effector of shape (3, n_q)
         dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
             Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
-        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, JB_pinv
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, Jee, Jee_d, JeeB_pinv
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
@@ -344,16 +333,13 @@ def operational_space_pd_plus_nonlinear_actuation(
         u: input to the system. this is an array of shape (n_phi) with motor positions / twist angles of the proximal end of the rods
         controller_info: dictionary with information about intermediate computations
     """
-    # jacobian of the end-effector mapping velocities from configuration space to operational space
-    Jee = jacobian_end_effector_fn(q)
-
     # current position and velocity of end-effector
     pee, pee_d = chiee[:2], chiee_d[:2]
     # error in operational space
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
-    Lambda, nu, JB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
@@ -393,7 +379,6 @@ def operational_space_impedance_control_nonlinear_actuation(
     q_d: Array,
     phi: Array,
     *args,
-    jacobian_end_effector_fn,
     dynamical_matrices_fn: Callable,
     operational_space_dynamical_matrices_fn: Callable,
     pee_des: Array,
@@ -418,10 +403,9 @@ def operational_space_impedance_control_nonlinear_actuation(
         q: configuration vector of shape (n_q, )
         q_d: configuration velocity vector of shape (n_q, )
         phi: current motor positions vector of shape (n_phi, )
-        jacobian_end_effector_fn: function that returns the Jacobian of the end effector of shape (3, n_q)
         dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
             Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
-        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, JB_pinv
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, Jee, Jee_d, JeeB_pinv
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
@@ -429,16 +413,13 @@ def operational_space_impedance_control_nonlinear_actuation(
         u: input to the system. this is an array of shape (n_phi) with motor positions / twist angles of the proximal end of the rods
         controller_info: dictionary with information about intermediate computations
     """
-    # jacobian of the end-effector mapping velocities from configuration space to operational space
-    Jee = jacobian_end_effector_fn(q)
-
     # current position and velocity of end-effector
     pee, pee_d = chiee[:2], chiee_d[:2]
     # error in operational space
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
-    Lambda, nu, JB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
@@ -447,7 +428,7 @@ def operational_space_impedance_control_nonlinear_actuation(
         # cancel for static elastic and gravitational forces directly in operational space
         # + JB_pinv.T[:2, :] @ (G + K)
         # cancel damping in operational space so that we can shape it ourselves
-        + JB_pinv.T[:2, :] @ (D @ q_d)
+        + JeeB_pinv.T[:2, :] @ (D @ q_d)
     )
 
     # project end-effector force into configuration space

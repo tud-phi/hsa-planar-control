@@ -18,9 +18,6 @@ from hsa_planar_control.controllers.configuration_space_controllers import (
     pd_plus_steady_state_actuation,
     P_satI_D_collocated_form_plus_steady_state_actuation_for_constant_stiffness,
 )
-from hsa_planar_control.controllers.operational_space_controllers import (
-    operational_space_computed_torque,
-)
 from hsa_planar_control.planning.static_planning import (
     static_inversion_factory,
     statically_invert_actuation_to_task_space_scipy_rootfinding,
