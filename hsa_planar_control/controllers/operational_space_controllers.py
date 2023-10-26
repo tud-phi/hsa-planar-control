@@ -245,10 +245,10 @@ def operational_space_pd_plus_linearized_actuation(
     References:
         - "A unified approach for motion and force control of robot manipulators: The operational space formulation"
             by Oussama Khatib
-        - Paden, B., & Panja, R. (1988). Globally asymptotically stable ‘PD+’controller for robot manipulators. 
+        - Paden, B., & Panja, R. (1988). Globally asymptotically stable ‘PD+’controller for robot manipulators.
             International Journal of Control, 47(6), 1697-1712.
         - Ott, Christian. Cartesian impedance control of redundant and flexible-joint robots. Springer, 2008.
-        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment." 
+        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment."
             The International Journal of Robotics Research 39.4 (2020): 490-513.
     Args:
         t: time [s]
@@ -321,10 +321,10 @@ def operational_space_pd_plus_nonlinear_actuation(
     References:
         - "A unified approach for motion and force control of robot manipulators: The operational space formulation"
             by Oussama Khatib
-        - Paden, B., & Panja, R. (1988). Globally asymptotically stable ‘PD+’controller for robot manipulators. 
+        - Paden, B., & Panja, R. (1988). Globally asymptotically stable ‘PD+’controller for robot manipulators.
             International Journal of Control, 47(6), 1697-1712.
         - Ott, Christian. Cartesian impedance control of redundant and flexible-joint robots. Springer, 2008.
-        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment." 
+        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment."
             The International Journal of Robotics Research 39.4 (2020): 490-513.
     Args:
         t: time [s]
@@ -409,7 +409,7 @@ def operational_space_impedance_control_nonlinear_actuation(
         - "A unified approach for motion and force control of robot manipulators: The operational space formulation"
             by Oussama Khatib
         - Ott, Christian. Cartesian impedance control of redundant and flexible-joint robots. Springer, 2008.
-        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment." 
+        - Della Santina, Cosimo, et al. "Model-based dynamic feedback control of a planar soft robot: trajectory tracking and interaction with the environment."
             The International Journal of Robotics Research 39.4 (2020): 490-513.
     Args:
         t: time [s]

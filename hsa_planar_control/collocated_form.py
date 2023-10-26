@@ -150,38 +150,38 @@ def mapping_into_collocated_form_factory(
                 * (
                     2 * C_S_a1 * C_varepsilon1 * h1 * phi1 * roff1 * xi1
                     + 2 * C_S_a1 * C_varepsilon1 * h1 * phi1 * xi3
-                    - C_S_a1 * l1 * roff1**2 * xi1**2 / 2
+                    - C_S_a1 * l1 * roff1 ** 2 * xi1 ** 2 / 2
                     + C_S_a1 * l1 * roff1 * sigma_a_eq1 * xi1
                     - C_S_a1 * l1 * roff1 * xi1 * xi3
                     + C_S_a1 * l1 * sigma_a_eq1 * xi3
-                    - C_S_a1 * l1 * xi3**2 / 2
+                    - C_S_a1 * l1 * xi3 ** 2 / 2
                     + C_S_b1 * l1 * kappa_b_eq1 * xi1
-                    - C_S_b1 * l1 * xi1**2 / 2
+                    - C_S_b1 * l1 * xi1 ** 2 / 2
                     + C_S_sh1 * l1 * sigma_sh_eq1 * xi2
-                    - C_S_sh1 * l1 * xi2**2 / 2
+                    - C_S_sh1 * l1 * xi2 ** 2 / 2
                     + C_varepsilon1 * S_a_hat1 * l1 * roff1 * xi1
                     + C_varepsilon1 * S_a_hat1 * l1 * xi3
                 )
-                / l1**2
+                / l1 ** 2
             ],
             [
                 h2
                 * (
                     2 * C_S_a2 * C_varepsilon2 * h2 * phi2 * roff2 * xi1
                     + 2 * C_S_a2 * C_varepsilon2 * h2 * phi2 * xi3
-                    - C_S_a2 * l1 * roff2**2 * xi1**2 / 2
+                    - C_S_a2 * l1 * roff2 ** 2 * xi1 ** 2 / 2
                     + C_S_a2 * l1 * roff2 * sigma_a_eq2 * xi1
                     - C_S_a2 * l1 * roff2 * xi1 * xi3
                     + C_S_a2 * l1 * sigma_a_eq2 * xi3
-                    - C_S_a2 * l1 * xi3**2 / 2
+                    - C_S_a2 * l1 * xi3 ** 2 / 2
                     + C_S_b2 * l1 * kappa_b_eq2 * xi1
-                    - C_S_b2 * l1 * xi1**2 / 2
+                    - C_S_b2 * l1 * xi1 ** 2 / 2
                     + C_S_sh2 * l1 * sigma_sh_eq2 * xi2
-                    - C_S_sh2 * l1 * xi2**2 / 2
+                    - C_S_sh2 * l1 * xi2 ** 2 / 2
                     + C_varepsilon2 * S_a_hat2 * l1 * roff2 * xi1
                     + C_varepsilon2 * S_a_hat2 * l1 * xi3
                 )
-                / l1**2
+                / l1 ** 2
             ],
             [xi2],  # use the shear strain as the unactuated variable
         ]

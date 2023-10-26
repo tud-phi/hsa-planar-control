@@ -235,12 +235,7 @@ def optimize_with_closed_form_linear_lq(
             f"The system parameters are not identifiable."
         )
 
-    cal_B = vmap(
-        cal_b_fn,
-        in_axes=(0, 0, 0, 0),
-        axis_name="mpl",
-        out_axes=0,
-    )(
+    cal_B = vmap(cal_b_fn, in_axes=(0, 0, 0, 0), axis_name="mpl", out_axes=0,)(
         data_ts["xi_ts"],
         data_ts["xi_d_ts"],
         data_ts["xi_dd_ts"],

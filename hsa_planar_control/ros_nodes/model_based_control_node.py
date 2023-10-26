@@ -33,7 +33,7 @@ from hsa_planar_control.controllers.operational_space_controllers import (
     basic_operational_space_pid,
     operational_space_pd_plus_linearized_actuation,
     operational_space_pd_plus_nonlinear_actuation,
-    operational_space_impedance_control_nonlinear_actuation
+    operational_space_impedance_control_nonlinear_actuation,
 )
 from hsa_planar_control.controllers.saturation import saturate_control_inputs
 
@@ -98,7 +98,9 @@ class ModelBasedControlNode(Node):
         # parameters for specifying different rest strains
         self.declare_parameter("kappa_b_eq", self.params["kappa_b_eq"].mean().item())
         self.declare_parameter("sigma_sh_eq", self.params["sigma_sh_eq"].mean().item())
-        self.declare_parameter("sigma_a_eq", self.params["sigma_a_eq"].flatten().tolist())
+        self.declare_parameter(
+            "sigma_a_eq", self.params["sigma_a_eq"].flatten().tolist()
+        )
         kappa_b_eq = self.get_parameter("kappa_b_eq").value
         sigma_sh_eq = self.get_parameter("sigma_sh_eq").value
         sigma_a_eq = self.get_parameter("sigma_a_eq").value
@@ -108,7 +110,9 @@ class ModelBasedControlNode(Node):
         self.params["sigma_sh_eq"] = sigma_sh_eq * jnp.ones_like(
             self.params["sigma_sh_eq"]
         )
-        self.params["sigma_a_eq"] = jnp.array(sigma_a_eq).reshape(self.params["sigma_a_eq"].shape)
+        self.params["sigma_a_eq"] = jnp.array(sigma_a_eq).reshape(
+            self.params["sigma_a_eq"].shape
+        )
         # actual rest strain
         self.xi_eq = sys_helpers["rest_strains_fn"](self.params)  # rest strains
 
@@ -256,7 +260,9 @@ class ModelBasedControlNode(Node):
         ]:
             if self.controller_type == "operational_space_pd_plus_linearized_actuation":
                 control_fn = operational_space_pd_plus_linearized_actuation
-            elif self.controller_type == "operational_space_pd_plus_nonlinear_actuation":
+            elif (
+                self.controller_type == "operational_space_pd_plus_nonlinear_actuation"
+            ):
                 control_fn = operational_space_pd_plus_nonlinear_actuation
             else:
                 control_fn = operational_space_impedance_control_nonlinear_actuation
@@ -292,7 +298,7 @@ class ModelBasedControlNode(Node):
         elif self.controller_type in [
             "operational_space_pd_plus_linearized_actuation",
             "operational_space_pd_plus_nonlinear_actuation",
-            "operational_space_impedance_control_nonlinear_actuation"
+            "operational_space_impedance_control_nonlinear_actuation",
         ]:
             phi_des_dummy, _ = self.control_fn(
                 0.0,

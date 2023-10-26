@@ -6,7 +6,10 @@ jax_config.update("jax_platform_name", "cpu")  # use CPU
 from jax import Array, jit, vmap
 import jax.numpy as jnp
 import jsrm
-from jsrm.parameters.hsa_params import generate_base_params_for_fpu, generate_base_params_for_epu
+from jsrm.parameters.hsa_params import (
+    generate_base_params_for_fpu,
+    generate_base_params_for_epu,
+)
 from jsrm.systems import planar_hsa
 import matplotlib
 
@@ -45,14 +48,14 @@ if HSA_MATERIAL == "fpu":
         num_segments=num_segments,
         num_rods_per_segment=num_rods_per_segment,
         rod_multiplier=2,
-        end_effector_attached=END_EFFECTOR_ATTACHED
+        end_effector_attached=END_EFFECTOR_ATTACHED,
     )
 elif HSA_MATERIAL == "epu":
     params = generate_base_params_for_epu(
         num_segments=num_segments,
         num_rods_per_segment=num_rods_per_segment,
         rod_multiplier=2,
-        end_effector_attached=END_EFFECTOR_ATTACHED
+        end_effector_attached=END_EFFECTOR_ATTACHED,
     )
 else:
     raise ValueError(f"Unknown hsa_material: {HSA_MATERIAL}")

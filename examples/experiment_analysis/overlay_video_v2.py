@@ -206,7 +206,9 @@ def main():
     # absolute start time
     data_start_time = ci_ts["ts"][0] + DATA_REL_START_TIME
     ci_ts["ts"] = ci_ts["ts"] - data_start_time
-    ci_start_time_idx = jnp.argmin(jnp.abs(ci_ts["ts"]))  # find the data point closest to zero
+    ci_start_time_idx = jnp.argmin(
+        jnp.abs(ci_ts["ts"])
+    )  # find the data point closest to zero
     print("Experiment full duration:", ci_ts["ts"][-1])
 
     # trim the time series data
@@ -227,9 +229,7 @@ def main():
     print("Frame size = ", frame_width, "x", frame_height, "pixels")
 
     # compute the resolution of the video
-    res = (EE_UV[1] - ORIGIN_UV[1]).astype(jnp.float64) / ci_ts["chiee"][
-        0, 1
-    ]
+    res = (EE_UV[1] - ORIGIN_UV[1]).astype(jnp.float64) / ci_ts["chiee"][0, 1]
     print("Identified resolution = ", res, "pixel/m")
 
     fps_in = cap.get(cv2.CAP_PROP_FPS)
@@ -328,7 +328,9 @@ def main():
             if OVERLAY_EE_DES_HISTORY and ci_time_idx > 0:
                 pee_des_uv_hs = onp.array(
                     batched_position_to_uv(
-                        ORIGIN_UV, res, ci_ts["chiee_des"][ci_start_time_idx:ci_time_idx:1, :2]
+                        ORIGIN_UV,
+                        res,
+                        ci_ts["chiee_des"][ci_start_time_idx:ci_time_idx:1, :2],
                     )
                 )
                 frame = cv2.polylines(
@@ -353,7 +355,9 @@ def main():
                 # only plot every 16th data point to reduce the number of points
                 pee_uv_hs = onp.array(
                     batched_position_to_uv(
-                        ORIGIN_UV, res, ci_ts["chiee"][ci_start_time_idx:ci_time_idx:16, :2]
+                        ORIGIN_UV,
+                        res,
+                        ci_ts["chiee"][ci_start_time_idx:ci_time_idx:16, :2],
                     )
                 )
                 frame = cv2.polylines(

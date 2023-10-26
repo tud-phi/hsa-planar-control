@@ -70,7 +70,9 @@ class StaticPlanningNode(Node):
         # parameters for specifying different rest strains
         self.declare_parameter("kappa_b_eq", self.params["kappa_b_eq"].mean().item())
         self.declare_parameter("sigma_sh_eq", self.params["sigma_sh_eq"].mean().item())
-        self.declare_parameter("sigma_a_eq", self.params["sigma_a_eq"].flatten().tolist())
+        self.declare_parameter(
+            "sigma_a_eq", self.params["sigma_a_eq"].flatten().tolist()
+        )
         kappa_b_eq = self.get_parameter("kappa_b_eq").value
         sigma_sh_eq = self.get_parameter("sigma_sh_eq").value
         sigma_a_eq = self.get_parameter("sigma_a_eq").value
@@ -80,10 +82,12 @@ class StaticPlanningNode(Node):
         self.params["sigma_sh_eq"] = sigma_sh_eq * jnp.ones_like(
             self.params["sigma_sh_eq"]
         )
-        self.params["sigma_a_eq"] = jnp.array(sigma_a_eq).reshape(self.params["sigma_a_eq"].shape)
+        self.params["sigma_a_eq"] = jnp.array(sigma_a_eq).reshape(
+            self.params["sigma_a_eq"].shape
+        )
         # actual rest strain
         self.xi_eq = sys_helpers["rest_strains_fn"](self.params)  # rest strains
-        
+
         # pose offset of end-effector relative to top surface of the platform
         self.declare_parameter("chiee_off", [0.0, 0.0, 0.0])
         self.params["chiee_off"] = jnp.array(self.get_parameter("chiee_off").value)

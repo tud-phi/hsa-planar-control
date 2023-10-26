@@ -68,7 +68,9 @@ class CalibrationNode(Node):
 
         # pose offset of end-effector relative to top surface of the platform
         self.declare_parameter("chiee_off", [0.0, 0.0, 0.0])
-        self.known_params["chiee_off"] = jnp.array(self.get_parameter("chiee_off").value)
+        self.known_params["chiee_off"] = jnp.array(
+            self.get_parameter("chiee_off").value
+        )
         # external payload mass
         self.declare_parameter("mpl", 0.0)
         self.known_params["mpl"] = self.get_parameter("mpl").value

@@ -48,7 +48,9 @@ def main():
             ci_ts[key] = ci_ts[key][:end_time_idx]
 
     # compute the task space trajectory tracking metrics
-    e_pee_ts = jnp.linalg.norm(ci_ts["chiee_des"][..., :2] - ci_ts["chiee"][..., :2], axis=1)
+    e_pee_ts = jnp.linalg.norm(
+        ci_ts["chiee_des"][..., :2] - ci_ts["chiee"][..., :2], axis=1
+    )
     rmse_pee = np.sqrt(np.mean(np.square(e_pee_ts), axis=0))
     print(f"RMSE of end-effector position: {rmse_pee}")
 
