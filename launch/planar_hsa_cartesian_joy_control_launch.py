@@ -56,7 +56,7 @@ if END_EFFECTOR_ATTACHED:
     common_params["CoGpl"] = [0.0, -0.02137]
 
 planning_params = common_params | {
-    "planning_frequency": 0.025  # period of 40s between setpoints
+    "planning_frequency": 0.0166  # period of 60s between setpoints
 }
 viz_params = common_params | {"rendering_frequency": 20.0, "invert_colors": True, "draw_operational_workspace": True}
 joy_control_params = common_params | {
