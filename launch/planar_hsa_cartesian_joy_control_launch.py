@@ -101,8 +101,8 @@ elif controller_type in ["operational_space_pd_plus_nonlinear_actuation", "opera
         # rotation matrix
         rot = np.array([[np.cos(push_direction), -np.sin(push_direction)], [np.sin(push_direction), np.cos(push_direction)]])
         # global impedance matrix
-        Kp = rot.T @ Kp_local @ rot
-        Kd = rot.T @ Kd_local @ rot
+        Kp = rot @ Kp_local @ rot.T
+        Kd = rot @ Kd_local @ rot.T
         print("Kp:\n", Kp)
         print("Kd:\n", Kd)
     else:
