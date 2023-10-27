@@ -423,10 +423,10 @@ def operational_space_impedance_control_nonlinear_actuation(
     # compute the coriolis matrix in operational space
     eta = Lambda @ (Jee @ jnp.linalg.inv(B) @ C - Jee_d) @ JeeB_pinv
     # to avoid numerical issues and singularities, 
-    # we set the x-component of eta with respect to the orientation (i.e., null-space) to zero if the x coordinate is small
+    # we set the x-component of eta with respect to the orientation (i.e., null-space) to zero if theta is small
     eta = eta.at[0, 2].set(
         lax.select(
-            jnp.abs(pee[0]) < 5e-4,
+            jnp.abs(chiee[2]) < 1e-3,
             0.0,
             eta[0, 2]
         )
