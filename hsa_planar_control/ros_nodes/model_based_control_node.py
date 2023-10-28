@@ -266,13 +266,15 @@ class ModelBasedControlNode(Node):
                 control_fn = operational_space_pd_plus_nonlinear_actuation
             else:
                 control_fn = operational_space_impedance_control_nonlinear_actuation
+            dynamics_eps = 1e-1
             self.control_fn = jit(
                 partial(
                     control_fn,
-                    dynamical_matrices_fn=partial(dynamical_matrices_fn, self.params),
+                    dynamical_matrices_fn=partial(dynamical_matrices_fn, self.params, eps=dynamics_eps),
                     operational_space_dynamical_matrices_fn=partial(
                         sys_helpers["operational_space_dynamical_matrices_fn"],
                         self.params,
+                        eps=dynamics_eps,
                     ),
                     Kp=Kp,
                     Kd=Kd,
