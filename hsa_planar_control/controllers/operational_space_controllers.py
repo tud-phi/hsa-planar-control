@@ -162,7 +162,7 @@ def operational_space_computed_torque(
         jacobian_end_effector_fn: function that returns the Jacobian of the end effector of shape (3, n_q)
         dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
             Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
-        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, Jee, Jee_d, JeeB_pinv
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, mu, Jee, Jee_d, JeeB_pinv
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
@@ -178,7 +178,7 @@ def operational_space_computed_torque(
         controller_info: dictionary with information about intermediate computations
     """
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
-    Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # current end-effector pose
     chiee = forward_kinematics_end_effector_fn(q)
@@ -191,7 +191,7 @@ def operational_space_computed_torque(
     # desired force in operational space of shape (3, )
     f_des = (
         Lambda[:, :2] @ (Kp @ (pee_des - pee) - Kd @ p_d_ee)
-        + nu
+        + mu @ q_d
         + JeeB_pinv.T @ (G + K + D @ q_d)
     )
 
@@ -254,7 +254,7 @@ def operational_space_pd_plus_linearized_actuation(
         phi: current motor positions vector of shape (n_phi, )
         dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
             Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
-        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, Jee, Jee_d, JeeB_pinv
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, mu, Jee, Jee_d, JeeB_pinv
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
@@ -268,7 +268,7 @@ def operational_space_pd_plus_linearized_actuation(
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
-    Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
@@ -325,7 +325,7 @@ def operational_space_pd_plus_nonlinear_actuation(
         phi: current motor positions vector of shape (n_phi, )
         dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
             Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
-        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, Jee, Jee_d, JeeB_pinv
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, mu, Jee, Jee_d, JeeB_pinv
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
@@ -339,7 +339,7 @@ def operational_space_pd_plus_nonlinear_actuation(
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
-    Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
@@ -404,7 +404,7 @@ def operational_space_impedance_control_nonlinear_actuation(
         phi: current motor positions vector of shape (n_phi, )
         dynamical_matrices_fn: Callable that returns the B, C, G, K, D, and alpha.
             Needs to conform to the signature: dynamical_matrices_fn(q, q_d) -> Tuple[B, C, G, K, D, alpha]
-        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, nu, Jee, Jee_d, JeeB_pinv
+        operational_space_dynamical_matrices_fn: Callable with signature (q, q_d, B, C) -> Lambda, mu, Jee, Jee_d, JeeB_pinv
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
@@ -418,19 +418,7 @@ def operational_space_impedance_control_nonlinear_actuation(
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
-    Lambda, nu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
-
-    # compute the coriolis matrix in operational space
-    eta = Lambda @ (Jee @ jnp.linalg.inv(B) @ C - Jee_d) @ JeeB_pinv
-    # to avoid numerical issues and singularities, 
-    # we set the x-component of eta with respect to the orientation (i.e., null-space) to zero if theta is small
-    eta = eta.at[0, 2].set(
-        lax.select(
-            jnp.abs(chiee[2]) < 1e-3,
-            0.0,
-            eta[0, 2]
-        )
-    )
+    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
@@ -438,7 +426,7 @@ def operational_space_impedance_control_nonlinear_actuation(
         - Kd @ pee_d
         # cancel the corioli coupling between the operational space and the null-space
         # decouples the Cartesian dynamics from the residual null-space dynamics
-        + eta[:2, 2:3] @ chiee_d[2:3]
+        + mu[:2, :] @ (jnp.eye(q.shape[0]) - JeeB_pinv[:, :2] @ Jee[:2, :]) @ q_d
         # cancel for static elastic and gravitational forces directly in operational space
         # + JB_pinv.T[:2, :] @ (G + K)
         # cancel damping in operational space so that we can shape it ourselves
