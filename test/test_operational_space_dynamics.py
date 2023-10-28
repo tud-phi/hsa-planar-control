@@ -29,14 +29,16 @@ def test_operational_space_dynamics():
         inverse_kinematics_end_effector_fn,
         dynamical_matrices_fn,
         sys_helpers,
-    ) = planar_hsa.factory(sym_exp_filepath, eps=1e-6)
+    ) = planar_hsa.factory(sym_exp_filepath)
     dynamical_matrices_fn = partial(
         dynamical_matrices_fn,
         params,
+        eps=1e-1
     )
     operational_space_dynamical_matrices_fn = partial(
         sys_helpers["operational_space_dynamical_matrices_fn"],
         params,
+        eps=1e-1
     )
 
     def compute_operational_space_dynamical_components(q: Array, q_d: Array, phi: Array):
@@ -62,7 +64,7 @@ def test_operational_space_dynamics():
 
     # test for different axial strains
     print("test for different bending strains")
-    num_points = 5001
+    num_points = 20001
     sigma_b_ps = jnp.linspace(-0.5, 0.5, num_points)
     q_ps = jnp.stack([sigma_b_ps, jnp.zeros((num_points,)), jnp.zeros((num_points,))], axis=1)
     q_d = jnp.array([0.0, 0.0, 0.1])
