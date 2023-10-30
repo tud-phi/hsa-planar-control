@@ -409,6 +409,7 @@ def operational_space_impedance_control_nonlinear_actuation(
         pee_des: desired Cartesian-space position for end-effector of shape (2, )
         Kp: proportional gain matrix of shape (2, 2)
         Kd: derivative gain matrix of shape (2, 2)
+        eps: small number to avoid division by zero
     Returns:
         u: input to the system. this is an array of shape (n_phi) with motor positions / twist angles of the proximal end of the rods
         controller_info: dictionary with information about intermediate computations
