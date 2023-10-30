@@ -111,12 +111,12 @@ elif controller_type in ["operational_space_pd_plus_nonlinear_actuation", "opera
         print("Kp:\n", Kp)
         print("Kd:\n", Kd)
     else:
-        Kp = 2e2 * np.eye(2)  # [N/m]
+        Kp = 3e2 * np.eye(2)  # [N/m]
         Kd = 1e0 * np.eye(2)  # [Ns/m]
 
     if controller_type == "operational_space_impedance_control_nonlinear_actuation":
         # here, we cancel the natural damping. Therefore, we need to increase the Cartesian damping to make things stable
-        Kd = 1.2 * np.eye(2)  # [Ns/m]
+        Kd = 1.5 * np.eye(2)  # [Ns/m]
 else:
     raise ValueError(f"Unknown controller type: {controller_type}")
 control_params.update(
