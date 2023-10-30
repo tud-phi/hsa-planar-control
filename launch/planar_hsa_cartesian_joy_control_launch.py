@@ -250,10 +250,19 @@ def generate_launch_description():
         "host": "145.94.199.12"
     }
     if JOY_SIGNAL_SOURCE == "openvibe":
+        # launch_actions.append(
+        #     Node(
+        #         package="joylike_operation",
+        #         executable="openvibe_stimulation_to_joy_node",
+        #         name="openvibe_teleop",
+        #         parameters=[joylike_operation_params],
+        #         arguments=["--ros-args", "--log-level", LOG_LEVEL],
+        #     ),
+        # )
         launch_actions.append(
             Node(
                 package="joylike_operation",
-                executable="openvibe_stimulation_to_joy_node",
+                executable="openvibe_two_classifier_stimulation_to_joy_node",
                 name="openvibe_teleop",
                 parameters=[joylike_operation_params],
                 arguments=["--ros-args", "--log-level", LOG_LEVEL],
