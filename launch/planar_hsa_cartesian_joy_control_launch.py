@@ -247,7 +247,7 @@ def generate_launch_description():
 
     joylike_operation_params = {
         "joy_control_mode": JOY_CONTROL_MODE,
-        "host": "145.94.224.240"
+        "host": "145.94.199.12"
     }
     if JOY_SIGNAL_SOURCE == "openvibe":
         launch_actions.append(
