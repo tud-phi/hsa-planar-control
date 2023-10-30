@@ -278,6 +278,7 @@ class ModelBasedControlNode(Node):
                     ),
                     Kp=Kp,
                     Kd=Kd,
+                    eps=dynamics_eps,
                 )
             )
         else:

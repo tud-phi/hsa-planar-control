@@ -383,6 +383,7 @@ def operational_space_impedance_control_nonlinear_actuation(
     pee_des: Array,
     Kp: Array,
     Kd: Array,
+    eps: float,
     **kwargs,
 ) -> Tuple[Array, Dict[str, Array]]:
     """
@@ -419,6 +420,16 @@ def operational_space_impedance_control_nonlinear_actuation(
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
     Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+
+    # extract the bending strains
+    sigma_b = q[::3]
+    # if the bending angle is close to zero, then we encounter singularities in the mu matrix
+    # we therefore set it to zero
+    mu = lax.select(
+        (jnp.abs(sigma_b) < eps).any() * jnp.ones_like(mu, dtype=bool),
+        jnp.zeros_like(mu),
+        mu,
+    )
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
