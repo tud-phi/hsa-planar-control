@@ -78,7 +78,7 @@ if SYSTEM_TYPE == "sim":
     sim_params = common_params | {
         "sim_dt": 6e-5,
         "control_frequency": control_params["control_frequency"],
-        "damping_multiplier": 20.0,
+        "damping_multiplier": 30.0,
     }
     control_params[
         "present_planar_actuation_topic"
