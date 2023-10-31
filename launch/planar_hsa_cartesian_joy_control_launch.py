@@ -154,19 +154,22 @@ def generate_launch_description():
                 ),
             ],
         ),
-        TimerAction(
-            period=40.0,  # delay start of setpoint generation node for simulation to be fully compiled and ready
-            actions=[
-                Node(
-                    package="hsa_planar_control",
-                    executable="random_setpoints_node",
-                    name="random_setpoints_generator",
-                    parameters=[planning_params],
-                    arguments=["--ros-args", "--log-level", LOG_LEVEL],
-                ),
-            ],
-        ),
     ]
+    if PUSH_BUTTON_MODE is False:
+        launch_actions.append(
+            TimerAction(
+                period=40.0,  # delay start of setpoint generation node for simulation to be fully compiled and ready
+                actions=[
+                    Node(
+                        package="hsa_planar_control",
+                        executable="random_setpoints_node",
+                        name="random_setpoints_generator",
+                        parameters=[planning_params],
+                        arguments=["--ros-args", "--log-level", LOG_LEVEL],
+                    ),
+                ],
+            )
+        )
 
     if SYSTEM_TYPE == "sim":
         launch_actions.append(
