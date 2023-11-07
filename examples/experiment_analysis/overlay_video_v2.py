@@ -302,8 +302,8 @@ def main():
                 # write speedup to frame
                 frame = cv2.putText(
                     frame,
-                    f"{SPEEDUP:.1f} x",
-                    org=(frame_width - 100, 60),
+                    f"{SPEEDUP:.2f} x",
+                    org=(frame_width - 200, 60),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                     fontScale=1.5 * res_mult,
                     color=(255, 255, 255),
