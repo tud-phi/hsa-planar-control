@@ -19,23 +19,24 @@ import numpy as onp
 from pathlib import Path
 
 
-EXPERIMENT_NAME = "20231019_083240"  # experiment name
+EXPERIMENT_NAME = "20230925_092200"  # experiment name
 
 # SHOW additional plots for calibration purposes
 CALIBRATE = False
 
 HSA_MATERIAL = "fpu"  # "fpu" or "epu"
 SOURCE_RES = 2160  # 2160 (for 4k) or 1080 (for 180p), the default is 2160p
-if EXPERIMENT_NAME == "20230925_094023":
-    # FPU manual setpoints trajectory with baseline PID controller
+
+if EXPERIMENT_NAME == "20230925_092200":
+    # FPU manual setpoints trajectory with P-satI-D controller
     DATA_REL_START_TIME = 0.0
-    VIDEO_REL_START_TIME = 1.75 + DATA_REL_START_TIME
+    VIDEO_REL_START_TIME = 1.3 + DATA_REL_START_TIME
     DURATION = 110.0
-    SPEEDUP = 4.0
-    COMMIT_EVERY_N_FRAMES = 4
-    ORIGIN_UV = jnp.array([556, 305], dtype=jnp.uint32)  # uv coordinates of the origin
+    SPEEDUP = 0.1666
+    COMMIT_EVERY_N_FRAMES = 1
+    ORIGIN_UV = jnp.array([530, 270], dtype=jnp.uint32)  # uv coordinates of the origin
     EE_UV = jnp.array(
-        [556, 1041], dtype=jnp.uint32
+        [530, 950], dtype=jnp.uint32
     )  # uv coordinates of the end-effector
     OVERLAY_CURRENT_SETPOINT = True
     OVERLAY_END_EFFECTOR_POSITION = True
@@ -47,11 +48,27 @@ elif EXPERIMENT_NAME == "20230925_093236":
     DATA_REL_START_TIME = 0.0
     VIDEO_REL_START_TIME = 2.0 + DATA_REL_START_TIME
     DURATION = 110.0
-    SPEEDUP = 4.0
-    COMMIT_EVERY_N_FRAMES = 4
+    SPEEDUP = 0.1666
+    COMMIT_EVERY_N_FRAMES = 1
     ORIGIN_UV = jnp.array([550, 300], dtype=jnp.uint32)  # uv coordinates of the origin
     EE_UV = jnp.array(
         [550, 1045], dtype=jnp.uint32
+    )  # uv coordinates of the end-effector
+    OVERLAY_CURRENT_SETPOINT = True
+    OVERLAY_END_EFFECTOR_POSITION = True
+    OVERLAY_EE_HISTORY = False
+    OVERLAY_EE_DES_HISTORY = False
+    OVERLAY_VIRTUAL_BACKBONE = True
+elif EXPERIMENT_NAME == "20230925_094023":
+    # FPU manual setpoints trajectory with P-satI-D+GC controller
+    DATA_REL_START_TIME = 0.0
+    VIDEO_REL_START_TIME = 1.75 + DATA_REL_START_TIME
+    DURATION = 110.0
+    SPEEDUP = 0.1666
+    COMMIT_EVERY_N_FRAMES = 1
+    ORIGIN_UV = jnp.array([556, 305], dtype=jnp.uint32)  # uv coordinates of the origin
+    EE_UV = jnp.array(
+        [556, 1041], dtype=jnp.uint32
     )  # uv coordinates of the end-effector
     OVERLAY_CURRENT_SETPOINT = True
     OVERLAY_END_EFFECTOR_POSITION = True
