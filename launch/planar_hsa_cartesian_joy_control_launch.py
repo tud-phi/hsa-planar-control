@@ -99,7 +99,7 @@ elif controller_type == "operational_space_pd_plus_linearized_actuation":
         raise ValueError(f"Unknown HSA material: {HSA_MATERIAL}")
 elif controller_type in ["operational_space_pd_plus_nonlinear_actuation", "operational_space_impedance_control_nonlinear_actuation"]:
     if PUSH_BUTTON_MODE:
-        push_direction = 75 / 180 * np.pi  # rotation of impedance with respect to the x-axis [rad]
+        push_direction = 90 / 180 * np.pi  # rotation of impedance with respect to the x-axis [rad]
         # local impedance matrix
         Kp_local = np.diag(np.array([5e2, 2e2]))
         Kd_local = np.diag(np.array([1e0, 1e0]))
