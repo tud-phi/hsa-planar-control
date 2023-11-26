@@ -75,6 +75,23 @@ elif EXPERIMENT_NAME == "20230925_094023":
     OVERLAY_EE_HISTORY = False
     OVERLAY_EE_DES_HISTORY = False
     OVERLAY_VIRTUAL_BACKBONE = True
+elif EXPERIMENT_NAME == "20231019_072747":
+    # FPU star trajectory with P-satI-D controller
+    # 4K at 60 fps
+    DATA_REL_START_TIME = 1.0
+    VIDEO_REL_START_TIME = 0.7 + DATA_REL_START_TIME
+    DURATION = 120.0 - DATA_REL_START_TIME
+    SPEEDUP = 4.0
+    COMMIT_EVERY_N_FRAMES = 4
+    ORIGIN_UV = jnp.array([595, 333], dtype=jnp.uint32)  # uv coordinates of the origin
+    EE_UV = jnp.array(
+        [595, 1121], dtype=jnp.uint32
+    )  # uv coordinates of the end-effector
+    OVERLAY_CURRENT_SETPOINT = True
+    OVERLAY_END_EFFECTOR_POSITION = True
+    OVERLAY_EE_HISTORY = True
+    OVERLAY_EE_DES_HISTORY = True
+    OVERLAY_VIRTUAL_BACKBONE = True
 elif EXPERIMENT_NAME == "20231019_081703":
     # FPU tud-flame trajectory with P-satI-D controller
     # 1080p at 30 fps
