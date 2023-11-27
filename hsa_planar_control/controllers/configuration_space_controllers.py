@@ -394,10 +394,12 @@ def P_satI_D_collocated_form_plus_gravity_cancellation_elastic_compensation(
 
     varphi, Jvarphi = map_into_collocated_form_fn(q, phi_ss)
     varphi_des, Jvarphi_des = map_into_collocated_form_fn(q_des, phi_ss)
+    # inverse of Jacobian
+    Jvarphi_inv = jnp.linalg.inv(Jvarphi)
 
     # project gravity vector into collocated coordinates
-    G_varphi = jnp.linalg.inv(Jvarphi).T @ G
-    G_varphi_des = jnp.linalg.inv(Jvarphi).T @ G_des
+    G_varphi = Jvarphi_inv.T @ G
+    G_varphi_des = Jvarphi_inv.T @ G_des
 
     # velocity of the current collocated coordinates
     varphi_d = Jvarphi @ q_d
