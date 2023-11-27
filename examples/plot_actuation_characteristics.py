@@ -89,7 +89,7 @@ if __name__ == "__main__":
     for i, ax in enumerate(axes):
         ax.plot(x_samples, alpha_phi1_samples[:, i], color=colors[0], label=rf"$\phi_1$")
         ax.plot(x_samples, alpha_phi2_samples[:, i], color=colors[1], label=rf"$\phi_2$")
-        ax.set_xlabel(r"$\phi$")
+        ax.set_xlabel(r"Control input $\phi$")
         ax.set_ylabel(ylabels[i])
         ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
         ax.legend(loc="upper right")
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     for i, ax in enumerate(axes):
         ax.plot(x_samples, linearized_alpha_phi1_samples[:, i], color=colors[0], label=rf"$\phi_1$")
         ax.plot(x_samples, linearized_alpha_phi2_samples[:, i], color=colors[1], label=rf"$\phi_2$")
-        ax.set_xlabel(r"$\phi$")
+        ax.set_xlabel(r"Control input $\phi$")
         ax.set_ylabel(ylabels[i])
         ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
         ax.legend(loc="upper right")
