@@ -30,27 +30,21 @@ Please use the following citation if you use our software in your (scientific) w
 ## ROS2
 
 This repository also contains various ROS2 nodes for planning and control. 
-As usual, clone this repository into your ROS2 workspace and build it with `colcon build`.
-Furthermore, we rely on the ROS2 packages in the [ros2-hsa](https://github.com/tud-cor-sr/ros2-hsa) repository for the communication with the hardware (both actuation and motion capture), inverse kinematics and visualization.
+As usual, clone this repository into your ROS2 workspace and build it with `colon build.`
+Furthermore, we rely on the ROS2 packages in the [ros2-hsa](https://github.com/tud-phi/ros2-hsa) repository for the communication with the hardware (both actuation and motion capture), inverse kinematics and visualization.
 You can launch the nodes with `ros2 launch hsa_planar_control ./launch/hsa_planar_cl_control.py`.
 
 ## System identification
 
-### 1. Identify the static elongation parameters
+You can use the provided script `examples/system_identification/epu_identify_system_params_statically` to identify the nominal stiffness `S_a_hat`, the rest length elongation factor `C_varepsilon`, change of the axial stiffness `C_S_a`, and the bending parameters `S_b_hat`, `S_sh_hat`, `S_b_sh`, `C_S_b`, and `C_S_sh` using linear least-squares. Please modify the `SYSTTEMID_STEP` variable accordingly.
 
-Use the script `identify_system_params_statically_elongation.py` to identify with linear least-squares
+## See also
 
-1. The axial rest strain `sigma_a_eq` and the axial, nominal stiffness `S_a_hat` for varying payloads.
-2. The rest length elongation factor `C_varepsilon` for zero payload while assuming the axial stiffness to remain constant (i.e. `C_S_a=0`).
-3. The change of the axial stiffness `C_S_a` for varying payload.
-
-### 2. Identify the static bending parameters
-
-Use the script `identify_system_params_statically_bending.py` to identify with linear least-squares in one go
-`S_b_hat`, `S_sh_hat`, `S_b_sh`, `C_S_b`, and `C_S_sh` on a dataset with varying payload for a bending staircase sequence. 
-Do not forget to first identify `sigma_a_eq` for this dataset with the script `identify_system_params_statically_elongation.py`.
-
-### 3. Identify the dynamic parameters
-
-Use the script `identify_system_params_dynamically.py` to identify with nonlinear least-squares in one go
-all the damping coefficients. **Attention:** this doesn't give good results yet.
+You might also be interested in the following repositories:
+ - The [`jax-soft-robot-modelling`](https://github.com/tud-phi/jax-soft-robot-modelling) repository contains a JAX implementation 
+ of various soft robot models, which can be, for example, used to simulate the robot's forward dynamics.
+ - The [`jax-spcs-kinematics`](https://github.com/tud-phi/jax-spcs-kinematics) repository contains an implementation
+ of the Selective Piecewise Constant Strain (SPCS) kinematics in JAX. Our paper shows that this kinematic 
+model is suitable for representing the shape of HSA rods.
+ - The [`HSA-PyElastica`](https://github.com/tud-phi/HSA-PyElastica) repository contains a plugin for PyElastica
+for the simulation of HSA robots.
