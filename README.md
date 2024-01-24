@@ -3,12 +3,14 @@
 This repository provides implementation and closed-loop simulation of various control strategies for planar HSA robots.
 Furthermore, it contains ROS2 nodes for planning and control of the planar HSA robots.
 
+[![An Experimental Study of Model-based Control for Planar Handed Shearing Auxetics Robots - Video](https://img.youtube.com/vi/7PgKnE_MOsY/0.jpg)](https://www.youtube.com/watch?v=7PgKnE_MOsY)
+
 **Abstract:**
 Parallel robots based on Handed Shearing Auxetics (HSAs) can implement complex motions using standard electric motors while maintaining the complete softness of the structure, thanks to specifically designed architected metamaterials.
-However, their control is especially challenging due to varying and coupled stiffness, shearing, non-affine terms in the actuation model, and underactuation. In this paper, we present a model-based control strategy for planar HSA robots enabling regulation in task space. We formulate equations of motion, show that they admit a collocated form, and design a P-satI-D feedback controller with compensation for elastic and gravitational forces. 
-We experimentally identify and verify the proposed control strategy in closed loop.
+However, their control is especially challenging due to varying and coupled stiffness, shearing, non-affine terms in the actuation model, and underactuation. In this paper, we present a model-based control strategy for planar HSA robots enabling regulation in task space. We formulate equations of motion, show that they admit a collocated form, and design a P-satI-D feedback controller with compensation for elastic and gravitational forces. We experimentally identify and verify the proposed control strategy in closed loop.
 
-[![An Experimental Study of Model-based Control for Planar Handed Shearing Auxetics Robots - Video](https://img.youtube.com/vi/7PgKnE_MOsY/0.jpg)](https://www.youtube.com/watch?v=7PgKnE_MOsY)
+<img src="assets/20231019_081703_overlayed_300x.gif" width="250"/>
+<img src="assets/20231019_083240_overlayed_600x.gif" width="250"/>
 
 ## Citation
 
