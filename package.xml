@@ -7,6 +7,7 @@
   <maintainer email="maximilian@stoelzle.ch">root</maintainer>
   <license>TODO: License declaration</license>
 
+  <depend>python3-tqdm</depend>
   <depend>hsa_actuation</depend>
   <depend>hsa_control_interfaces</depend>
   <depend>mocap_optitrack_interfaces</depend>
