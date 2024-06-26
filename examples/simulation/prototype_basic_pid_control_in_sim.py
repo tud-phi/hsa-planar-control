@@ -18,8 +18,9 @@ from hsa_planar_control.controllers.operational_space_controllers import (
     basic_operational_space_pid_configuration_input,
 )
 from hsa_planar_control.controllers.saturation import saturate_control_inputs
-from hsa_planar_control.rendering.opencv_renderer import animate_robot
 from hsa_planar_control.simulation import simulate_closed_loop_system
+
+from jsrm.rendering.planar_hsa.opencv_renderer import animate_robot
 
 num_segments = 1
 num_rods_per_segment = 2

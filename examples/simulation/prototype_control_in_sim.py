@@ -24,8 +24,8 @@ from hsa_planar_control.planning.static_planning import (
     static_inversion_factory,
     statically_invert_actuation_to_task_space_scipy_rootfinding,
 )
-from hsa_planar_control.rendering.opencv_renderer import animate_robot
 from hsa_planar_control.simulation import simulate_closed_loop_system
+from jsrm.rendering.planar_hsa.opencv_renderer import animate_robot
 
 num_segments = 1
 num_rods_per_segment = 2

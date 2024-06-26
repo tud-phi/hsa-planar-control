@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import Callable, Dict, Tuple
 
-from hsa_planar_control.rendering.opencv_renderer import animate_robot
 from hsa_planar_control.simulation import simulate_closed_loop_system
 from hsa_planar_control.system_identification.preprocessing import preprocess_data
 from hsa_planar_control.system_identification.rest_strain import (
