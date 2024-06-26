@@ -12,7 +12,6 @@ setup(
         package_name + ".analysis",
         package_name + ".controllers",
         package_name + ".planning",
-        package_name + ".rendering",
         package_name + ".ros_nodes",
         package_name + ".system_identification",
         package_name + ".system_identification.optimization",
