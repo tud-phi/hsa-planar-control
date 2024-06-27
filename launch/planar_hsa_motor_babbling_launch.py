@@ -14,7 +14,7 @@ import os
 now = datetime.now()
 
 RECORD = True  # Record data to rosbag file
-BAG_PATH = f"/home/mstoelzle/phd/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
+BAG_PATH = f"/home/gfranzese/Documents/sources/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
 LOG_LEVEL = "warn"
 
 hsa_material = "fpu"
@@ -37,8 +37,9 @@ common_params = {
     "phi_max": phi_max,
 }
 motor_babbling_params = common_params | {
-    "mode": "gbn",
+    "mode": "sinusoidal_extension",
     "duration": 60.0,
+    "frequency": 0.2
 }
 
 
@@ -98,12 +99,12 @@ def generate_launch_description():
             parameters=[motor_babbling_params],
             arguments=["--ros-args", "--log-level", LOG_LEVEL],
         ),
-        Node(
-            package="hsa_visualization",
-            executable="planar_viz_node",
-            name="visualization",
-            parameters=[common_params],
-        ),
+        # Node(
+        #     package="hsa_visualization",
+        #     executable="planar_viz_node",
+        #     name="visualization",
+        #     parameters=[common_params],
+        # ),
     ]
 
     if RECORD:
@@ -118,7 +119,6 @@ def generate_launch_description():
                     BAG_PATH,
                     "-s",
                     "sqlite3",
-                    "-x /rendering",
                 ],
                 output="screen",
             )
