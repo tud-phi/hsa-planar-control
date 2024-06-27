@@ -191,42 +191,42 @@ def preprocess_data(
             data_raw_ts["chiee_ts"][:, 0],
             marker=".",
             color=colors[0],
-            label="$p_\mathrm{x}$",
+            label=r"$p_\mathrm{x}$",
         )
         ax1.plot(
             data_raw_ts["t_mts"],
             data_raw_ts["chiee_ts"][:, 1],
             marker=".",
             color=colors[1],
-            label="$p_\mathrm{y}$",
+            label=r"$p_\mathrm{y}$",
         )
         ax2.plot(
             data_raw_ts["t_ts"],
             data_raw_ts["phi_ts"][:, 0],
             marker=".",
             color=colors[2],
-            label="$\phi_{21}$",
+            label=r"$\phi_{21}$",
         )
         ax2.plot(
             data_raw_ts["t_ts"],
             data_raw_ts["phi_ts"][:, 1],
             marker=".",
             color=colors[3],
-            label="$\phi_{22}$",
+            label=r"$\phi_{22}$",
         )
         ax2.plot(
             data_raw_ts["t_ts"],
             data_raw_ts["phi_ts"][:, 2],
             marker=".",
             color=colors[4],
-            label="$\phi_{23}$",
+            label=r"$\phi_{23}$",
         )
         ax2.plot(
             data_raw_ts["t_ts"],
             data_raw_ts["phi_ts"][:, 3],
             marker=".",
             color=colors[5],
-            label="$\phi_{24}$",
+            label=r"$\phi_{24}$",
         )
         ax1.legend(loc="upper left")
         ax2.legend(loc="upper right")
@@ -385,7 +385,7 @@ def preprocess_data(
             linestyle="None",
             marker=".",
             color=colors[0],
-            label="$\phi_{21}$",
+            label=r"$\phi_{21}$",
         )
         plt.plot(
             data_raw_ts["t_ts"],
@@ -393,7 +393,7 @@ def preprocess_data(
             linestyle="None",
             marker=".",
             color=colors[1],
-            label="$\phi_{22}$",
+            label=r"$\phi_{22}$",
         )
         plt.plot(
             data_raw_ts["t_ts"],
@@ -401,7 +401,7 @@ def preprocess_data(
             linestyle="None",
             marker=".",
             color=colors[2],
-            label="$\phi_{23}$",
+            label=r"$\phi_{23}$",
         )
         plt.plot(
             data_raw_ts["t_ts"],
@@ -409,7 +409,7 @@ def preprocess_data(
             linestyle="None",
             marker=".",
             color=colors[3],
-            label="$\phi_{24}$",
+            label=r"$\phi_{24}$",
         )
         if resample:
             plt.plot(
@@ -417,28 +417,28 @@ def preprocess_data(
                 data_pts["phi_ts"][:, 0],
                 linestyle="-",
                 color=colors[0],
-                label="$\hat{\phi}_{21}$",
+                label=r"$\hat{\phi}_{21}$",
             )
             plt.plot(
                 data_pts["t_ts"],
                 data_pts["phi_ts"][:, 1],
                 linestyle="-",
                 color=colors[1],
-                label="$\hat{\phi}_{22}$",
+                label=r"$\hat{\phi}_{22}$",
             )
             plt.plot(
                 data_pts["t_ts"],
                 data_pts["phi_ts"][:, 2],
                 linestyle="-",
                 color=colors[2],
-                label="$\hat{\phi}_{23}$",
+                label=r"$\hat{\phi}_{23}$",
             )
             plt.plot(
                 data_pts["t_ts"],
                 data_pts["phi_ts"][:, 3],
                 linestyle="-",
                 color=colors[3],
-                label="$\hat{\phi}_{24}$",
+                label=r"$\hat{\phi}_{24}$",
             )
             plt.plot(
                 data_res_ts["t_ts"],
@@ -446,7 +446,7 @@ def preprocess_data(
                 linestyle="None",
                 marker="x",
                 color=colors[0],
-                label="$\hat{\phi}_{21}$",
+                label=r"$\hat{\phi}_{21}$",
             )
             plt.plot(
                 data_res_ts["t_ts"],
@@ -454,7 +454,7 @@ def preprocess_data(
                 linestyle="None",
                 marker="x",
                 color=colors[1],
-                label="$\hat{\phi}_{22}$",
+                label=r"$\hat{\phi}_{22}$",
             )
             plt.plot(
                 data_res_ts["t_ts"],
@@ -462,7 +462,7 @@ def preprocess_data(
                 linestyle="None",
                 marker="x",
                 color=colors[2],
-                label="$\hat{\phi}_{23}$",
+                label=r"$\hat{\phi}_{23}$",
             )
             plt.plot(
                 data_res_ts["t_ts"],
@@ -470,7 +470,7 @@ def preprocess_data(
                 linestyle="None",
                 marker="x",
                 color=colors[3],
-                label="$\hat{\phi}_{24}$",
+                label=r"$\hat{\phi}_{24}$",
             )
         plt.xlabel("Time [s]")
         plt.ylabel("Motor position / rod twist angle [rad]")
