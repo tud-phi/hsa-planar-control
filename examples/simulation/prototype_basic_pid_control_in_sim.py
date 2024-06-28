@@ -3,7 +3,7 @@ from jax import config as jax_config
 jax_config.update("jax_enable_x64", True)  # double precision
 from diffrax import Dopri5, Euler
 from functools import partial
-from jax import Array, jit, vmap
+from jax import Array, debug, jit, vmap
 from jax import numpy as jnp
 import jsrm
 from jsrm.parameters.hsa_params import PARAMS_FPU_CONTROL
@@ -34,7 +34,7 @@ sym_exp_filepath = (
 # set parameters
 params = PARAMS_FPU_CONTROL.copy()
 rho_perturb_factor = (
-    1.5  # perturb the mass density of the robot used for the simulation
+    1.0  # perturb the mass density of the robot used for the simulation
 )
 params_perturbed = params.copy()
 params_perturbed.update(
@@ -46,7 +46,7 @@ params_perturbed.update(
 )
 
 # define initial configuration
-q0 = jnp.array([3 * jnp.pi, -0.01, 0.2])
+q0 = jnp.array([0.0, 0.0, 0.0])
 q_d0 = jnp.zeros_like(q0)
 phi0 = jnp.array([0.0, 0.0])
 
@@ -54,12 +54,12 @@ phi0 = jnp.array([0.0, 0.0])
 pee_des = jnp.array([0.037, 0.120])
 # pee_des = jnp.array([-0.05, 0.11])
 
-duration = 10.0
+duration = 5.0
 sim_dt = 5e-5  # time step
 
 # control settings
 control_dt = 2e-2  # control time step. corresponds to 50 Hz
-Kp = 1e1 * jnp.eye(phi0.shape[0])
+Kp = 5e-2 * jnp.eye(phi0.shape[0])
 Ki = 5e1 * jnp.eye(phi0.shape[0])
 Kd = 0e0 * jnp.eye(phi0.shape[0])
 
