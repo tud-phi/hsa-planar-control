@@ -252,5 +252,5 @@ if __name__ == "__main__":
         params,
         video_path,
         video_ts=sim_ts["t_ts"],
-        x_ts=sim_ts["x_ts"],
+        q_ts=sim_ts["x_ts"][:, :(sim_ts["x_ts"].shape[1] // 2)],
     )
