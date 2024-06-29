@@ -19,6 +19,9 @@ def simulate_closed_loop_system(
     controller_state_init: Optional[Dict[str, Array]] = None,
     ode_solver_class=dfx.Tsit5,
     consider_underactuation_model: bool = True,
+    control_in_operational_space: bool = False,
+    forward_kinematics_end_effector_fn: Optional[Callable] = None,
+    jacobian_end_effector_fn: Optional[Callable] = None,
 ) -> Dict[str, Array]:
     num_segments = params["l"].shape[0]
     num_rods_per_segment = params["rout"].shape[1]
@@ -45,11 +48,20 @@ def simulate_closed_loop_system(
             else:
                 u = jnp.zeros((n_q,))
         else:
+            if control_in_operational_space:
+                chiee = forward_kinematics_end_effector_fn(params, q)
+                chiee_d = jacobian_end_effector_fn(params, q) @ q_d
+                control_args = (t, chiee, chiee_d)
+                control_kwargs = dict(q=q, q_d=q_d, phi=phi)
+            else:
+                control_args = (t, q, q_d, phi)
+                control_kwargs = dict()
+
             if controller_state_init is None:
-                u, controller_info = control_fn(t, q, q_d, phi)
+                u, controller_info = control_fn(*control_args, **control_kwargs)
             else:
                 u, controller_state, controller_info = control_fn(
-                    t, q, q_d, phi, controller_state=carry["controller_state"]
+                    *control_args, controller_state=carry["controller_state"], **control_kwargs
                 )
                 carry["controller_state"] = controller_state
 

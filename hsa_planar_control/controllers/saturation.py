@@ -6,10 +6,8 @@ from typing import Dict, Tuple
 @jit
 def saturate_control_inputs(
     params: Dict[str, Array],
-    phi_des: Array,
-    controller_state: Dict[str, Array],
-    controller_info: Dict[str, Array],
-) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
+    *args,
+):
     """
     Saturate the control inputs (compensated with handedness) to the range [0, phi_max].
 
@@ -35,9 +33,17 @@ def saturate_control_inputs(
     phi_max = params["phi_max"]
     h = params["h"]
 
+    if len(args) == 2:
+        phi_des, controller_info = args
+    else:
+        phi_des, controller_state, controller_info = args
+
     phi_sat = jnp.clip(h.flatten() * phi_des, 0.0, phi_max.flatten())
 
     controller_info["phi_des_unsat"] = phi_des
     controller_info["phi_des_sat"] = phi_sat
 
-    return phi_sat, controller_state, controller_info
+    if len(args) == 2:
+        return phi_sat, controller_info
+    else:
+        return phi_sat, controller_state, controller_info
