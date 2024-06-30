@@ -178,7 +178,9 @@ def operational_space_computed_torque(
         controller_info: dictionary with information about intermediate computations
     """
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
-    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(
+        q, q_d, B, C
+    )
 
     # current end-effector pose
     chiee = forward_kinematics_end_effector_fn(q)
@@ -268,12 +270,13 @@ def operational_space_pd_plus_linearized_actuation(
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
-    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(
+        q, q_d, B, C
+    )
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
-        Kp @ e_pee
-        - Kd @ pee_d
+        Kp @ e_pee - Kd @ pee_d
         # compensate for static elastic and gravitational forces directly in operational space
         # + JB_pinv.T @ (G + K)
     )
@@ -339,12 +342,13 @@ def operational_space_pd_plus_nonlinear_actuation(
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
-    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(
+        q, q_d, B, C
+    )
 
     # desired force in operational space with respect to x, y and theta
     f_des = (
-        Kp @ e_pee
-        - Kd @ pee_d
+        Kp @ e_pee - Kd @ pee_d
         # cancel for static elastic and gravitational forces directly in operational space
         # + JB_pinv.T[:2, :] @ (G + K)
     )
@@ -420,7 +424,9 @@ def operational_space_impedance_control_nonlinear_actuation(
     e_pee = pee_des - pee
 
     B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
-    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+    Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(
+        q, q_d, B, C
+    )
 
     # extract the bending strains
     sigma_b = q[::3]

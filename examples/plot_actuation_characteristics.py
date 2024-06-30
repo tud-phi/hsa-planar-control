@@ -16,7 +16,9 @@ from pathlib import Path
 from hsa_planar_control.collocated_form import (
     mapping_into_collocated_form_factory,
 )
-from hsa_planar_control.controllers.generalized_torques_to_actuation import linearize_actuation
+from hsa_planar_control.controllers.generalized_torques_to_actuation import (
+    linearize_actuation,
+)
 
 plt.rcParams.update(
     {
@@ -60,9 +62,7 @@ def alpha_fn(phi: Array) -> Array:
 
 
 def linearized_actuation_force_fn(phi: Array) -> Array:
-    tau_eq, A = linearize_actuation(
-        partial(dynamical_matrices_fn, params), q, phi_ss
-    )
+    tau_eq, A = linearize_actuation(partial(dynamical_matrices_fn, params), q, phi_ss)
     tau_q = tau_eq + A @ phi
     return tau_q
 
@@ -82,16 +82,22 @@ if __name__ == "__main__":
     ylabels = [
         r"Torque on bend. strain: $\tau_\mathrm{be}$",
         r"Torque on shear strain: $\tau_\mathrm{sh}$",
-        r"Torque on axial strain: $\tau_\mathrm{ax}$"
+        r"Torque on axial strain: $\tau_\mathrm{ax}$",
     ]
     alpha_phi1_samples = alpha_fn_vmapped(phi1_samples)
     alpha_phi2_samples = alpha_fn_vmapped(phi2_samples)
     for i, ax in enumerate(axes):
-        ax.plot(x_samples, alpha_phi1_samples[:, i], color=colors[0], label=rf"$\phi_1$")
-        ax.plot(x_samples, alpha_phi2_samples[:, i], color=colors[1], label=rf"$\phi_2$")
+        ax.plot(
+            x_samples, alpha_phi1_samples[:, i], color=colors[0], label=rf"$\phi_1$"
+        )
+        ax.plot(
+            x_samples, alpha_phi2_samples[:, i], color=colors[1], label=rf"$\phi_2$"
+        )
         ax.set_xlabel(r"Control input $\phi$")
         ax.set_ylabel(ylabels[i])
-        ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
+        ax.tick_params(
+            left=False, right=False, labelleft=False, labelbottom=False, bottom=False
+        )
         ax.legend(loc="upper right")
     plt.tight_layout()
     plt.show()
@@ -101,16 +107,28 @@ if __name__ == "__main__":
     ylabels = [
         r"Torque on bend. strain: $\tau_\mathrm{be}$",
         r"Torque on shear strain: $\tau_\mathrm{sh}$",
-        r"Torque on axial strain: $\tau_\mathrm{ax}$"
+        r"Torque on axial strain: $\tau_\mathrm{ax}$",
     ]
     linearized_alpha_phi1_samples = linearized_actuation_force_fn_vmapped(phi1_samples)
     linearized_alpha_phi2_samples = linearized_actuation_force_fn_vmapped(phi2_samples)
     for i, ax in enumerate(axes):
-        ax.plot(x_samples, linearized_alpha_phi1_samples[:, i], color=colors[0], label=rf"$\phi_1$")
-        ax.plot(x_samples, linearized_alpha_phi2_samples[:, i], color=colors[1], label=rf"$\phi_2$")
+        ax.plot(
+            x_samples,
+            linearized_alpha_phi1_samples[:, i],
+            color=colors[0],
+            label=rf"$\phi_1$",
+        )
+        ax.plot(
+            x_samples,
+            linearized_alpha_phi2_samples[:, i],
+            color=colors[1],
+            label=rf"$\phi_2$",
+        )
         ax.set_xlabel(r"Control input $\phi$")
         ax.set_ylabel(ylabels[i])
-        ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
+        ax.tick_params(
+            left=False, right=False, labelleft=False, labelbottom=False, bottom=False
+        )
         ax.legend(loc="upper right")
     plt.tight_layout()
     plt.show()
@@ -120,7 +138,7 @@ if __name__ == "__main__":
     ylabels = [
         r"Torque on 1st act. coord.: $\tau_{\varphi_1}$",
         r"Torque on 2nd act. coord.: $\tau_{\varphi_2}$",
-        r"Torque on unact. coord.: $\tau_{\varphi_3}$"
+        r"Torque on unact. coord.: $\tau_{\varphi_3}$",
     ]
     y_samples = x_samples
     for i, ax in enumerate(axes):
@@ -128,7 +146,9 @@ if __name__ == "__main__":
             ax.plot(x_samples, y_samples, color=colors[i], label=rf"$u_{i+1}$")
         ax.set_xlabel(r"Control input $u$")
         ax.set_ylabel(ylabels[i])
-        ax.tick_params(left=False, right=False, labelleft=False, labelbottom=False, bottom=False)
+        ax.tick_params(
+            left=False, right=False, labelleft=False, labelbottom=False, bottom=False
+        )
         if i < 2:
             ax.legend(loc="upper left")
     plt.tight_layout()

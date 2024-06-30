@@ -30,20 +30,18 @@ def test_operational_space_dynamics():
         dynamical_matrices_fn,
         sys_helpers,
     ) = planar_hsa.factory(sym_exp_filepath)
-    dynamical_matrices_fn = partial(
-        dynamical_matrices_fn,
-        params,
-        eps=1e-1
-    )
+    dynamical_matrices_fn = partial(dynamical_matrices_fn, params, eps=1e-1)
     operational_space_dynamical_matrices_fn = partial(
-        sys_helpers["operational_space_dynamical_matrices_fn"],
-        params,
-        eps=1e-1
+        sys_helpers["operational_space_dynamical_matrices_fn"], params, eps=1e-1
     )
 
-    def compute_operational_space_dynamical_components(q: Array, q_d: Array, phi: Array):
+    def compute_operational_space_dynamical_components(
+        q: Array, q_d: Array, phi: Array
+    ):
         B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
-        Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
+        Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(
+            q, q_d, B, C
+        )
 
         print("Jee:\n", Jee)
         print("Jee_d:\n", Jee_d)
@@ -66,10 +64,14 @@ def test_operational_space_dynamics():
     print("test for different bending strains")
     num_points = 20001
     sigma_b_ps = jnp.linspace(-0.5, 0.5, num_points)
-    q_ps = jnp.stack([sigma_b_ps, jnp.zeros((num_points,)), jnp.zeros((num_points,))], axis=1)
+    q_ps = jnp.stack(
+        [sigma_b_ps, jnp.zeros((num_points,)), jnp.zeros((num_points,))], axis=1
+    )
     q_d = jnp.array([0.0, 0.0, 0.1])
     phi = jnp.zeros((2,))
-    mu_N_ps = vmap(compute_operational_space_dynamical_components, in_axes=(0, None, None))(q_ps, q_d, phi)
+    mu_N_ps = vmap(
+        compute_operational_space_dynamical_components, in_axes=(0, None, None)
+    )(q_ps, q_d, phi)
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(sigma_b_ps, mu_N_ps[:, 0, 0], label=r"$\mu_{N,11}$")
@@ -87,7 +89,7 @@ def test_operational_space_dynamics():
     plt.show()
 
     mu_Nb = compute_operational_space_dynamical_components(q_ps[0], q_d, phi)
-    mu_N0 = compute_operational_space_dynamical_components(jnp.zeros((3, )), q_d, phi)
+    mu_N0 = compute_operational_space_dynamical_components(jnp.zeros((3,)), q_d, phi)
 
 
 if __name__ == "__main__":

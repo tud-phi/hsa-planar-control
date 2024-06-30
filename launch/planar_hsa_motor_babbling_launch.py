@@ -14,7 +14,9 @@ import os
 now = datetime.now()
 
 RECORD = True  # Record data to rosbag file
-BAG_PATH = f"/home/gfranzese/Documents/sources/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
+BAG_PATH = (
+    f"/home/gfranzese/Documents/sources/rosbags/rosbag2_{now.strftime('%Y%m%d_%H%M%S')}"
+)
 LOG_LEVEL = "warn"
 
 hsa_material = "fpu"
@@ -39,7 +41,7 @@ common_params = {
 motor_babbling_params = common_params | {
     "mode": "sinusoidal_extension",
     "duration": 60.0,
-    "frequency": 0.2
+    "frequency": 0.2,
 }
 
 

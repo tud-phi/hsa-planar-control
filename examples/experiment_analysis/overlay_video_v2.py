@@ -257,8 +257,9 @@ def main():
     if cap.isOpened() == False:
         raise RuntimeError("Error opening video stream or file")
 
-    frame_width, frame_height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(
-        cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    frame_width, frame_height = (
+        int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+        int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
     )
     print("Frame size = ", frame_width, "x", frame_height, "pixels")
 

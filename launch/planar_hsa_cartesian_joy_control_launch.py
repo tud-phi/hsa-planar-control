@@ -16,7 +16,9 @@ LOG_LEVEL = "warn"
 
 SYSTEM_TYPE = "robot"  # "sim" or "robot"
 HSA_MATERIAL = "fpu"
-END_EFFECTOR_ATTACHED = True  # whether our 3D printed end effector is attached to the HSA platform
+END_EFFECTOR_ATTACHED = (
+    True  # whether our 3D printed end effector is attached to the HSA platform
+)
 JOY_SIGNAL_SOURCE = "keyboard"  # "openvibe" or "keyboard"
 JOY_CONTROL_MODE = "cartesian"  # "bending", "cartesian" or "cartesian_switch"
 PUSH_BUTTON_MODE = False  # True or False
@@ -59,14 +61,19 @@ planning_params = common_params | {
     "setpoint_frequency": 0.0166  # period of 60s between setpoints
 }
 viz_params = common_params | {
-    "rendering_frequency": 20.0, 
-    "invert_colors": True, 
+    "rendering_frequency": 20.0,
+    "invert_colors": True,
     "draw_operational_workspace": True,
-    "cartesian_switch_state_topic": "cartesian_switch_state" if JOY_CONTROL_MODE == "cartesian_switch" else "None",
+    "cartesian_switch_state_topic": "cartesian_switch_state"
+    if JOY_CONTROL_MODE == "cartesian_switch"
+    else "None",
 }
 joy_control_params = common_params | {
     "cartesian_delta": 2e-4,  # step for moving the attractor [m]
-    "pee_y0": 0.11 + common_params["chiee_off"][1],  # initial y coordinate position of the attractor [m]
+    "pee_y0": 0.11
+    + common_params["chiee_off"][
+        1
+    ],  # initial y coordinate position of the attractor [m]
 }
 control_params = common_params | {
     "controller_type": controller_type,
@@ -97,14 +104,24 @@ elif controller_type == "operational_space_pd_plus_linearized_actuation":
         Kd = 1e-1 * np.eye(2)  # [Ns/m]
     else:
         raise ValueError(f"Unknown HSA material: {HSA_MATERIAL}")
-elif controller_type in ["operational_space_pd_plus_nonlinear_actuation", "operational_space_impedance_control_nonlinear_actuation"]:
+elif controller_type in [
+    "operational_space_pd_plus_nonlinear_actuation",
+    "operational_space_impedance_control_nonlinear_actuation",
+]:
     if PUSH_BUTTON_MODE:
-        push_direction = 90 / 180 * np.pi  # rotation of impedance with respect to the x-axis [rad]
+        push_direction = (
+            90 / 180 * np.pi
+        )  # rotation of impedance with respect to the x-axis [rad]
         # local impedance matrix
         Kp_local = np.diag(np.array([5e2, 2e2]))
         Kd_local = np.diag(np.array([1e0, 1e0]))
         # rotation matrix
-        rot = np.array([[np.cos(push_direction), -np.sin(push_direction)], [np.sin(push_direction), np.cos(push_direction)]])
+        rot = np.array(
+            [
+                [np.cos(push_direction), -np.sin(push_direction)],
+                [np.sin(push_direction), np.cos(push_direction)],
+            ]
+        )
         # global impedance matrix
         Kp = rot @ Kp_local @ rot.T
         Kd = rot @ Kd_local @ rot.T
@@ -250,7 +267,7 @@ def generate_launch_description():
 
     joylike_operation_params = {
         "joy_control_mode": JOY_CONTROL_MODE,
-        "host": "145.94.230.59"
+        "host": "145.94.230.59",
     }
     if JOY_SIGNAL_SOURCE == "openvibe":
         if JOY_CONTROL_MODE == "cartesian_switch":
@@ -273,13 +290,15 @@ def generate_launch_description():
                     arguments=["--ros-args", "--log-level", LOG_LEVEL],
                 ),
             )
-        
+
     elif JOY_SIGNAL_SOURCE == "keyboard":
-        joylike_operation_params['config_filepath'] = str(os.path.join(
-            get_package_share_directory("joylike_operation"),
-            "config",
-            f"keystroke2joy_{joylike_operation_params['joy_control_mode']}.yaml",
-        ))
+        joylike_operation_params["config_filepath"] = str(
+            os.path.join(
+                get_package_share_directory("joylike_operation"),
+                "config",
+                f"keystroke2joy_{joylike_operation_params['joy_control_mode']}.yaml",
+            )
+        )
         launch_actions.extend(
             [
                 Node(
@@ -302,7 +321,8 @@ def generate_launch_description():
     if RECORD:
         launch_actions.append(
             ExecuteProcess(
-                cmd=["ros2", "bag", "record", "-a", "-o", BAG_PATH, "-s", "sqlite3"], output="screen"
+                cmd=["ros2", "bag", "record", "-a", "-o", BAG_PATH, "-s", "sqlite3"],
+                output="screen",
             )
         )
 

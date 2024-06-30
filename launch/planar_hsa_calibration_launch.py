@@ -15,7 +15,9 @@ now = datetime.now()
 LOG_LEVEL = "warn"
 
 HSA_MATERIAL = "fpu"
-END_EFFECTOR_ATTACHED = True  # whether our 3D printed end effector is attached to the HSA platform
+END_EFFECTOR_ATTACHED = (
+    True  # whether our 3D printed end effector is attached to the HSA platform
+)
 
 
 ros_params = {

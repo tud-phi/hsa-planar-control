@@ -132,7 +132,11 @@ def optimize_with_nonlinear_lq(
             residual: array of residuals of the optimization problem
         """
         debug.print("Pi = {_Pi}", _Pi=_Pi)
-        residual = vmap(eom_residual_fn, in_axes=(None, 0, 0, 0, 0, 0), out_axes=0,)(
+        residual = vmap(
+            eom_residual_fn,
+            in_axes=(None, 0, 0, 0, 0, 0),
+            out_axes=0,
+        )(
             _Pi,
             data_ts["xi_ts"],
             data_ts["xi_d_ts"],

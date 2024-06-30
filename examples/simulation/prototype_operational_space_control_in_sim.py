@@ -73,7 +73,9 @@ match controller_type:
         Kp = 5e0 * jnp.eye(2)  # [N/m]
         Kd = 0e0 * jnp.eye(2)  # [Ns/m]
     case _:
-        raise ValueError(f"There does not exist an implementation for {controller_type}")
+        raise ValueError(
+            f"There does not exist an implementation for {controller_type}"
+        )
 
 # video settings
 video_path = Path("videos") / f"controlled_planar_hsa_{controller_type}.mp4"
@@ -106,23 +108,25 @@ if __name__ == "__main__":
                 "e_pee": jnp.zeros_like(pee_des),
                 "integral_error": jnp.zeros_like(pee_des),
             }
-        case "operational_space_pd_plus_linearized_actuation" | \
-            "operational_space_pd_plus_nonlinear_actuation" | \
-            "operational_space_impedance_control_nonlinear_actuation":
+        case (
+            "operational_space_pd_plus_linearized_actuation"
+            | "operational_space_pd_plus_nonlinear_actuation"
+            | "operational_space_impedance_control_nonlinear_actuation"
+        ):
             if controller_type == "operational_space_pd_plus_linearized_actuation":
                 control_fn = operational_space_pd_plus_linearized_actuation
-            elif (
-                controller_type == "operational_space_pd_plus_nonlinear_actuation"
-            ):
+            elif controller_type == "operational_space_pd_plus_nonlinear_actuation":
                 control_fn = operational_space_pd_plus_nonlinear_actuation
             else:
                 control_fn = operational_space_impedance_control_nonlinear_actuation
-            
+
             dynamics_eps = 1e-1
             control_fn = jit(
                 partial(
                     control_fn,
-                    dynamical_matrices_fn=partial(dynamical_matrices_fn, params, eps=dynamics_eps),
+                    dynamical_matrices_fn=partial(
+                        dynamical_matrices_fn, params, eps=dynamics_eps
+                    ),
                     operational_space_dynamical_matrices_fn=partial(
                         sys_helpers["operational_space_dynamical_matrices_fn"],
                         params,
@@ -135,19 +139,18 @@ if __name__ == "__main__":
                 )
             )
         case _:
-            raise ValueError(f"There does not exist an implementation for {controller_type}")
+            raise ValueError(
+                f"There does not exist an implementation for {controller_type}"
+            )
 
     @jit
     def saturated_control_fn(
         *args, **kwargs
     ) -> Tuple[Array, Dict[str, Array], Dict[str, Array]]:
         controller_output = control_fn(*args, **kwargs)
-        controller_output = saturate_control_inputs(
-            params,
-            *controller_output
-        )
+        controller_output = saturate_control_inputs(params, *controller_output)
         return controller_output
-    
+
     chiee = forward_kinematics_end_effector_fn(params, q0)
     chiee_d = jacobian_end_effector_fn(params, q0) @ q_d0
     phi_des, controller_info = control_fn(0.0, chiee, chiee_d, q=q0, q_d=q_d0, phi=phi0)
@@ -230,5 +233,5 @@ if __name__ == "__main__":
         params,
         video_path,
         video_ts=sim_ts["t_ts"],
-        q_ts=sim_ts["x_ts"][:, :(sim_ts["x_ts"].shape[1] // 2)],
+        q_ts=sim_ts["x_ts"][:, : (sim_ts["x_ts"].shape[1] // 2)],
     )

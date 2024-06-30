@@ -19,7 +19,9 @@ def linearize_actuation(
     """
 
     def alpha_fn(_phi: Array) -> Array:
-        _, _, _, _, _, _alpha = dynamical_matrices_fn(q_eq, jnp.zeros_like(q_eq), phi=_phi)
+        _, _, _, _, _, _alpha = dynamical_matrices_fn(
+            q_eq, jnp.zeros_like(q_eq), phi=_phi
+        )
         return _alpha
 
     tau_eq = alpha_fn(phi_eq)  # torque at which the system is linearized

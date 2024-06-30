@@ -61,7 +61,9 @@ def simulate_closed_loop_system(
                 u, controller_info = control_fn(*control_args, **control_kwargs)
             else:
                 u, controller_state, controller_info = control_fn(
-                    *control_args, controller_state=carry["controller_state"], **control_kwargs
+                    *control_args,
+                    controller_state=carry["controller_state"],
+                    **control_kwargs,
                 )
                 carry["controller_state"] = controller_state
 

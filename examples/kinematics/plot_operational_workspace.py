@@ -106,8 +106,9 @@ if __name__ == "__main__":
     colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
     # fit polynomial to the max actuation samples
-    xmin, xmax = jnp.min(max_actuation_samples["chiee_ss"][:, 0]), jnp.max(
-        max_actuation_samples["chiee_ss"][:, 0]
+    xmin, xmax = (
+        jnp.min(max_actuation_samples["chiee_ss"][:, 0]),
+        jnp.max(max_actuation_samples["chiee_ss"][:, 0]),
     )
     print(f"xmin = {xmin}, xmax = {xmax}")
     pmin = jnp.polyfit(
@@ -173,14 +174,14 @@ if __name__ == "__main__":
         max_actuation_samples["chiee_ss"][:, 0],
         max_actuation_samples["chiee_ss"][:, 1],
         "k--",
-        zorder=2
+        zorder=2,
         # label="Max. actuation"
     )
     plt.plot(
         min_actuation_samples["chiee_ss"][:, 0],
         min_actuation_samples["chiee_ss"][:, 1],
         "k--",
-        zorder=2
+        zorder=2,
         # label="Min. actuation"
     )
 

@@ -120,7 +120,8 @@ def generate_launch_description():
     if RECORD:
         launch_actions.append(
             ExecuteProcess(
-                cmd=["ros2", "bag", "record", "-a", "-o", BAG_PATH, "-s", "sqlite3"], output="screen"
+                cmd=["ros2", "bag", "record", "-a", "-o", BAG_PATH, "-s", "sqlite3"],
+                output="screen",
             )
         )
 
