@@ -34,7 +34,7 @@ def static_inversion_factory(
 
         # compute the dynamical matrices at the current configuration and phi
         _, _, _G, _K, _, _alpha = dynamical_matrices_fn(
-            params, _q, jnp.zeros_like(_q), _phi
+            params, _q, jnp.zeros_like(_q), phi=_phi
         )
 
         lhs = _G + _K

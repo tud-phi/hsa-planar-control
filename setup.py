@@ -6,7 +6,7 @@ package_name = "hsa_planar_control"
 
 setup(
     name=package_name,
-    version="0.0.1",
+    version="0.0.2",
     packages=[
         package_name,
         package_name + ".analysis",

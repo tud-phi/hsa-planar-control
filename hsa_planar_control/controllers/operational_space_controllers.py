@@ -177,7 +177,7 @@ def operational_space_computed_torque(
                 the generalized torques
         controller_info: dictionary with information about intermediate computations
     """
-    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
+    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
     Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # current end-effector pose
@@ -267,7 +267,7 @@ def operational_space_pd_plus_linearized_actuation(
     # error in operational space
     e_pee = pee_des - pee
 
-    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
+    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
     Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # desired force in operational space with respect to x, y and theta
@@ -338,7 +338,7 @@ def operational_space_pd_plus_nonlinear_actuation(
     # error in operational space
     e_pee = pee_des - pee
 
-    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
+    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
     Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # desired force in operational space with respect to x, y and theta
@@ -419,7 +419,7 @@ def operational_space_impedance_control_nonlinear_actuation(
     # error in operational space
     e_pee = pee_des - pee
 
-    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
+    B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
     Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
     # extract the bending strains

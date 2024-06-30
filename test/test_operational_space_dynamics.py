@@ -42,7 +42,7 @@ def test_operational_space_dynamics():
     )
 
     def compute_operational_space_dynamical_components(q: Array, q_d: Array, phi: Array):
-        B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi)
+        B, C, G, K, D, alpha = dynamical_matrices_fn(q, q_d, phi=phi)
         Lambda, mu, Jee, Jee_d, JeeB_pinv = operational_space_dynamical_matrices_fn(q, q_d, B, C)
 
         print("Jee:\n", Jee)

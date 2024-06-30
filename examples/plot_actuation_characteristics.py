@@ -55,7 +55,7 @@ phi_ss = jnp.array([0.0, 0.0])
 
 
 def alpha_fn(phi: Array) -> Array:
-    B, C, G, K, D, alpha = dynamical_matrices_fn(params, q, q_d, phi)
+    B, C, G, K, D, alpha = dynamical_matrices_fn(params, q, q_d, phi=phi)
     return alpha
 
 

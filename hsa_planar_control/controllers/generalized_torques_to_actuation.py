@@ -19,7 +19,7 @@ def linearize_actuation(
     """
 
     def alpha_fn(_phi: Array) -> Array:
-        _, _, _, _, _, _alpha = dynamical_matrices_fn(q_eq, jnp.zeros_like(q_eq), _phi)
+        _, _, _, _, _, _alpha = dynamical_matrices_fn(q_eq, jnp.zeros_like(q_eq), phi=_phi)
         return _alpha
 
     tau_eq = alpha_fn(phi_eq)  # torque at which the system is linearized
@@ -66,7 +66,7 @@ def map_generalized_torques_to_actuation_with_nonlinear_optimization(
     """
 
     def residual_fn(_phi: Array) -> Array:
-        _, _, _, _, _, _alpha = dynamical_matrices_fn(q, jnp.zeros_like(q), _phi)
+        _, _, _, _, _, _alpha = dynamical_matrices_fn(q, jnp.zeros_like(q), phi=_phi)
         return _alpha - tau_q_des
 
     # solve the nonlinear least squares problem

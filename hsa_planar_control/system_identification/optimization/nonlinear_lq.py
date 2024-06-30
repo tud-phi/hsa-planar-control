@@ -93,7 +93,7 @@ def nonlinear_lq_optim_problem_factory(
         q_d = xi_d
 
         # evaluate the dynamical matrices
-        B, C, G, K, D, alpha = dynamical_matrices_fn(_params, q, q_d, phi)
+        B, C, G, K, D, alpha = dynamical_matrices_fn(_params, q, q_d, phi=phi)
 
         # rhs of the equations of motion
         rhs = alpha
